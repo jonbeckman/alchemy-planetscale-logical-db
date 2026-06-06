@@ -1,0 +1,31 @@
+{
+  "name": "alchemy-planetscale-pglite-hyperdrive",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:db": "pglite-server --db .pglite/project_a --host 127.0.0.1 --port 15432 --max-connections 100",
+    "migrate:local": "APP_SLUG=project_a DATABASE_URL=\"postgresql://postgres:postgres@127.0.0.1:15432/postgres?sslmode=disable\" tsx scripts/migrate-local.ts",
+    "dev:app": "APP_DB_MODE=local APP_SLUG=project_a DATABASE_URL=\"postgresql://postgres:postgres@127.0.0.1:15432/postgres?sslmode=disable\" alchemy dev alchemy.app.run.ts --stage dev --env-file .env",
+    "plan:db": "alchemy plan alchemy.db.run.ts --stage prod --env-file .env",
+    "deploy:db": "alchemy deploy alchemy.db.run.ts --stage prod --env-file .env --yes",
+    "plan:app:remote": "APP_DB_MODE=remote APP_SLUG=project_a alchemy plan alchemy.app.run.ts --stage prod --env-file .env",
+    "deploy:app:remote": "APP_DB_MODE=remote APP_SLUG=project_a alchemy deploy alchemy.app.run.ts --stage prod --env-file .env --yes",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "0.4.5",
+    "@electric-sql/pglite-socket": "0.1.5",
+    "alchemy": "https://pkg.ing/alchemy/main",
+    "effect": "4.0.0-beta.78",
+    "postgres": "3.4.9",
+    "vite": "^8.0.7"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260521.1",
+    "@effect/platform-node": "4.0.0-beta.78",
+    "@types/node": "^25.9.1",
+    "tsx": "^4.22.3",
+    "typescript": "^6.0.3"
+  }
+}
