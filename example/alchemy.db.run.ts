@@ -1,6 +1,7 @@
 import * as Alchemy from "alchemy"
 import * as Output from "alchemy/Output"
 import * as Planetscale from "alchemy/Planetscale"
+import * as PlanetscaleLogicalDb from "alchemy-planetscale-logical-db"
 import * as Effect from "effect/Effect"
 import { DB_STACK_NAME, postgresCluster, projects, type ProjectConfig } from "./src/config.ts"
 import { stackOptions } from "./src/stack-options.ts"
@@ -30,9 +31,9 @@ function createProjectDatabase(project: ProjectConfig, cluster: Planetscale.Post
       successor: "postgres",
     })
 
-    return yield* Planetscale.PostgresLogicalDatabase(`${project.resourcePrefix}PostgresDatabase`, {
+    return yield* PlanetscaleLogicalDb.PostgresLogicalDatabase(`${project.resourcePrefix}PostgresDatabase`, {
       adminOrigin: adminRole.origin,
-      appRoleName: Output.map(appRole.username, Planetscale.postgresRoleNameFromUsername),
+      appRoleName: Output.map(appRole.username, PlanetscaleLogicalDb.postgresRoleNameFromUsername),
       appRolePrivilegesVersion: 1,
       importsTable: "__app_imports",
       migrationsDir: project.migrationsDir,

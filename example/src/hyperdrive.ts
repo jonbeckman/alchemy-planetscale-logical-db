@@ -2,6 +2,7 @@ import * as Alchemy from "alchemy"
 import * as Cloudflare from "alchemy/Cloudflare"
 import * as Output from "alchemy/Output"
 import * as Planetscale from "alchemy/Planetscale"
+import * as PlanetscaleLogicalDb from "alchemy-planetscale-logical-db"
 import * as Effect from "effect/Effect"
 import * as Redacted from "effect/Redacted"
 import { DB_STACK_NAME, type ProjectConfig } from "./config.ts"
@@ -93,7 +94,7 @@ function createRemoteHyperdrive(project: ProjectConfig) {
     const appRole = yield* Planetscale.PostgresRole.ref(`${project.resourcePrefix}PostgresAppRole`, {
       stack: DB_STACK_NAME,
     })
-    const logicalDatabase = yield* Planetscale.PostgresLogicalDatabase.ref(
+    const logicalDatabase = yield* PlanetscaleLogicalDb.PostgresLogicalDatabase.ref(
       `${project.resourcePrefix}PostgresDatabase`,
       { stack: DB_STACK_NAME },
     )
