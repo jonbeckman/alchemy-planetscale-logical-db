@@ -3,30 +3,9 @@ import type { NodeLike } from "./types.ts"
 
 const effectUtilityImportSources = new Set(["effect/Clock", "effect/DateTime"])
 
-export function isLintRequestObservabilitySurface(filename: string): boolean {
-  const normalized = filename.replaceAll("\\", "/")
-  return (
-    /\/apps\/[^/]+\/src\/api\.[cm]?[jt]sx?$/.test(normalized) ||
-    /\/apps\/[^/]+\/src\/server(?:\/|$)/.test(normalized) ||
-    normalized.endsWith("/packages/utils/src/observability.ts")
-  )
-}
+export const isLintAllowedDynamicImportBoundary = (_filename: string): boolean => false
 
-export function isLintAllowedDynamicImportBoundary(filename: string): boolean {
-  const normalized = filename.replaceAll("\\", "/")
-  return normalized.endsWith("/apps/gtt-web/src/browser-automation-modules.ts")
-}
-
-export function isLintAllowedBackendEffectBoundary(filename: string): boolean {
-  const normalized = filename.replaceAll("\\", "/")
-  return (
-    normalized.endsWith("/apps/gtt-web/src/api.ts") ||
-    normalized.endsWith("/apps/solzero-web/src/api.ts") ||
-    normalized.endsWith("/apps/gtt-web/src/server/ws.ts") ||
-    normalized.endsWith("/apps/gtt-web/src/server/api/services/automation/browser-runners.ts") ||
-    normalized.endsWith("/apps/gtt-web/src/server/api/services/automation/chronogolf.ts")
-  )
-}
+export const isLintAllowedBackendEffectBoundary = (_filename: string): boolean => false
 
 export function hasEffectSignal(program: NodeLike): boolean {
   return containsNode(program, (candidate) => {

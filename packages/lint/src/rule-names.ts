@@ -32,7 +32,6 @@ export const lintRuleNames = [
   ...compositionRuleNames,
   "prefer-option-over-null",
   "avoid-untagged-errors",
-  "use-effect-otel",
 ] as const
 
 export type LintRuleName = (typeof lintRuleNames)[number]

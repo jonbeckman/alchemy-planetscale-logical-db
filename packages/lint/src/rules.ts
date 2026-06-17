@@ -14,7 +14,6 @@ import {
   isBranchCall,
   isCallExpression,
   isCallTo,
-  isConsoleAccess,
   isConsoleCall,
   isEffectCall,
   isEffectMember,
@@ -438,27 +437,4 @@ export const rules: Record<LintRuleName, Rule> = {
       },
     }
   }),
-  "use-effect-otel": makeRule(
-    "use-effect-otel",
-    ({ report, shouldRun }) => {
-      const reportAccess = (node: NodeLike) => {
-        if (!shouldRun()) {
-          return
-        }
-        if (isConsoleAccess(node)) {
-          report(
-            node,
-            "Rule: avoid console.* in API/Worker/server observability surfaces. Why: it bypasses Effect logs, spans, Cloudflare Observability, and Maple Local collection. Fix: use Effect.log*, Effect.withSpan, or request telemetry helpers.",
-          )
-        }
-      }
-
-      return {
-        ComputedMemberExpression: reportAccess,
-        MemberExpression: reportAccess,
-        StaticMemberExpression: reportAccess,
-      }
-    },
-    { requiresEffectFile: false, requiresLintRequestObservabilitySurface: true },
-  ),
 }

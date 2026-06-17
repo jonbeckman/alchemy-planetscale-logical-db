@@ -45,7 +45,6 @@
         "lint/prevent-dynamic-imports": "warn",
         "lint/prefer-option-over-null": "warn",
         "lint/avoid-untagged-errors": "warn",
-        "lint/use-effect-otel": "warn",
         "effect/avoid-try-catch": "warn",
         "effect/prefer-match-over-switch": "warn",
         "effect/imperative-loops": "warn",

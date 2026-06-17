@@ -59,6 +59,4 @@ export const messages: Record<LintRuleName, string> = {
     "Rule: avoid nullable return/local types in Effect-bearing code. Why: nullable unions hide absence in plain TypeScript control flow. Fix: return Option.Option<T> and branch with Option.match, Option.map, or Option.flatMap.",
   "avoid-untagged-errors":
     "Rule: avoid bare Error values in recoverable Effect failure channels. Why: untagged errors cannot be handled precisely with catchTag/catchTags. Fix: use Schema.TaggedErrorClass for API errors, Data.TaggedError for internal Effect errors, or Effect.die for unrecoverable defects.",
-  "use-effect-otel":
-    "Rule: use Effect OTEL-aware logging for API/Worker/server observability. Why: raw console bypasses Effect logs, spans, Cloudflare Observability, and Maple Local collection. Fix: use Effect.log*, Effect.withSpan, or request telemetry helpers.",
 }
