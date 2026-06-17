@@ -22,7 +22,7 @@ pnpm add alchemy-planetscale-logical-db
 The package expects Alchemy v2 and Effect from the consuming project:
 
 ```sh
-pnpm add alchemy@latest effect@4.0.0-beta.78
+pnpm add alchemy@2.0.0-beta.55 effect@4.0.0-beta.78
 ```
 
 ## Usage
