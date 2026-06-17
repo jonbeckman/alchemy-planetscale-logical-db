@@ -4,6 +4,11 @@
   "description": "Alchemy v2 resource for managing logical PostgreSQL databases inside PlanetScale Postgres clusters.",
   "license": "Apache-2.0",
   "type": "module",
+  "packageManager": "pnpm@11.5.2",
+  "engines": {
+    "node": ">=24",
+    "pnpm": ">=11 <12"
+  },
   "sideEffects": false,
   "files": [
     "dist",
@@ -18,7 +23,15 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "check": "pnpm typecheck && pnpm build && pnpm --dir example typecheck",
+    "prepublishOnly": "pnpm build",
     "typecheck": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jonbeckman/alchemy-planetscale-logical-db.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jonbeckman/alchemy-planetscale-logical-db/issues"
   },
   "peerDependencies": {
     "alchemy": ">=2.0.0-beta.55",
