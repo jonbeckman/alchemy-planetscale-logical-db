@@ -3,6 +3,7 @@ import * as Output from "alchemy/Output"
 import * as Planetscale from "alchemy/Planetscale"
 import * as PlanetscaleLogicalDb from "alchemy-planetscale-logical-db"
 import * as Effect from "effect/Effect"
+import * as R from "effect/Record"
 import { DB_STACK_NAME, postgresCluster, projects, type ProjectConfig } from "./src/config.ts"
 import { stackOptions } from "./src/stack-options.ts"
 
@@ -52,7 +53,7 @@ function createProjectDatabase(project: ProjectConfig, cluster: Planetscale.Post
   })
 }
 
-const SharedPostgresProgram = Effect.gen(function* () {
+const SharedPostgresProgram = Effect.fn("SharedPostgresProgram")(function* () {
   const cluster = yield* Planetscale.PostgresDatabase("SharedPostgresCluster", {
     clusterSize: postgresCluster.clusterSize,
     defaultBranch: postgresCluster.defaultBranch,
@@ -61,14 +62,14 @@ const SharedPostgresProgram = Effect.gen(function* () {
   })
 
   yield* Effect.all(
-    Object.values(projects).map((project) => createProjectDatabase(project, cluster)),
+    R.values(projects).map((project) => createProjectDatabase(project, cluster)),
     { concurrency: "unbounded" },
   )
 
   return {
     clusterName: postgresCluster.name,
-    logicalDatabases: Object.values(projects).map((project) => project.logicalDatabaseName),
+    logicalDatabases: R.values(projects).map((project) => project.logicalDatabaseName),
   } satisfies SharedPostgresOutput
 })
 
-export default SharedPostgres.make(stackOptions(), SharedPostgresProgram)
+export default SharedPostgres.make(stackOptions(), SharedPostgresProgram())

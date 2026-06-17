@@ -1,7 +1,10 @@
-import crypto from "node:crypto"
-import { readdir, readFile } from "node:fs/promises"
-import { resolve } from "node:path"
+import * as Arr from "effect/Array"
 import * as Effect from "effect/Effect"
+import * as FileSystem from "effect/FileSystem"
+import * as Option from "effect/Option"
+import * as Order from "effect/Order"
+import * as Path from "effect/Path"
+import * as Stream from "effect/Stream"
 
 export interface SqlFile {
   readonly id: string
@@ -9,43 +12,72 @@ export interface SqlFile {
   readonly hash: string
 }
 
-const sqlFilePrefix = (name: string): number | null => {
+const textEncoder = new TextEncoder()
+
+const bytesToHex = (bytes: ArrayBuffer) =>
+  Arr.fromIterable(new Uint8Array(bytes))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("")
+
+const sha256Hex = (value: string) =>
+  Effect.tryPromise({
+    try: () => globalThis.crypto.subtle.digest("SHA-256", textEncoder.encode(value)),
+    catch: (error) => error,
+  }).pipe(Effect.map(bytesToHex))
+
+function sqlFilePrefix(name: string) {
   const prefix = name.split("_")[0]
   const parsed = Number.parseInt(prefix, 10)
-  return Number.isNaN(parsed) ? null : parsed
+  return Option.liftPredicate(parsed, (value) => !Number.isNaN(value))
 }
 
-const compareSqlFiles = (left: string, right: string) => {
-  const leftPrefix = sqlFilePrefix(left)
-  const rightPrefix = sqlFilePrefix(right)
-
-  if (leftPrefix !== null && rightPrefix !== null) {
-    return leftPrefix - rightPrefix
-  }
-
-  if (leftPrefix !== null) return -1
-  if (rightPrefix !== null) return 1
-
-  return left.localeCompare(right)
-}
-
-export const readSqlFile = (directory: string, name: string) =>
-  Effect.tryPromise(() =>
-    readFile(resolve(directory, name), "utf8").then((sql) => {
-      const hash = crypto.createHash("sha256").update(sql).digest("hex")
-      const file: SqlFile = { id: name, sql, hash }
-      Object.defineProperty(file, "sql", { enumerable: false })
-      return file
+const compareSqlFiles: Order.Order<string> = (left, right) =>
+  Option.product(sqlFilePrefix(left), sqlFilePrefix(right)).pipe(
+    Option.match({
+      onSome: ([leftPrefix, rightPrefix]) => Order.Number(leftPrefix, rightPrefix),
+      onNone: () =>
+        sqlFilePrefix(left).pipe(
+          Option.match({
+            onSome: () => -1,
+            onNone: () =>
+              sqlFilePrefix(right).pipe(
+                Option.match({
+                  onSome: () => 1,
+                  onNone: () => Order.String(left, right),
+                }),
+              ),
+          }),
+        ),
     }),
   )
 
+export const readSqlFile = (directory: string, name: string) =>
+  Effect.gen(function* () {
+    const fs = yield* FileSystem.FileSystem
+    const path = yield* Path.Path
+    const sql = yield* fs.stream(path.join(directory, name)).pipe(
+      Stream.decodeText(),
+      Stream.runFold(
+        () => "",
+        (content: string, chunk: string) => content + chunk,
+      ),
+    )
+    const hash = yield* sha256Hex(sql)
+    const file: SqlFile = { id: name, sql, hash }
+    Object.defineProperty(file, "sql", { enumerable: false })
+    return file
+  })
+
 export const listSqlFiles = (directory: string) =>
   Effect.gen(function* () {
-    const entries = yield* Effect.tryPromise(() => readdir(directory, { recursive: true }))
-    const sqlFileNames = entries
-      .map((entry) => String(entry))
-      .filter((name) => name.endsWith(".sql"))
-      .sort(compareSqlFiles)
+    const fs = yield* FileSystem.FileSystem
+    const entries = yield* fs.readDirectory(directory, { recursive: true })
+    const sqlFileNames = Arr.sort(
+      entries.map((entry) => String(entry)).filter((name) => name.endsWith(".sql")),
+      compareSqlFiles,
+    )
 
-    return yield* Effect.all(sqlFileNames.map((name) => readSqlFile(directory, name)))
+    return yield* Effect.forEach(sqlFileNames, (name) => readSqlFile(directory, name), {
+      concurrency: "unbounded",
+    })
   })

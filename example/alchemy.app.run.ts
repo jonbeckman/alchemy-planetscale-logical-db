@@ -16,12 +16,12 @@ export class ExampleViteApp extends Alchemy.Stack<ExampleViteApp, ExampleViteApp
   APP_STACK_NAME,
 ) {}
 
-const ExampleViteAppProgram = Effect.gen(function* () {
+const ExampleViteAppProgram = Effect.fn("ExampleViteAppProgram")(function* () {
   const appDbMode = appDbModeFromEnv()
   const project = getProject(requiredEnv("APP_SLUG"))
   const db = yield* createProjectHyperdrive(project, appDbMode)
 
-  const worker = yield* Cloudflare.Vite(`${project.resourcePrefix}Web`, {
+  yield* Cloudflare.Vite(`${project.resourcePrefix}Web`, {
     compatibility: {
       date: "2026-05-24",
       flags: ["nodejs_compat"],
@@ -45,4 +45,4 @@ const ExampleViteAppProgram = Effect.gen(function* () {
   } satisfies ExampleViteAppOutput
 })
 
-export default ExampleViteApp.make(stackOptions(), ExampleViteAppProgram)
+export default ExampleViteApp.make(stackOptions(), ExampleViteAppProgram())

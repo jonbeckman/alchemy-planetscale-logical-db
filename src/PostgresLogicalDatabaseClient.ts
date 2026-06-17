@@ -1,14 +1,29 @@
-import crypto from "node:crypto"
 import type { PostgresOrigin } from "alchemy/Planetscale"
+import { sha256Object } from "alchemy/Util/sha256"
+import * as Arr from "effect/Array"
 import * as Effect from "effect/Effect"
 import * as Exit from "effect/Exit"
+import * as HashSet from "effect/HashSet"
+import * as Match from "effect/Match"
+import * as Option from "effect/Option"
+import * as Order from "effect/Order"
+import * as P from "effect/Predicate"
+import * as R from "effect/Record"
 import * as Redacted from "effect/Redacted"
+import * as Schema from "effect/Schema"
 import { Client, type QueryResultRow } from "pg"
 import type { SqlFile } from "./SqlFile.ts"
 
 type TrackedSqlFileAction = "reject" | "reapply"
 
 const POSTGRES_IDENTIFIER = /^[a-z][a-z0-9_]*$/
+
+class TrackedSqlFileError extends Schema.TaggedErrorClass<TrackedSqlFileError>()(
+  "TrackedSqlFileError",
+  {
+    message: Schema.String,
+  },
+) {}
 
 export interface PostgresLogicalDatabaseOwner {
   readonly logicalId: string
@@ -21,23 +36,42 @@ export interface AppRolePrivilegeState {
   readonly ready: boolean
 }
 
-const validateIdentifier = (label: string, value: string) => {
-  if (!POSTGRES_IDENTIFIER.test(value)) {
-    throw new Error(
-      `${label} "${value}" must start with a lowercase letter and contain only lowercase letters, numbers, and underscores.`,
-    )
-  }
+interface PrivilegeCheck {
+  readonly name: string
+  readonly ok: boolean
 }
 
-const quoteIdentifier = (value: string) => {
+function throwInvalidIdentifier(label: string, value: string): never {
+  throw new Error(
+    `${label} "${value}" must start with a lowercase letter and contain only lowercase letters, numbers, and underscores.`,
+  )
+}
+
+const validateIdentifier = (label: string, value: string) =>
+  Match.value(POSTGRES_IDENTIFIER.test(value)).pipe(
+    Match.when(true, () => undefined),
+    Match.when(false, () => throwInvalidIdentifier(label, value)),
+    Match.exhaustive,
+  )
+
+function quoteIdentifier(value: string) {
   validateIdentifier("Postgres identifier", value)
   return `"${value}"`
 }
 
-const quoteExternalIdentifier = (label: string, value: string) => {
-  if (value.length === 0 || value.includes("\0")) {
-    throw new Error(`${label} "${value}" must be a non-empty Postgres identifier.`)
-  }
+const validateExternalIdentifier = (label: string, value: string) =>
+  Match.value(value !== "" && !value.includes("\0")).pipe(
+    Match.when(true, () => undefined),
+    Match.when(false, () => throwInvalidExternalIdentifier(label, value)),
+    Match.exhaustive,
+  )
+
+function throwInvalidExternalIdentifier(label: string, value: string): never {
+  throw new Error(`${label} "${value}" must be a non-empty Postgres identifier.`)
+}
+
+function quoteExternalIdentifier(label: string, value: string) {
+  validateExternalIdentifier(label, value)
   return `"${value.replaceAll('"', '""')}"`
 }
 
@@ -45,14 +79,15 @@ const quoteQualifiedIdentifier = (schema: string, value: string) =>
   `${quoteIdentifier(schema)}.${quoteIdentifier(value)}`
 
 const postgresErrorCode = (error: unknown) =>
-  typeof error === "object" && error !== null && "code" in error
-    ? String((error as { code?: unknown }).code)
-    : undefined
+  Option.liftPredicate(error, P.isObject).pipe(
+    Option.filter((value) => "code" in value),
+    Option.map((value) => String((value as { code?: unknown }).code)),
+    Option.getOrUndefined,
+  )
 
-const hashJson = (value: unknown) =>
-  crypto.createHash("sha256").update(JSON.stringify(value)).digest("hex")
+const hashJson = (value: object) => sha256Object(value)
 
-const originConnectionUrl = (origin: PostgresOrigin, database: string) => {
+function originConnectionUrl(origin: PostgresOrigin, database: string) {
   const url = new URL(`${origin.scheme}://localhost`)
   url.hostname = origin.host
   url.port = String(origin.port)
@@ -63,16 +98,19 @@ const originConnectionUrl = (origin: PostgresOrigin, database: string) => {
   return url.toString()
 }
 
-const stripPgSslQueryParams = (uri: string): string => {
-  if (!URL.canParse(uri)) {
-    return uri
-  }
-
+function removePgSslQueryParams(uri: string) {
   const url = new URL(uri)
   url.searchParams.delete("sslmode")
   url.searchParams.delete("channel_binding")
   return url.toString()
 }
+
+const stripPgSslQueryParams = (uri: string): string =>
+  Match.value(URL.canParse(uri)).pipe(
+    Match.when(true, () => removePgSslQueryParams(uri)),
+    Match.when(false, () => uri),
+    Match.exhaustive,
+  )
 
 const query = <Row extends QueryResultRow = QueryResultRow>(
   client: Client,
@@ -108,10 +146,10 @@ const quoteExternalIdentifierEffect = (label: string, value: string) =>
     catch: (error) => error,
   })
 
-const withPostgresClient = <A, E, R>(
+const withPostgresClient = <Use extends (client: Client) => Effect.All.EffectAny>(
   origin: PostgresOrigin,
   database: string,
-  use: (client: Client) => Effect.Effect<A, E, R>,
+  use: Use,
 ) =>
   Effect.acquireUseRelease(
     connectPostgresClient(
@@ -123,6 +161,32 @@ const withPostgresClient = <A, E, R>(
     use,
     (client) => closePostgresClient(client),
   )
+
+const queryExists = (client: Client, tableName: string) =>
+  query<{ exists: boolean }>(client, "SELECT to_regclass($1) IS NOT NULL AS exists", [
+    `public.${tableName}`,
+  ]).pipe(Effect.map(({ rows }) => rows[0]?.exists === true))
+
+function createDatabaseWhenMissing(
+  client: Client,
+  databaseName: string,
+  rows: readonly { readonly exists: boolean }[],
+) {
+  const missing = Effect.succeed(rows[0]?.exists !== true)
+  return createDatabase(client, databaseName).pipe(Effect.when(missing), Effect.asVoid)
+}
+
+function dropDatabaseWhenPresent(
+  client: Client,
+  databaseName: string,
+  rows: readonly { readonly exists: boolean }[],
+) {
+  const present = Effect.succeed(rows[0]?.exists === true)
+  return query(
+    client,
+    `DROP DATABASE IF EXISTS ${quoteIdentifier(databaseName)} WITH (FORCE)`,
+  ).pipe(Effect.when(present), Effect.asVoid)
+}
 
 const createDatabase = (client: Client, databaseName: string) =>
   query(
@@ -140,55 +204,64 @@ export const databaseExists = (origin: PostgresOrigin, databaseName: string) =>
   Effect.gen(function* () {
     yield* validateIdentifierEffect("Postgres database", databaseName)
 
-    return yield* withPostgresClient(origin, "postgres", function (client) {
-      return query<{ exists: boolean }>(
+    return yield* withPostgresClient(origin, "postgres", (client) =>
+      query<{ exists: boolean }>(
         client,
         "SELECT EXISTS(SELECT 1 FROM pg_database WHERE datname = $1) AS exists",
         [databaseName],
-      ).pipe(Effect.map(({ rows }) => rows[0]?.exists === true))
-    })
+      ).pipe(Effect.map(({ rows }) => rows[0]?.exists === true)),
+    )
   })
 
 export const ensureDatabase = (origin: PostgresOrigin, databaseName: string) =>
   Effect.gen(function* () {
     yield* validateIdentifierEffect("Postgres database", databaseName)
 
-    yield* withPostgresClient(origin, "postgres", function (client) {
-      return Effect.gen(function* () {
-        const { rows } = yield* query<{ exists: boolean }>(
-          client,
-          "SELECT EXISTS(SELECT 1 FROM pg_database WHERE datname = $1) AS exists",
-          [databaseName],
-        )
-
-        if (rows[0]?.exists !== true) {
-          yield* createDatabase(client, databaseName)
-        }
-      })
-    })
+    yield* withPostgresClient(origin, "postgres", (client) =>
+      query<{ exists: boolean }>(
+        client,
+        "SELECT EXISTS(SELECT 1 FROM pg_database WHERE datname = $1) AS exists",
+        [databaseName],
+      ).pipe(Effect.flatMap(({ rows }) => createDatabaseWhenMissing(client, databaseName, rows))),
+    )
   })
 
 export const dropDatabase = (origin: PostgresOrigin, databaseName: string) =>
   Effect.gen(function* () {
     yield* validateIdentifierEffect("Postgres database", databaseName)
 
-    yield* withPostgresClient(origin, "postgres", function (client) {
-      return Effect.gen(function* () {
-        const { rows } = yield* query<{ exists: boolean }>(
-          client,
-          "SELECT EXISTS(SELECT 1 FROM pg_database WHERE datname = $1) AS exists",
-          [databaseName],
-        )
-
-        if (rows[0]?.exists === true) {
-          yield* query(
-            client,
-            `DROP DATABASE IF EXISTS ${quoteIdentifier(databaseName)} WITH (FORCE)`,
-          )
-        }
-      })
-    })
+    yield* withPostgresClient(origin, "postgres", (client) =>
+      query<{ exists: boolean }>(
+        client,
+        "SELECT EXISTS(SELECT 1 FROM pg_database WHERE datname = $1) AS exists",
+        [databaseName],
+      ).pipe(Effect.flatMap(({ rows }) => dropDatabaseWhenPresent(client, databaseName, rows))),
+    )
   })
+
+function readDatabaseOwnershipWhenTableExists(
+  client: Client,
+  input: {
+    readonly ownerResourceType: string
+    readonly tableName: string
+  },
+  exists: boolean,
+) {
+  const tableExists = Effect.succeed(exists)
+  return query<PostgresLogicalDatabaseOwner>(
+    client,
+    `SELECT logical_id AS "logicalId", resource_type AS "resourceType", owner_version AS "version"
+       FROM ${quoteIdentifier(input.tableName)}
+       WHERE resource_type = $1
+       LIMIT 1`,
+    [input.ownerResourceType],
+  ).pipe(
+    Effect.map(({ rows }) => Option.fromUndefinedOr(rows[0])),
+    Effect.when(tableExists),
+    Effect.map(Option.flatten),
+    Effect.map(Option.getOrUndefined),
+  )
+}
 
 export const readDatabaseOwnership = (input: {
   readonly databaseName: string
@@ -200,28 +273,43 @@ export const readDatabaseOwnership = (input: {
     yield* validateIdentifierEffect("Postgres database", input.databaseName)
     yield* validateIdentifierEffect("Postgres ownership table", input.tableName)
 
-    return yield* withPostgresClient(input.origin, input.databaseName, function (client) {
-      return Effect.gen(function* () {
-        const exists = yield* query<{ exists: boolean }>(
-          client,
-          "SELECT to_regclass($1) IS NOT NULL AS exists",
-          [`public.${input.tableName}`],
-        )
+    return yield* withPostgresClient(input.origin, input.databaseName, (client) =>
+      queryExists(client, input.tableName).pipe(
+        Effect.flatMap((exists) => readDatabaseOwnershipWhenTableExists(client, input, exists)),
+      ),
+    )
+  })
 
-        if (exists.rows[0]?.exists !== true) return undefined
+const ensureDatabaseOwnershipWithClient = (input: {
+  readonly client: Client
+  readonly owner: PostgresLogicalDatabaseOwner
+  readonly tableName: string
+}) =>
+  Effect.gen(function* () {
+    const table = quoteIdentifier(input.tableName)
+    yield* query(
+      input.client,
+      `
+      CREATE TABLE IF NOT EXISTS ${table} (
+        resource_type text PRIMARY KEY,
+        logical_id text NOT NULL,
+        owner_version integer NOT NULL,
+        claimed_at timestamptz NOT NULL DEFAULT now(),
+        updated_at timestamptz NOT NULL DEFAULT now()
+      )
+    `,
+    )
 
-        const owners = yield* query<PostgresLogicalDatabaseOwner>(
-          client,
-          `SELECT logical_id AS "logicalId", resource_type AS "resourceType", owner_version AS "version"
-       FROM ${quoteIdentifier(input.tableName)}
-       WHERE resource_type = $1
-       LIMIT 1`,
-          [input.ownerResourceType],
-        )
-
-        return owners.rows[0]
-      })
-    })
+    yield* query(
+      input.client,
+      `INSERT INTO ${table} (resource_type, logical_id, owner_version)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (resource_type) DO UPDATE
+       SET logical_id = excluded.logical_id,
+           owner_version = excluded.owner_version,
+           updated_at = now()`,
+      [input.owner.resourceType, input.owner.logicalId, input.owner.version],
+    )
   })
 
 export const ensureDatabaseOwnership = (input: {
@@ -234,36 +322,18 @@ export const ensureDatabaseOwnership = (input: {
     yield* validateIdentifierEffect("Postgres database", input.databaseName)
     yield* validateIdentifierEffect("Postgres ownership table", input.tableName)
 
-    const table = quoteIdentifier(input.tableName)
-
-    yield* withPostgresClient(input.origin, input.databaseName, function (client) {
-      return Effect.gen(function* () {
-        yield* query(
-          client,
-          `
-      CREATE TABLE IF NOT EXISTS ${table} (
-        resource_type text PRIMARY KEY,
-        logical_id text NOT NULL,
-        owner_version integer NOT NULL,
-        claimed_at timestamptz NOT NULL DEFAULT now(),
-        updated_at timestamptz NOT NULL DEFAULT now()
-      )
-    `,
-        )
-
-        yield* query(
-          client,
-          `INSERT INTO ${table} (resource_type, logical_id, owner_version)
-       VALUES ($1, $2, $3)
-       ON CONFLICT (resource_type) DO UPDATE
-       SET logical_id = excluded.logical_id,
-           owner_version = excluded.owner_version,
-           updated_at = now()`,
-          [input.owner.resourceType, input.owner.logicalId, input.owner.version],
-        )
-      })
-    })
+    yield* withPostgresClient(input.origin, input.databaseName, (client) =>
+      ensureDatabaseOwnershipWithClient({ client, owner: input.owner, tableName: input.tableName }),
+    )
   })
+
+function trackedSqlFileHashesWhenTableExists(client: Client, tableName: string, exists: boolean) {
+  const tableExists = Effect.succeed(exists)
+  return readExistingTrackedSqlFileHashes(client, tableName).pipe(
+    Effect.when(tableExists),
+    Effect.map(Option.getOrElse(() => ({}))),
+  )
+}
 
 export const readTrackedSqlFileHashes = (input: {
   readonly databaseName: string
@@ -274,54 +344,46 @@ export const readTrackedSqlFileHashes = (input: {
     yield* validateIdentifierEffect("Postgres database", input.databaseName)
     yield* validateIdentifierEffect("Postgres tracking table", input.tableName)
 
-    return yield* withPostgresClient(input.origin, input.databaseName, function (client) {
-      return Effect.gen(function* () {
-        const exists = yield* query<{ exists: boolean }>(
-          client,
-          "SELECT to_regclass($1) IS NOT NULL AS exists",
-          [`public.${input.tableName}`],
-        )
-
-        if (exists.rows[0]?.exists !== true) return {}
-
-        const hashes = yield* query<{ name: string; hash: string }>(
-          client,
-          `SELECT name, hash FROM ${quoteIdentifier(input.tableName)} ORDER BY name`,
-        )
-
-        return Object.fromEntries(hashes.rows.map((row) => [row.name, row.hash]))
-      })
-    })
+    return yield* withPostgresClient(input.origin, input.databaseName, (client) =>
+      queryExists(client, input.tableName).pipe(
+        Effect.flatMap((exists) =>
+          trackedSqlFileHashesWhenTableExists(client, input.tableName, exists),
+        ),
+      ),
+    )
   })
 
 const readExistingTrackedSqlFileHashes = (client: Client, tableName: string) =>
   query<{ name: string; hash: string }>(
     client,
     `SELECT name, hash FROM ${quoteIdentifier(tableName)} ORDER BY name`,
-  ).pipe(Effect.map((hashes) => Object.fromEntries(hashes.rows.map((row) => [row.name, row.hash]))))
+  ).pipe(Effect.map((hashes) => R.fromEntries(hashes.rows.map((row) => [row.name, row.hash]))))
 
-export const removedRecordNames = (
+export function removedRecordNames(
   desiredFiles: readonly Pick<SqlFile, "id">[],
   existingRecords: Record<string, string>,
-) => {
-  const desiredNames = new Set(desiredFiles.map((file) => file.id))
-  return Object.keys(existingRecords)
-    .filter((name) => !desiredNames.has(name))
-    .sort()
+) {
+  const desiredNames = HashSet.fromIterable(desiredFiles.map((file) => file.id))
+  return Arr.sort(
+    R.keys(existingRecords).filter((name) => !HashSet.has(desiredNames, name)),
+    Order.String,
+  )
 }
 
 const rejectRemovedTrackedSqlFiles = (tableName: string, removedNames: readonly string[]) =>
-  removedNames.length > 0
-    ? Effect.fail(
-        new Error(
-          `Refusing to remove tracked SQL file records from ${tableName}: ${removedNames.join(
+  Arr.match(removedNames, {
+    onEmpty: () => Effect.void,
+    onNonEmpty: (names) =>
+      Effect.fail(
+        new TrackedSqlFileError({
+          message: `Refusing to remove tracked SQL file records from ${tableName}: ${names.join(
             ", ",
           )}. Create a new forward migration/import instead.`,
-        ),
-      )
-    : Effect.void
+        }),
+      ),
+  })
 
-const transaction = <A, E, R>(client: Client, use: Effect.Effect<A, E, R>) =>
+const transaction = <Use extends Effect.All.EffectAny>(client: Client, use: Use) =>
   Effect.acquireUseRelease(
     query(client, "BEGIN"),
     () => use,
@@ -331,6 +393,36 @@ const transaction = <A, E, R>(client: Client, use: Effect.Effect<A, E, R>) =>
         onFailure: () => query(client, "ROLLBACK").pipe(Effect.ignore),
       }),
   )
+
+const writeTrackedSqlFileTransaction = Effect.fn("writeTrackedSqlFileTransaction")(
+  function* (input: {
+    readonly client: Client
+    readonly file: SqlFile
+    readonly tableName: string
+  }) {
+    yield* query(input.client, input.file.sql)
+    yield* query(
+      input.client,
+      `INSERT INTO ${quoteIdentifier(input.tableName)} (name, hash)
+       VALUES ($1, $2)
+       ON CONFLICT (name) DO UPDATE SET hash = excluded.hash, applied_at = now()`,
+      [input.file.id, input.file.hash],
+    )
+  },
+)
+
+function writeTrackedSqlFile(input: {
+  readonly client: Client
+  readonly file: SqlFile
+  readonly tableName: string
+}) {
+  return transaction(input.client, writeTrackedSqlFileTransaction(input))
+}
+
+const changedSqlFileError = (file: SqlFile) =>
+  new TrackedSqlFileError({
+    message: `Refusing to reapply changed SQL file ${file.id}; create a new migration/import file instead.`,
+  })
 
 const applyTrackedSqlFile = (input: {
   readonly changedFileAction: TrackedSqlFileAction
@@ -344,31 +436,21 @@ const applyTrackedSqlFile = (input: {
       `SELECT hash FROM ${quoteIdentifier(input.tableName)} WHERE name = $1`,
       [input.file.id],
     )
-    const existingHash = existing.rows[0]?.hash
-
-    if (existingHash === input.file.hash) return
-
-    if (existingHash && input.changedFileAction === "reject") {
-      return yield* Effect.fail(
-        new Error(
-          `Refusing to reapply changed SQL file ${input.file.id}; create a new migration/import file instead.`,
-        ),
-      )
-    }
-
-    yield* transaction(
-      input.client,
-      Effect.gen(function* () {
-        yield* query(input.client, input.file.sql)
-        yield* query(
-          input.client,
-          `INSERT INTO ${quoteIdentifier(input.tableName)} (name, hash)
-       VALUES ($1, $2)
-       ON CONFLICT (name) DO UPDATE SET hash = excluded.hash, applied_at = now()`,
-          [input.file.id, input.file.hash],
-        )
+    const existingHash = Option.fromUndefinedOr(existing.rows[0]?.hash)
+    const changed = existingHash.pipe(
+      Option.match({
+        onSome: (hash) => hash !== input.file.hash,
+        onNone: () => true,
       }),
     )
+    const rejectsChangedFile = changed && input.changedFileAction === "reject"
+    const shouldWrite = changed && !rejectsChangedFile
+    const rejectChange = Effect.fail(changedSqlFileError(input.file))
+    const writeChange = writeTrackedSqlFile(input)
+    const rejectsChangedFileEffect = Effect.succeed(rejectsChangedFile)
+    const shouldWriteEffect = Effect.succeed(shouldWrite)
+    yield* rejectChange.pipe(Effect.when(rejectsChangedFileEffect), Effect.asVoid)
+    yield* writeChange.pipe(Effect.when(shouldWriteEffect), Effect.asVoid)
   })
 
 const applyChangedTrackedSqlFiles = (input: {
@@ -402,140 +484,161 @@ const applyChangedTrackedSqlFiles = (input: {
     )
   })
 
-export const applyTrackedSqlFiles = (input: {
+const existingTrackedSqlFileHashes = (client: Client, tableName: string) =>
+  queryExists(client, tableName).pipe(
+    Effect.flatMap((exists) => trackedSqlFileHashesWhenTableExists(client, tableName, exists)),
+  )
+
+const applyTrackedSqlFilesWithClient = (input: {
   readonly changedFileAction: TrackedSqlFileAction
-  readonly databaseName: string
+  readonly client: Client
   readonly files: readonly SqlFile[]
-  readonly origin: PostgresOrigin
   readonly tableName: string
 }) =>
   Effect.gen(function* () {
-    yield* validateIdentifierEffect("Postgres database", input.databaseName)
-    yield* validateIdentifierEffect("Postgres tracking table", input.tableName)
-
-    yield* withPostgresClient(input.origin, input.databaseName, function (client) {
-      return Effect.gen(function* () {
-        const exists = yield* query<{ exists: boolean }>(
-          client,
-          "SELECT to_regclass($1) IS NOT NULL AS exists",
-          [`public.${input.tableName}`],
-        )
-        const existingHashes =
-          exists.rows[0]?.exists === true
-            ? yield* readExistingTrackedSqlFileHashes(client, input.tableName)
-            : {}
-        yield* rejectRemovedTrackedSqlFiles(
-          input.tableName,
-          removedRecordNames(input.files, existingHashes),
-        )
-
-        if (input.files.length > 0) {
-          yield* applyChangedTrackedSqlFiles({
-            changedFileAction: input.changedFileAction,
-            client,
-            files: input.files,
-            tableName: input.tableName,
-          })
-        }
-      })
+    const existingHashes = yield* existingTrackedSqlFileHashes(input.client, input.tableName)
+    yield* rejectRemovedTrackedSqlFiles(
+      input.tableName,
+      removedRecordNames(input.files, existingHashes),
+    )
+    yield* Arr.match(input.files, {
+      onEmpty: () => Effect.void,
+      onNonEmpty: (files) =>
+        applyChangedTrackedSqlFiles({
+          changedFileAction: input.changedFileAction,
+          client: input.client,
+          files,
+          tableName: input.tableName,
+        }),
     })
   })
 
-export const ensureAppRolePrivileges = (input: {
-  readonly databaseName: string
+function revokeTablePrivilegesWhenExists(
+  input: {
+    readonly client: Client
+    readonly role: string
+    readonly tableName: string
+  },
+  exists: boolean,
+) {
+  const table = quoteQualifiedIdentifier("public", input.tableName)
+  const tableExists = Effect.succeed(exists)
+  return query(input.client, `REVOKE ALL PRIVILEGES ON TABLE ${table} FROM ${input.role}`).pipe(
+    Effect.when(tableExists),
+  )
+}
+
+function revokeExcludedTablePrivileges(input: {
+  readonly client: Client
+  readonly role: string
+  readonly tableName: string
+}) {
+  return queryExists(input.client, input.tableName).pipe(
+    Effect.flatMap((exists) => revokeTablePrivilegesWhenExists(input, exists)),
+    Effect.asVoid,
+  )
+}
+
+const ensureAppRolePrivilegesWithClient = (input: {
+  readonly client: Client
+  readonly database: string
   readonly excludedTableNames: readonly string[]
-  readonly origin: PostgresOrigin
-  readonly roleName: string
+  readonly role: string
 }) =>
   Effect.gen(function* () {
-    yield* validateIdentifierEffect("Postgres database", input.databaseName)
-    yield* Effect.forEach(
-      input.excludedTableNames,
-      (tableName) => validateIdentifierEffect("Postgres excluded table", tableName),
-      { concurrency: 1, discard: true },
+    yield* query(input.client, `REVOKE CONNECT ON DATABASE ${input.database} FROM PUBLIC`)
+    yield* query(
+      input.client,
+      `GRANT CONNECT, TEMPORARY ON DATABASE ${input.database} TO ${input.role}`,
+    )
+    yield* query(input.client, `GRANT USAGE ON SCHEMA public TO ${input.role}`)
+    yield* query(
+      input.client,
+      `GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO ${input.role}`,
+    )
+    yield* query(
+      input.client,
+      `GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO ${input.role}`,
+    )
+    yield* query(
+      input.client,
+      `ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO ${input.role}`,
+    )
+    yield* query(
+      input.client,
+      `ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT, UPDATE ON SEQUENCES TO ${input.role}`,
     )
 
-    const database = quoteIdentifier(input.databaseName)
-    const role = yield* quoteExternalIdentifierEffect("Postgres role", input.roleName)
-
-    yield* withPostgresClient(input.origin, input.databaseName, function (client) {
-      return Effect.gen(function* () {
-        yield* query(client, `REVOKE CONNECT ON DATABASE ${database} FROM PUBLIC`)
-        yield* query(client, `GRANT CONNECT, TEMPORARY ON DATABASE ${database} TO ${role}`)
-        yield* query(client, `GRANT USAGE ON SCHEMA public TO ${role}`)
-        yield* query(
-          client,
-          `GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO ${role}`,
-        )
-        yield* query(
-          client,
-          `GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO ${role}`,
-        )
-        yield* query(
-          client,
-          `ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO ${role}`,
-        )
-        yield* query(
-          client,
-          `ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT, UPDATE ON SEQUENCES TO ${role}`,
-        )
-
-        yield* Effect.forEach(
-          [...new Set(input.excludedTableNames)],
-          (tableName) =>
-            Effect.gen(function* () {
-              const table = quoteQualifiedIdentifier("public", tableName)
-              const exists = yield* query<{ exists: boolean }>(
-                client,
-                "SELECT to_regclass($1) IS NOT NULL AS exists",
-                [`public.${tableName}`],
-              )
-              if (exists.rows[0]?.exists === true) {
-                yield* query(client, `REVOKE ALL PRIVILEGES ON TABLE ${table} FROM ${role}`)
-              }
-            }),
-          { concurrency: 1, discard: true },
-        )
-      })
-    })
+    yield* Effect.forEach(
+      Arr.fromIterable(HashSet.fromIterable(input.excludedTableNames)),
+      (tableName) => revokeExcludedTablePrivileges({ ...input, tableName }),
+      { concurrency: 1, discard: true },
+    )
   })
 
-export const readAppRolePrivileges = (input: {
-  readonly databaseName: string
-  readonly excludedTableNames: readonly string[]
-  readonly origin: PostgresOrigin
-  readonly roleName: string
+const privilegeCheckOrder = Order.mapInput(Order.String, (check: PrivilegeCheck) => check.name)
+
+const appRoleMissingPrivilegeState = (roleName: string) =>
+  Effect.gen(function* () {
+    const checks = [{ name: `role:${roleName}:exists`, ok: false }]
+    return {
+      hash: yield* hashJson(checks),
+      ready: false,
+    } satisfies AppRolePrivilegeState
+  })
+
+const tablePrivilegeCheck = (
+  excludedTables: HashSet.HashSet<string>,
+  check: {
+    readonly granted: boolean
+    readonly privilege: string
+    readonly tableName: string
+  },
+): PrivilegeCheck => ({
+  name: `table:${check.tableName}:${check.privilege.toLowerCase()}`,
+  ok: Match.value(HashSet.has(excludedTables, check.tableName)).pipe(
+    Match.when(true, () => !check.granted),
+    Match.when(false, () => check.granted),
+    Match.exhaustive,
+  ),
+})
+
+const sequencePrivilegeCheck = (check: {
+  readonly granted: boolean
+  readonly privilege: string
+  readonly sequenceName: string
+}): PrivilegeCheck => ({
+  name: `sequence:${check.sequenceName}:${check.privilege.toLowerCase()}`,
+  ok: check.granted,
+})
+
+const defaultPrivilegeCheck = (check: {
+  readonly granted: boolean
+  readonly objectType: string
+  readonly privilege: string
+}): PrivilegeCheck => ({
+  name: `default:${check.objectType}:${check.privilege.toLowerCase()}`,
+  ok: check.granted,
+})
+
+const appRolePrivilegeState = (checks: readonly PrivilegeCheck[]) =>
+  Effect.gen(function* () {
+    const sortedChecks = Arr.sort(checks, privilegeCheckOrder)
+    return {
+      hash: yield* hashJson(sortedChecks),
+      ready: sortedChecks.every((check) => check.ok),
+    } satisfies AppRolePrivilegeState
+  })
+
+const readExistingAppRolePrivileges = (input: {
+  readonly client: Client
+  readonly excludedTables: HashSet.HashSet<string>
+  readonly roleOid: string
 }) =>
   Effect.gen(function* () {
-    yield* validateIdentifierEffect("Postgres database", input.databaseName)
-    yield* Effect.forEach(
-      input.excludedTableNames,
-      (tableName) => validateIdentifierEffect("Postgres excluded table", tableName),
-      { concurrency: 1, discard: true },
-    )
-
-    const excludedTables = new Set(input.excludedTableNames)
-
-    return yield* withPostgresClient(input.origin, input.databaseName, function (client) {
-      return Effect.gen(function* () {
-        const roleRows = yield* query<{ oid: string }>(
-          client,
-          "SELECT oid::text AS oid FROM pg_roles WHERE rolname = $1",
-          [input.roleName],
-        )
-        const roleOid = roleRows.rows[0]?.oid
-
-        if (!roleOid) {
-          const checks = [{ name: `role:${input.roleName}:exists`, ok: false }]
-          return {
-            hash: hashJson(checks),
-            ready: false,
-          }
-        }
-
-        const databaseChecks = yield* query<{ name: string; ok: boolean }>(
-          client,
-          `SELECT 'database:connect' AS name,
+    const databaseChecks = yield* query<{ name: string; ok: boolean }>(
+      input.client,
+      `SELECT 'database:connect' AS name,
               has_database_privilege($1::oid, current_database(), 'CONNECT') AS ok
        UNION ALL
        SELECT 'database:temporary' AS name,
@@ -543,16 +646,16 @@ export const readAppRolePrivileges = (input: {
        UNION ALL
        SELECT 'schema:public:usage' AS name,
               has_schema_privilege($1::oid, 'public', 'USAGE') AS ok`,
-          [roleOid],
-        )
+      [input.roleOid],
+    )
 
-        const tableChecks = yield* query<{
-          granted: boolean
-          privilege: string
-          tableName: string
-        }>(
-          client,
-          `WITH privileges(privilege) AS (
+    const tableChecks = yield* query<{
+      granted: boolean
+      privilege: string
+      tableName: string
+    }>(
+      input.client,
+      `WITH privileges(privilege) AS (
          VALUES ('SELECT'), ('INSERT'), ('UPDATE'), ('DELETE')
        ),
        tables AS (
@@ -572,16 +675,16 @@ export const readAppRolePrivileges = (input: {
        FROM tables
        CROSS JOIN privileges
        ORDER BY tables.table_name, privileges.privilege`,
-          [roleOid],
-        )
+      [input.roleOid],
+    )
 
-        const sequenceChecks = yield* query<{
-          granted: boolean
-          privilege: string
-          sequenceName: string
-        }>(
-          client,
-          `WITH privileges(privilege) AS (
+    const sequenceChecks = yield* query<{
+      granted: boolean
+      privilege: string
+      sequenceName: string
+    }>(
+      input.client,
+      `WITH privileges(privilege) AS (
          VALUES ('USAGE'), ('SELECT'), ('UPDATE')
        )
        SELECT
@@ -596,16 +699,16 @@ export const readAppRolePrivileges = (input: {
        CROSS JOIN privileges
        WHERE sequences.sequence_schema = 'public'
        ORDER BY sequences.sequence_name, privileges.privilege`,
-          [roleOid],
-        )
+      [input.roleOid],
+    )
 
-        const defaultPrivilegeChecks = yield* query<{
-          granted: boolean
-          objectType: string
-          privilege: string
-        }>(
-          client,
-          `WITH desired(object_type, privilege) AS (
+    const defaultPrivilegeChecks = yield* query<{
+      granted: boolean
+      objectType: string
+      privilege: string
+    }>(
+      input.client,
+      `WITH desired(object_type, privilege) AS (
          VALUES
            ('r', 'SELECT'),
            ('r', 'INSERT'),
@@ -630,29 +733,105 @@ export const readAppRolePrivileges = (input: {
          desired.privilege
        FROM desired
        ORDER BY desired.object_type, desired.privilege`,
-          [roleOid],
-        )
+      [input.roleOid],
+    )
 
-        const checks = [
-          ...databaseChecks.rows,
-          ...tableChecks.rows.map((check) => ({
-            name: `table:${check.tableName}:${check.privilege.toLowerCase()}`,
-            ok: excludedTables.has(check.tableName) ? !check.granted : check.granted,
-          })),
-          ...sequenceChecks.rows.map((check) => ({
-            name: `sequence:${check.sequenceName}:${check.privilege.toLowerCase()}`,
-            ok: check.granted,
-          })),
-          ...defaultPrivilegeChecks.rows.map((check) => ({
-            name: `default:${check.objectType}:${check.privilege.toLowerCase()}`,
-            ok: check.granted,
-          })),
-        ]
-        const sortedChecks = checks.sort((a, b) => a.name.localeCompare(b.name))
-        return {
-          hash: hashJson(sortedChecks),
-          ready: sortedChecks.every((check) => check.ok),
-        }
-      })
-    })
+    return yield* appRolePrivilegeState([
+      ...databaseChecks.rows,
+      ...tableChecks.rows.map((check) => tablePrivilegeCheck(input.excludedTables, check)),
+      ...sequenceChecks.rows.map(sequencePrivilegeCheck),
+      ...defaultPrivilegeChecks.rows.map(defaultPrivilegeCheck),
+    ])
+  })
+
+const readAppRolePrivilegesWithClient = (input: {
+  readonly client: Client
+  readonly excludedTables: HashSet.HashSet<string>
+  readonly roleName: string
+}) =>
+  Effect.gen(function* () {
+    const roleRows = yield* query<{ oid: string }>(
+      input.client,
+      "SELECT oid::text AS oid FROM pg_roles WHERE rolname = $1",
+      [input.roleName],
+    )
+    return yield* Option.fromUndefinedOr(roleRows.rows[0]?.oid).pipe(
+      Option.match({
+        onSome: (roleOid) =>
+          readExistingAppRolePrivileges({
+            client: input.client,
+            excludedTables: input.excludedTables,
+            roleOid,
+          }),
+        onNone: () => appRoleMissingPrivilegeState(input.roleName),
+      }),
+    )
+  })
+
+export const applyTrackedSqlFiles = (input: {
+  readonly changedFileAction: TrackedSqlFileAction
+  readonly databaseName: string
+  readonly files: readonly SqlFile[]
+  readonly origin: PostgresOrigin
+  readonly tableName: string
+}) =>
+  Effect.gen(function* () {
+    yield* validateIdentifierEffect("Postgres database", input.databaseName)
+    yield* validateIdentifierEffect("Postgres tracking table", input.tableName)
+
+    yield* withPostgresClient(input.origin, input.databaseName, (client) =>
+      applyTrackedSqlFilesWithClient({ ...input, client }),
+    )
+  })
+
+export const ensureAppRolePrivileges = (input: {
+  readonly databaseName: string
+  readonly excludedTableNames: readonly string[]
+  readonly origin: PostgresOrigin
+  readonly roleName: string
+}) =>
+  Effect.gen(function* () {
+    yield* validateIdentifierEffect("Postgres database", input.databaseName)
+    yield* Effect.forEach(
+      input.excludedTableNames,
+      (tableName) => validateIdentifierEffect("Postgres excluded table", tableName),
+      { concurrency: 1, discard: true },
+    )
+
+    const database = quoteIdentifier(input.databaseName)
+    const role = yield* quoteExternalIdentifierEffect("Postgres role", input.roleName)
+
+    yield* withPostgresClient(input.origin, input.databaseName, (client) =>
+      ensureAppRolePrivilegesWithClient({
+        client,
+        database,
+        excludedTableNames: input.excludedTableNames,
+        role,
+      }),
+    )
+  })
+
+export const readAppRolePrivileges = (input: {
+  readonly databaseName: string
+  readonly excludedTableNames: readonly string[]
+  readonly origin: PostgresOrigin
+  readonly roleName: string
+}) =>
+  Effect.gen(function* () {
+    yield* validateIdentifierEffect("Postgres database", input.databaseName)
+    yield* Effect.forEach(
+      input.excludedTableNames,
+      (tableName) => validateIdentifierEffect("Postgres excluded table", tableName),
+      { concurrency: 1, discard: true },
+    )
+
+    const excludedTables = HashSet.fromIterable(input.excludedTableNames)
+
+    return yield* withPostgresClient(input.origin, input.databaseName, (client) =>
+      readAppRolePrivilegesWithClient({
+        client,
+        excludedTables,
+        roleName: input.roleName,
+      }),
+    )
   })
