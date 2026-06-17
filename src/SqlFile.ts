@@ -30,13 +30,14 @@ const compareSqlFiles = (left: string, right: string) => {
 };
 
 export const readSqlFile = (directory: string, name: string) =>
-  Effect.tryPromise(async () => {
-    const sql = await readFile(resolve(directory, name), "utf8");
-    const hash = crypto.createHash("sha256").update(sql).digest("hex");
-    const file: SqlFile = { id: name, sql, hash };
-    Object.defineProperty(file, "sql", { enumerable: false });
-    return file;
-  });
+  Effect.tryPromise(() =>
+    readFile(resolve(directory, name), "utf8").then((sql) => {
+      const hash = crypto.createHash("sha256").update(sql).digest("hex");
+      const file: SqlFile = { id: name, sql, hash };
+      Object.defineProperty(file, "sql", { enumerable: false });
+      return file;
+    }),
+  );
 
 export const listSqlFiles = (directory: string) =>
   Effect.gen(function* () {

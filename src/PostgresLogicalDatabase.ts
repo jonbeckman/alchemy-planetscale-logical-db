@@ -295,14 +295,12 @@ const readAppRolePrivilegesIfConfigured = (input: {
   readonly origin: PostgresOrigin;
 }) =>
   input.appRoleName
-    ? Effect.tryPromise(() =>
-        readAppRolePrivileges({
-          databaseName: input.databaseName,
-          excludedTableNames: input.excludedTableNames,
-          origin: input.origin,
-          roleName: input.appRoleName!,
-        }),
-      )
+    ? readAppRolePrivileges({
+        databaseName: input.databaseName,
+        excludedTableNames: input.excludedTableNames,
+        origin: input.origin,
+        roleName: input.appRoleName,
+      })
     : Effect.succeed(undefined);
 
 const diffExistingDatabase = (input: {
@@ -318,8 +316,9 @@ const diffExistingDatabase = (input: {
   readonly props: PostgresLogicalDatabaseProps;
 }) =>
   Effect.gen(function* () {
-    const exists = yield* Effect.tryPromise(() =>
-      databaseExists(input.props.adminOrigin, input.output.name),
+    const exists = yield* databaseExists(
+      input.props.adminOrigin,
+      input.output.name,
     );
     if (!exists) return { action: "update" } as const;
 
@@ -368,30 +367,24 @@ const readExistingDatabase = (input: {
     const ownershipTable =
       input.output?.ownershipTable ?? DEFAULT_OWNERSHIP_TABLE;
     const owner = logicalDatabaseOwner(input.id);
-    const databaseOwner = yield* Effect.tryPromise(() =>
-      readDatabaseOwnership({
-        databaseName: input.name,
-        origin: input.olds.adminOrigin,
-        ownerResourceType: POSTGRES_LOGICAL_DATABASE_RESOURCE_TYPE,
-        tableName: ownershipTable,
-      }),
-    );
+    const databaseOwner = yield* readDatabaseOwnership({
+      databaseName: input.name,
+      origin: input.olds.adminOrigin,
+      ownerResourceType: POSTGRES_LOGICAL_DATABASE_RESOURCE_TYPE,
+      tableName: ownershipTable,
+    });
     const [migrationsHashes, importHashes] = yield* Effect.all(
       [
-        Effect.tryPromise(() =>
-          readTrackedSqlFileHashes({
-            databaseName: input.name,
-            origin: input.olds.adminOrigin,
-            tableName: migrationsTable,
-          }),
-        ),
-        Effect.tryPromise(() =>
-          readTrackedSqlFileHashes({
-            databaseName: input.name,
-            origin: input.olds.adminOrigin,
-            tableName: importsTable,
-          }),
-        ),
+        readTrackedSqlFileHashes({
+          databaseName: input.name,
+          origin: input.olds.adminOrigin,
+          tableName: migrationsTable,
+        }),
+        readTrackedSqlFileHashes({
+          databaseName: input.name,
+          origin: input.olds.adminOrigin,
+          tableName: importsTable,
+        }),
       ],
       { concurrency: 2 },
     );
@@ -433,38 +426,37 @@ const reconcileAppRolePrivileges = (input: {
   readonly ownershipTable: string;
   readonly origin: PostgresOrigin;
   readonly session: { readonly note: (message: string) => Effect.Effect<void> };
-}) =>
-  input.appRoleName
+}) => {
+  const appRoleName = input.appRoleName;
+
+  return appRoleName
     ? Effect.gen(function* () {
         yield* input.session.note(
           `Ensuring app role privileges for logical Postgres database "${input.databaseName}"...`,
         );
-        yield* Effect.tryPromise(() =>
-          ensureAppRolePrivileges({
-            databaseName: input.databaseName,
-            excludedTableNames: excludedAppRoleTableNames(
-              input.migrationsTable,
-              input.importsTable,
-              input.ownershipTable,
-            ),
-            origin: input.origin,
-            roleName: input.appRoleName!,
-          }),
-        );
-        return yield* Effect.tryPromise(() =>
-          readAppRolePrivileges({
-            databaseName: input.databaseName,
-            excludedTableNames: excludedAppRoleTableNames(
-              input.migrationsTable,
-              input.importsTable,
-              input.ownershipTable,
-            ),
-            origin: input.origin,
-            roleName: input.appRoleName!,
-          }),
-        );
+        yield* ensureAppRolePrivileges({
+          databaseName: input.databaseName,
+          excludedTableNames: excludedAppRoleTableNames(
+            input.migrationsTable,
+            input.importsTable,
+            input.ownershipTable,
+          ),
+          origin: input.origin,
+          roleName: appRoleName,
+        });
+        return yield* readAppRolePrivileges({
+          databaseName: input.databaseName,
+          excludedTableNames: excludedAppRoleTableNames(
+            input.migrationsTable,
+            input.importsTable,
+            input.ownershipTable,
+          ),
+          origin: input.origin,
+          roleName: appRoleName,
+        });
       })
     : Effect.succeed(undefined);
+};
 
 export const PostgresLogicalDatabaseProvider = () =>
   Provider.effect(
@@ -519,9 +511,7 @@ export const PostgresLogicalDatabaseProvider = () =>
 
           const name =
             output?.name ?? (yield* createLogicalDatabaseName(id, olds.name));
-          const exists = yield* Effect.tryPromise(() =>
-            databaseExists(olds.adminOrigin, name),
-          );
+          const exists = yield* databaseExists(olds.adminOrigin, name);
           if (!exists) return undefined;
 
           return yield* readExistingDatabase({
@@ -559,47 +549,39 @@ export const PostgresLogicalDatabaseProvider = () =>
           yield* session.note(
             `Ensuring logical Postgres database "${name}"...`,
           );
-          yield* Effect.tryPromise(() =>
-            ensureDatabase(news.adminOrigin, name),
-          );
+          yield* ensureDatabase(news.adminOrigin, name);
 
           yield* session.note(
             `Claiming logical Postgres database "${name}"...`,
           );
-          yield* Effect.tryPromise(() =>
-            ensureDatabaseOwnership({
-              databaseName: name,
-              origin: news.adminOrigin,
-              owner,
-              tableName: ownershipTable,
-            }),
-          );
+          yield* ensureDatabaseOwnership({
+            databaseName: name,
+            origin: news.adminOrigin,
+            owner,
+            tableName: ownershipTable,
+          });
 
           yield* session.note(
             `Applying migrations for logical Postgres database "${name}"...`,
           );
-          yield* Effect.tryPromise(() =>
-            applyTrackedSqlFiles({
-              changedFileAction: "reject",
-              databaseName: name,
-              files: migrations,
-              origin: news.adminOrigin,
-              tableName: migrationsTable,
-            }),
-          );
+          yield* applyTrackedSqlFiles({
+            changedFileAction: "reject",
+            databaseName: name,
+            files: migrations,
+            origin: news.adminOrigin,
+            tableName: migrationsTable,
+          });
 
           yield* session.note(
             `Applying imports for logical Postgres database "${name}"...`,
           );
-          yield* Effect.tryPromise(() =>
-            applyTrackedSqlFiles({
-              changedFileAction: "reapply",
-              databaseName: name,
-              files: imports,
-              origin: news.adminOrigin,
-              tableName: importsTable,
-            }),
-          );
+          yield* applyTrackedSqlFiles({
+            changedFileAction: "reapply",
+            databaseName: name,
+            files: imports,
+            origin: news.adminOrigin,
+            tableName: importsTable,
+          });
 
           const appRoleName = news.appRoleName;
           const appRolePrivileges = yield* reconcileAppRolePrivileges({
@@ -630,9 +612,7 @@ export const PostgresLogicalDatabaseProvider = () =>
           yield* session.note(
             `Dropping logical Postgres database "${output.name}"...`,
           );
-          yield* Effect.tryPromise(() =>
-            dropDatabase(olds.adminOrigin, output.name),
-          );
+          yield* dropDatabase(olds.adminOrigin, output.name);
         }),
       };
     }),
