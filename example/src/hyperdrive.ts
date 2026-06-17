@@ -91,9 +91,12 @@ function createLocalHyperdrive(project: ProjectConfig) {
 
 function createRemoteHyperdrive(project: ProjectConfig) {
   return Effect.gen(function* () {
-    const appRole = yield* Planetscale.PostgresRole.ref(`${project.resourcePrefix}PostgresAppRole`, {
-      stack: DB_STACK_NAME,
-    })
+    const appRole = yield* Planetscale.PostgresRole.ref(
+      `${project.resourcePrefix}PostgresAppRole`,
+      {
+        stack: DB_STACK_NAME,
+      },
+    )
     const logicalDatabase = yield* PlanetscaleLogicalDb.PostgresLogicalDatabase.ref(
       `${project.resourcePrefix}PostgresDatabase`,
       { stack: DB_STACK_NAME },

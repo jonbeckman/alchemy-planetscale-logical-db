@@ -2,18 +2,20 @@
   "name": "alchemy-planetscale-logical-db",
   "version": "1.0.0",
   "description": "Alchemy v2 resource for managing logical PostgreSQL databases inside PlanetScale Postgres clusters.",
-  "license": "Apache-2.0",
-  "type": "module",
-  "packageManager": "pnpm@11.5.2",
-  "engines": {
-    "node": ">=24",
-    "pnpm": ">=11 <12"
+  "bugs": {
+    "url": "https://github.com/jonbeckman/alchemy-planetscale-logical-db/issues"
   },
-  "sideEffects": false,
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jonbeckman/alchemy-planetscale-logical-db.git"
+  },
   "files": [
     "dist",
     "README.md"
   ],
+  "type": "module",
+  "sideEffects": false,
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -22,29 +24,36 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "check": "pnpm typecheck && pnpm build && pnpm --dir example typecheck",
+    "check": "pnpm typecheck && pnpm lint && pnpm format && pnpm build && pnpm --dir example typecheck",
+    "format": "oxfmt --check",
+    "format:fix": "oxfmt",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "lint:fix:max": "oxlint --fix --fix-suggestions --fix-dangerously",
     "prepublishOnly": "pnpm build",
     "typecheck": "tsc --noEmit"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/jonbeckman/alchemy-planetscale-logical-db.git"
-  },
-  "bugs": {
-    "url": "https://github.com/jonbeckman/alchemy-planetscale-logical-db/issues"
-  },
-  "peerDependencies": {
-    "alchemy": ">=2.0.0-beta.55",
-    "effect": "4.0.0-beta.78"
   },
   "dependencies": {
     "pg": "^8.16.3"
   },
   "devDependencies": {
+    "@mpsuesser/oxlint-plugin-effect": "0.2.2",
+    "@oxlint/plugins": "1.66.0",
     "@types/node": "^25.9.1",
     "@types/pg": "^8.15.6",
     "alchemy": "2.0.0-beta.55",
     "effect": "4.0.0-beta.78",
+    "oxfmt": "^0.48.0",
+    "oxlint": "1.66.0",
     "typescript": "^6.0.3"
-  }
+  },
+  "peerDependencies": {
+    "alchemy": ">=2.0.0-beta.55",
+    "effect": "4.0.0-beta.78"
+  },
+  "engines": {
+    "node": ">=24",
+    "pnpm": ">=11 <12"
+  },
+  "packageManager": "pnpm@11.5.2"
 }

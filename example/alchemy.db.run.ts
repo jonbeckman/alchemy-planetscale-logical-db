@@ -17,12 +17,15 @@ export class SharedPostgres extends Alchemy.Stack<SharedPostgres, SharedPostgres
 
 function createProjectDatabase(project: ProjectConfig, cluster: Planetscale.PostgresDatabase) {
   return Effect.gen(function* () {
-    const adminRole = yield* Planetscale.PostgresRole(`${project.resourcePrefix}PostgresAdminRole`, {
-      branch: postgresCluster.defaultBranch,
-      database: cluster,
-      inheritedRoles: ["postgres"],
-      successor: "postgres",
-    })
+    const adminRole = yield* Planetscale.PostgresRole(
+      `${project.resourcePrefix}PostgresAdminRole`,
+      {
+        branch: postgresCluster.defaultBranch,
+        database: cluster,
+        inheritedRoles: ["postgres"],
+        successor: "postgres",
+      },
+    )
 
     const appRole = yield* Planetscale.PostgresRole(`${project.resourcePrefix}PostgresAppRole`, {
       branch: postgresCluster.defaultBranch,
@@ -31,15 +34,21 @@ function createProjectDatabase(project: ProjectConfig, cluster: Planetscale.Post
       successor: "postgres",
     })
 
-    return yield* PlanetscaleLogicalDb.PostgresLogicalDatabase(`${project.resourcePrefix}PostgresDatabase`, {
-      adminOrigin: adminRole.origin,
-      appRoleName: Output.map(appRole.username, PlanetscaleLogicalDb.postgresRoleNameFromUsername),
-      appRolePrivilegesVersion: 1,
-      importsTable: "__app_imports",
-      migrationsDir: project.migrationsDir,
-      migrationsTable: "__app_migrations",
-      name: project.logicalDatabaseName,
-    })
+    return yield* PlanetscaleLogicalDb.PostgresLogicalDatabase(
+      `${project.resourcePrefix}PostgresDatabase`,
+      {
+        adminOrigin: adminRole.origin,
+        appRoleName: Output.map(
+          appRole.username,
+          PlanetscaleLogicalDb.postgresRoleNameFromUsername,
+        ),
+        appRolePrivilegesVersion: 1,
+        importsTable: "__app_imports",
+        migrationsDir: project.migrationsDir,
+        migrationsTable: "__app_migrations",
+        name: project.logicalDatabaseName,
+      },
+    )
   })
 }
 

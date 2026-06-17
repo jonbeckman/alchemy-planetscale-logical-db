@@ -1,9 +1,9 @@
-import { Unowned } from "alchemy/AdoptPolicy";
-import { isResolved } from "alchemy/Diff";
-import { createPhysicalName } from "alchemy/PhysicalName";
-import * as Provider from "alchemy/Provider";
-import { Resource } from "alchemy/Resource";
-import type { PostgresOrigin } from "alchemy/Planetscale";
+import { Unowned } from "alchemy/AdoptPolicy"
+import { isResolved } from "alchemy/Diff"
+import { createPhysicalName } from "alchemy/PhysicalName"
+import * as Provider from "alchemy/Provider"
+import { Resource } from "alchemy/Resource"
+import type { PostgresOrigin } from "alchemy/Planetscale"
 import {
   applyTrackedSqlFiles,
   databaseExists,
@@ -16,20 +16,19 @@ import {
   readTrackedSqlFileHashes,
   type AppRolePrivilegeState,
   type PostgresLogicalDatabaseOwner,
-} from "./PostgresLogicalDatabaseClient.ts";
-import { listSqlFiles, readSqlFile, type SqlFile } from "./SqlFile.ts";
-import type { Providers } from "./Providers.ts";
-import { recordsEqual } from "./recordsEqual.ts";
-import * as Effect from "effect/Effect";
-import * as Predicate from "effect/Predicate";
+} from "./PostgresLogicalDatabaseClient.ts"
+import { listSqlFiles, readSqlFile, type SqlFile } from "./SqlFile.ts"
+import type { Providers } from "./Providers.ts"
+import { recordsEqual } from "./recordsEqual.ts"
+import * as Effect from "effect/Effect"
+import * as Predicate from "effect/Predicate"
 
-const DEFAULT_MIGRATIONS_TABLE = "__alchemy_migrations";
-const DEFAULT_IMPORTS_TABLE = "__alchemy_imports";
-const DEFAULT_OWNERSHIP_TABLE = "__alchemy_logical_database_ownership";
-const DEFAULT_APP_ROLE_PRIVILEGES_VERSION = 0;
-const POSTGRES_LOGICAL_DATABASE_RESOURCE_TYPE =
-  "Planetscale.PostgresLogicalDatabase";
-const POSTGRES_LOGICAL_DATABASE_OWNER_VERSION = 1;
+const DEFAULT_MIGRATIONS_TABLE = "__alchemy_migrations"
+const DEFAULT_IMPORTS_TABLE = "__alchemy_imports"
+const DEFAULT_OWNERSHIP_TABLE = "__alchemy_logical_database_ownership"
+const DEFAULT_APP_ROLE_PRIVILEGES_VERSION = 0
+const POSTGRES_LOGICAL_DATABASE_RESOURCE_TYPE = "Planetscale.PostgresLogicalDatabase"
+const POSTGRES_LOGICAL_DATABASE_OWNER_VERSION = 1
 
 /**
  * Properties for creating or updating a logical PostgreSQL database inside a
@@ -40,52 +39,52 @@ export interface PostgresLogicalDatabaseProps {
    * Logical PostgreSQL database name. If omitted, Alchemy generates a
    * lowercase underscore-delimited name.
    */
-  name?: string;
+  name?: string
 
   /**
    * Admin PostgreSQL connection origin for the PlanetScale branch. Use an
    * origin from a {@link PostgresRole} that inherits `postgres`.
    */
-  adminOrigin: PostgresOrigin;
+  adminOrigin: PostgresOrigin
 
   /**
    * Postgres-visible application role name to grant access to this logical
    * database. PlanetScale connection usernames often contain a suffix; pass
    * the visible role prefix.
    */
-  appRoleName?: string;
+  appRoleName?: string
 
   /**
    * Bump this value to force re-checking and re-applying application role
    * grants even when the privilege hash has not otherwise changed.
    * @default 0
    */
-  appRolePrivilegesVersion?: number;
+  appRolePrivilegesVersion?: number
 
   /**
    * Directory of SQL migration files to apply once. Applied file hashes are
    * tracked in the logical database and changed or removed migration records
    * are rejected.
    */
-  migrationsDir?: string;
+  migrationsDir?: string
 
   /**
    * Table used to track applied migrations.
    * @default "__alchemy_migrations"
    */
-  migrationsTable?: string;
+  migrationsTable?: string
 
   /**
    * SQL files to apply as imports/seed data. Imports are re-applied when the
    * file hash changes, while removed tracked import records are rejected.
    */
-  importFiles?: ReadonlyArray<string>;
+  importFiles?: ReadonlyArray<string>
 
   /**
    * Table used to track applied imports.
    * @default "__alchemy_imports"
    */
-  importsTable?: string;
+  importsTable?: string
 }
 
 /**
@@ -93,25 +92,25 @@ export interface PostgresLogicalDatabaseProps {
  */
 export interface PostgresLogicalDatabaseAttributes {
   /** Logical PostgreSQL database name. */
-  name: string;
+  name: string
   /** Application role name that receives table and sequence grants. */
-  appRoleName?: string;
+  appRoleName?: string
   /** Hash of observed app-role privilege state. */
-  appRolePrivilegesHash?: string;
+  appRolePrivilegesHash?: string
   /** Desired application role privileges version. */
-  appRolePrivilegesVersion: number;
+  appRolePrivilegesVersion: number
   /** Applied migration file hashes keyed by SQL file id. */
-  migrationsHashes: Record<string, string>;
+  migrationsHashes: Record<string, string>
   /** Applied import file hashes keyed by SQL file path. */
-  importHashes: Record<string, string>;
+  importHashes: Record<string, string>
   /** Table used to track applied migrations. */
-  migrationsTable: string;
+  migrationsTable: string
   /** Table used to track applied imports. */
-  importsTable: string;
+  importsTable: string
   /** Ownership marker written inside the logical database. */
-  owner: PostgresLogicalDatabaseOwner;
+  owner: PostgresLogicalDatabaseOwner
   /** Table used to track Alchemy ownership. */
-  ownershipTable: string;
+  ownershipTable: string
 }
 
 /**
@@ -167,21 +166,20 @@ export type PostgresLogicalDatabase = Resource<
   PostgresLogicalDatabaseAttributes,
   never,
   Providers
->;
+>
 
 export const PostgresLogicalDatabase = Resource<PostgresLogicalDatabase>(
   "Planetscale.PostgresLogicalDatabase",
-);
+)
 
-export const postgresRoleNameFromUsername = (username: string) =>
-  username.split(".")[0] ?? username;
+export const postgresRoleNameFromUsername = (username: string) => username.split(".")[0] ?? username
 
 const ensurePostgresIdentifierPrefix = (name: string) =>
-  /^[a-z]/.test(name) ? name : `db_${name}`.slice(0, 63);
+  /^[a-z]/.test(name) ? name : `db_${name}`.slice(0, 63)
 
 const createLogicalDatabaseName = (id: string, name: string | undefined) =>
   Effect.gen(function* () {
-    if (name) return name;
+    if (name) return name
     return ensurePostgresIdentifierPrefix(
       yield* createPhysicalName({
         id,
@@ -189,16 +187,14 @@ const createLogicalDatabaseName = (id: string, name: string | undefined) =>
         lowercase: true,
         maxLength: 63,
       }),
-    );
-  });
+    )
+  })
 
-const logicalDatabaseOwner = (
-  logicalId: string,
-): PostgresLogicalDatabaseOwner => ({
+const logicalDatabaseOwner = (logicalId: string): PostgresLogicalDatabaseOwner => ({
   logicalId,
   resourceType: POSTGRES_LOGICAL_DATABASE_RESOURCE_TYPE,
   version: POSTGRES_LOGICAL_DATABASE_OWNER_VERSION,
-});
+})
 
 const ownersEqual = (
   left: PostgresLogicalDatabaseOwner | undefined,
@@ -206,79 +202,72 @@ const ownersEqual = (
 ) =>
   left?.logicalId === right.logicalId &&
   left.resourceType === right.resourceType &&
-  left.version === right.version;
+  left.version === right.version
 
 const excludedAppRoleTableNames = (
   migrationsTable: string,
   importsTable: string,
   ownershipTable: string,
-) => [migrationsTable, importsTable, ownershipTable];
+) => [migrationsTable, importsTable, ownershipTable]
 
 const renameError = (oldName: string, newName: string) =>
   new Error(
     `Refusing to rename logical Postgres database "${oldName}" to "${newName}". ` +
       "Database renames can break downstream connection references; perform an explicit manual cutover instead.",
-  );
+  )
 
 const isReadablePostgresOrigin = (value: unknown): value is PostgresOrigin => {
-  if (!Predicate.isObject(value)) return false;
+  if (!Predicate.isObject(value)) return false
 
-  const origin = value as Partial<Record<keyof PostgresOrigin, unknown>>;
+  const origin = value as Partial<Record<keyof PostgresOrigin, unknown>>
   return (
     Predicate.isString(origin.scheme) &&
     Predicate.isString(origin.host) &&
     Predicate.isNumber(origin.port) &&
     Predicate.isString(origin.user) &&
     !Predicate.isUndefined(origin.password)
-  );
-};
+  )
+}
 
-const hasReadableLogicalDatabaseProps = (
-  value: PostgresLogicalDatabaseProps | undefined,
-) => Predicate.isObject(value) && isReadablePostgresOrigin(value.adminOrigin);
+const hasReadableLogicalDatabaseProps = (value: PostgresLogicalDatabaseProps | undefined) =>
+  Predicate.isObject(value) && isReadablePostgresOrigin(value.adminOrigin)
 
-const appRolePrivilegesHash = (privileges: AppRolePrivilegeState | undefined) =>
-  privileges?.hash;
+const appRolePrivilegesHash = (privileges: AppRolePrivilegeState | undefined) => privileges?.hash
 
 const recordHashes = (files: readonly SqlFile[]) =>
-  Object.fromEntries(files.map((file) => [file.id, file.hash]));
+  Object.fromEntries(files.map((file) => [file.id, file.hash]))
 
 const readLogicalDatabaseSqlFiles = (input: {
-  readonly importFiles?: ReadonlyArray<string>;
-  readonly migrationsDir?: string;
-  readonly rootDir: string;
+  readonly importFiles?: ReadonlyArray<string>
+  readonly migrationsDir?: string
+  readonly rootDir: string
 }) =>
   Effect.gen(function* () {
-    const migrations = input.migrationsDir
-      ? yield* listSqlFiles(input.migrationsDir)
-      : [];
+    const migrations = input.migrationsDir ? yield* listSqlFiles(input.migrationsDir) : []
     const imports = yield* Effect.all(
-      [...(input.importFiles ?? [])]
-        .sort()
-        .map((filePath) => readSqlFile(input.rootDir, filePath)),
-    );
+      [...(input.importFiles ?? [])].sort().map((filePath) => readSqlFile(input.rootDir, filePath)),
+    )
 
     return {
       imports,
       migrations,
-    };
-  });
+    }
+  })
 
 const logicalDatabaseNeedsUpdate = (input: {
-  readonly appRoleName: string | undefined;
-  readonly appRolePrivileges: AppRolePrivilegeState | undefined;
-  readonly appRolePrivilegesVersion: number;
-  readonly imports: Record<string, string>;
-  readonly importsTable: string;
-  readonly migrations: Record<string, string>;
-  readonly migrationsTable: string;
-  readonly output: PostgresLogicalDatabaseAttributes;
-  readonly owner: PostgresLogicalDatabaseOwner;
-  readonly ownershipTable: string;
+  readonly appRoleName: string | undefined
+  readonly appRolePrivileges: AppRolePrivilegeState | undefined
+  readonly appRolePrivilegesVersion: number
+  readonly imports: Record<string, string>
+  readonly importsTable: string
+  readonly migrations: Record<string, string>
+  readonly migrationsTable: string
+  readonly output: PostgresLogicalDatabaseAttributes
+  readonly owner: PostgresLogicalDatabaseOwner
+  readonly ownershipTable: string
 }) =>
   input.output.appRoleName !== input.appRoleName ||
-  input.output.appRolePrivilegesHash !==
-    appRolePrivilegesHash(input.appRolePrivileges) ||
+  input.output.appRolePrivilegesHash !== appRolePrivilegesHash(input.appRolePrivileges) ||
   input.output.appRolePrivilegesVersion !== input.appRolePrivilegesVersion ||
   input.output.migrationsTable !== input.migrationsTable ||
   input.output.importsTable !== input.importsTable ||
@@ -286,13 +275,13 @@ const logicalDatabaseNeedsUpdate = (input: {
   !ownersEqual(input.output.owner, input.owner) ||
   input.appRolePrivileges?.ready === false ||
   !recordsEqual(input.migrations, input.output.migrationsHashes) ||
-  !recordsEqual(input.imports, input.output.importHashes);
+  !recordsEqual(input.imports, input.output.importHashes)
 
 const readAppRolePrivilegesIfConfigured = (input: {
-  readonly appRoleName: string | undefined;
-  readonly databaseName: string;
-  readonly excludedTableNames: readonly string[];
-  readonly origin: PostgresOrigin;
+  readonly appRoleName: string | undefined
+  readonly databaseName: string
+  readonly excludedTableNames: readonly string[]
+  readonly origin: PostgresOrigin
 }) =>
   input.appRoleName
     ? readAppRolePrivileges({
@@ -301,26 +290,23 @@ const readAppRolePrivilegesIfConfigured = (input: {
         origin: input.origin,
         roleName: input.appRoleName,
       })
-    : Effect.succeed(undefined);
+    : Effect.succeed(undefined)
 
 const diffExistingDatabase = (input: {
-  readonly appRoleName: string | undefined;
-  readonly appRolePrivilegesVersion: number;
-  readonly imports: Record<string, string>;
-  readonly importsTable: string;
-  readonly migrations: Record<string, string>;
-  readonly migrationsTable: string;
-  readonly output: PostgresLogicalDatabaseAttributes;
-  readonly owner: PostgresLogicalDatabaseOwner;
-  readonly ownershipTable: string;
-  readonly props: PostgresLogicalDatabaseProps;
+  readonly appRoleName: string | undefined
+  readonly appRolePrivilegesVersion: number
+  readonly imports: Record<string, string>
+  readonly importsTable: string
+  readonly migrations: Record<string, string>
+  readonly migrationsTable: string
+  readonly output: PostgresLogicalDatabaseAttributes
+  readonly owner: PostgresLogicalDatabaseOwner
+  readonly ownershipTable: string
+  readonly props: PostgresLogicalDatabaseProps
 }) =>
   Effect.gen(function* () {
-    const exists = yield* databaseExists(
-      input.props.adminOrigin,
-      input.output.name,
-    );
-    if (!exists) return { action: "update" } as const;
+    const exists = yield* databaseExists(input.props.adminOrigin, input.output.name)
+    if (!exists) return { action: "update" } as const
 
     const appRolePrivileges = yield* readAppRolePrivilegesIfConfigured({
       appRoleName: input.appRoleName,
@@ -331,7 +317,7 @@ const diffExistingDatabase = (input: {
         input.ownershipTable,
       ),
       origin: input.props.adminOrigin,
-    });
+    })
 
     return logicalDatabaseNeedsUpdate({
       appRoleName: input.appRoleName,
@@ -346,33 +332,28 @@ const diffExistingDatabase = (input: {
       ownershipTable: input.ownershipTable,
     })
       ? ({ action: "update" } as const)
-      : undefined;
-  });
+      : undefined
+  })
 
 const readExistingDatabase = (input: {
-  readonly id: string;
-  readonly name: string;
-  readonly olds: PostgresLogicalDatabaseProps;
-  readonly output: PostgresLogicalDatabaseAttributes | undefined;
+  readonly id: string
+  readonly name: string
+  readonly olds: PostgresLogicalDatabaseProps
+  readonly output: PostgresLogicalDatabaseAttributes | undefined
 }) =>
   Effect.gen(function* () {
     const migrationsTable =
-      input.olds.migrationsTable ??
-      input.output?.migrationsTable ??
-      DEFAULT_MIGRATIONS_TABLE;
+      input.olds.migrationsTable ?? input.output?.migrationsTable ?? DEFAULT_MIGRATIONS_TABLE
     const importsTable =
-      input.olds.importsTable ??
-      input.output?.importsTable ??
-      DEFAULT_IMPORTS_TABLE;
-    const ownershipTable =
-      input.output?.ownershipTable ?? DEFAULT_OWNERSHIP_TABLE;
-    const owner = logicalDatabaseOwner(input.id);
+      input.olds.importsTable ?? input.output?.importsTable ?? DEFAULT_IMPORTS_TABLE
+    const ownershipTable = input.output?.ownershipTable ?? DEFAULT_OWNERSHIP_TABLE
+    const owner = logicalDatabaseOwner(input.id)
     const databaseOwner = yield* readDatabaseOwnership({
       databaseName: input.name,
       origin: input.olds.adminOrigin,
       ownerResourceType: POSTGRES_LOGICAL_DATABASE_RESOURCE_TYPE,
       tableName: ownershipTable,
-    });
+    })
     const [migrationsHashes, importHashes] = yield* Effect.all(
       [
         readTrackedSqlFileHashes({
@@ -387,18 +368,14 @@ const readExistingDatabase = (input: {
         }),
       ],
       { concurrency: 2 },
-    );
-    const appRoleName = input.olds.appRoleName ?? input.output?.appRoleName;
+    )
+    const appRoleName = input.olds.appRoleName ?? input.output?.appRoleName
     const appRolePrivileges = yield* readAppRolePrivilegesIfConfigured({
       appRoleName,
       databaseName: input.name,
-      excludedTableNames: excludedAppRoleTableNames(
-        migrationsTable,
-        importsTable,
-        ownershipTable,
-      ),
+      excludedTableNames: excludedAppRoleTableNames(migrationsTable, importsTable, ownershipTable),
       origin: input.olds.adminOrigin,
-    });
+    })
     const attributes = {
       appRoleName,
       appRolePrivilegesHash: appRolePrivilegesHash(appRolePrivileges),
@@ -413,27 +390,27 @@ const readExistingDatabase = (input: {
       name: input.name,
       owner,
       ownershipTable,
-    } satisfies PostgresLogicalDatabaseAttributes;
+    } satisfies PostgresLogicalDatabaseAttributes
 
-    return ownersEqual(databaseOwner, owner) ? attributes : Unowned(attributes);
-  });
+    return ownersEqual(databaseOwner, owner) ? attributes : Unowned(attributes)
+  })
 
 const reconcileAppRolePrivileges = (input: {
-  readonly appRoleName: string | undefined;
-  readonly databaseName: string;
-  readonly migrationsTable: string;
-  readonly importsTable: string;
-  readonly ownershipTable: string;
-  readonly origin: PostgresOrigin;
-  readonly session: { readonly note: (message: string) => Effect.Effect<void> };
+  readonly appRoleName: string | undefined
+  readonly databaseName: string
+  readonly migrationsTable: string
+  readonly importsTable: string
+  readonly ownershipTable: string
+  readonly origin: PostgresOrigin
+  readonly session: { readonly note: (message: string) => Effect.Effect<void> }
 }) => {
-  const appRoleName = input.appRoleName;
+  const appRoleName = input.appRoleName
 
   return appRoleName
     ? Effect.gen(function* () {
         yield* input.session.note(
           `Ensuring app role privileges for logical Postgres database "${input.databaseName}"...`,
-        );
+        )
         yield* ensureAppRolePrivileges({
           databaseName: input.databaseName,
           excludedTableNames: excludedAppRoleTableNames(
@@ -443,7 +420,7 @@ const reconcileAppRolePrivileges = (input: {
           ),
           origin: input.origin,
           roleName: appRoleName,
-        });
+        })
         return yield* readAppRolePrivileges({
           databaseName: input.databaseName,
           excludedTableNames: excludedAppRoleTableNames(
@@ -453,44 +430,39 @@ const reconcileAppRolePrivileges = (input: {
           ),
           origin: input.origin,
           roleName: appRoleName,
-        });
+        })
       })
-    : Effect.succeed(undefined);
-};
+    : Effect.succeed(undefined)
+}
 
 export const PostgresLogicalDatabaseProvider = () =>
   Provider.effect(
     PostgresLogicalDatabase,
     Effect.gen(function* () {
-      const rootDir = yield* Effect.sync(() => process.cwd());
+      const rootDir = yield* Effect.sync(() => process.cwd())
 
       return {
         diff: Effect.fn(function* ({ id, news, output }) {
-          if (!isResolved(news)) return undefined;
-          if (!output) return undefined;
+          if (!isResolved(news)) return undefined
+          if (!output) return undefined
 
-          const name = yield* createLogicalDatabaseName(id, news.name);
+          const name = yield* createLogicalDatabaseName(id, news.name)
           if (output.name !== name) {
-            return yield* Effect.fail(renameError(output.name, name));
+            return yield* Effect.fail(renameError(output.name, name))
           }
 
           const appRolePrivilegesVersion =
-            news.appRolePrivilegesVersion ??
-            DEFAULT_APP_ROLE_PRIVILEGES_VERSION;
+            news.appRolePrivilegesVersion ?? DEFAULT_APP_ROLE_PRIVILEGES_VERSION
           const migrationsTable =
-            news.migrationsTable ??
-            output.migrationsTable ??
-            DEFAULT_MIGRATIONS_TABLE;
-          const importsTable =
-            news.importsTable ?? output.importsTable ?? DEFAULT_IMPORTS_TABLE;
-          const ownershipTable =
-            output.ownershipTable ?? DEFAULT_OWNERSHIP_TABLE;
-          const owner = logicalDatabaseOwner(id);
+            news.migrationsTable ?? output.migrationsTable ?? DEFAULT_MIGRATIONS_TABLE
+          const importsTable = news.importsTable ?? output.importsTable ?? DEFAULT_IMPORTS_TABLE
+          const ownershipTable = output.ownershipTable ?? DEFAULT_OWNERSHIP_TABLE
+          const owner = logicalDatabaseOwner(id)
           const { imports, migrations } = yield* readLogicalDatabaseSqlFiles({
             importFiles: news.importFiles,
             migrationsDir: news.migrationsDir,
             rootDir,
-          });
+          })
 
           return yield* diffExistingDatabase({
             appRoleName: news.appRoleName,
@@ -503,87 +475,73 @@ export const PostgresLogicalDatabaseProvider = () =>
             owner,
             ownershipTable,
             props: news,
-          });
+          })
         }),
 
         read: Effect.fn(function* ({ id, olds, output }) {
-          if (!hasReadableLogicalDatabaseProps(olds)) return undefined;
+          if (!hasReadableLogicalDatabaseProps(olds)) return undefined
 
-          const name =
-            output?.name ?? (yield* createLogicalDatabaseName(id, olds.name));
-          const exists = yield* databaseExists(olds.adminOrigin, name);
-          if (!exists) return undefined;
+          const name = output?.name ?? (yield* createLogicalDatabaseName(id, olds.name))
+          const exists = yield* databaseExists(olds.adminOrigin, name)
+          if (!exists) return undefined
 
           return yield* readExistingDatabase({
             id,
             name,
             olds,
             output,
-          });
+          })
         }),
 
         reconcile: Effect.fn(function* ({ id, news, output, session }) {
-          const name = yield* createLogicalDatabaseName(id, news.name);
+          const name = yield* createLogicalDatabaseName(id, news.name)
           if (output?.name && output.name !== name) {
-            return yield* Effect.fail(renameError(output.name, name));
+            return yield* Effect.fail(renameError(output.name, name))
           }
 
           const appRolePrivilegesVersion =
-            news.appRolePrivilegesVersion ??
-            DEFAULT_APP_ROLE_PRIVILEGES_VERSION;
+            news.appRolePrivilegesVersion ?? DEFAULT_APP_ROLE_PRIVILEGES_VERSION
           const migrationsTable =
-            news.migrationsTable ??
-            output?.migrationsTable ??
-            DEFAULT_MIGRATIONS_TABLE;
-          const importsTable =
-            news.importsTable ?? output?.importsTable ?? DEFAULT_IMPORTS_TABLE;
-          const ownershipTable =
-            output?.ownershipTable ?? DEFAULT_OWNERSHIP_TABLE;
-          const owner = logicalDatabaseOwner(id);
+            news.migrationsTable ?? output?.migrationsTable ?? DEFAULT_MIGRATIONS_TABLE
+          const importsTable = news.importsTable ?? output?.importsTable ?? DEFAULT_IMPORTS_TABLE
+          const ownershipTable = output?.ownershipTable ?? DEFAULT_OWNERSHIP_TABLE
+          const owner = logicalDatabaseOwner(id)
           const { imports, migrations } = yield* readLogicalDatabaseSqlFiles({
             importFiles: news.importFiles,
             migrationsDir: news.migrationsDir,
             rootDir,
-          });
+          })
 
-          yield* session.note(
-            `Ensuring logical Postgres database "${name}"...`,
-          );
-          yield* ensureDatabase(news.adminOrigin, name);
+          yield* session.note(`Ensuring logical Postgres database "${name}"...`)
+          yield* ensureDatabase(news.adminOrigin, name)
 
-          yield* session.note(
-            `Claiming logical Postgres database "${name}"...`,
-          );
+          yield* session.note(`Claiming logical Postgres database "${name}"...`)
           yield* ensureDatabaseOwnership({
             databaseName: name,
             origin: news.adminOrigin,
             owner,
             tableName: ownershipTable,
-          });
+          })
 
-          yield* session.note(
-            `Applying migrations for logical Postgres database "${name}"...`,
-          );
+          yield* session.note(`Applying migrations for logical Postgres database "${name}"...`)
           yield* applyTrackedSqlFiles({
             changedFileAction: "reject",
             databaseName: name,
             files: migrations,
             origin: news.adminOrigin,
             tableName: migrationsTable,
-          });
+          })
 
-          yield* session.note(
-            `Applying imports for logical Postgres database "${name}"...`,
-          );
+          yield* session.note(`Applying imports for logical Postgres database "${name}"...`)
           yield* applyTrackedSqlFiles({
             changedFileAction: "reapply",
             databaseName: name,
             files: imports,
             origin: news.adminOrigin,
             tableName: importsTable,
-          });
+          })
 
-          const appRoleName = news.appRoleName;
+          const appRoleName = news.appRoleName
           const appRolePrivileges = yield* reconcileAppRolePrivileges({
             appRoleName,
             databaseName: name,
@@ -592,7 +550,7 @@ export const PostgresLogicalDatabaseProvider = () =>
             origin: news.adminOrigin,
             ownershipTable,
             session,
-          });
+          })
 
           return {
             appRoleName,
@@ -605,15 +563,13 @@ export const PostgresLogicalDatabaseProvider = () =>
             name,
             owner,
             ownershipTable,
-          } satisfies PostgresLogicalDatabaseAttributes;
+          } satisfies PostgresLogicalDatabaseAttributes
         }),
 
         delete: Effect.fn(function* ({ olds, output, session }) {
-          yield* session.note(
-            `Dropping logical Postgres database "${output.name}"...`,
-          );
-          yield* dropDatabase(olds.adminOrigin, output.name);
+          yield* session.note(`Dropping logical Postgres database "${output.name}"...`)
+          yield* dropDatabase(olds.adminOrigin, output.name)
         }),
-      };
+      }
     }),
-  );
+  )
