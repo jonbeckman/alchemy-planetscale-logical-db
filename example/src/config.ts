@@ -1,7 +1,7 @@
-import { dirname, join } from "node:path"
-import { fileURLToPath } from "node:url"
+import * as Option from "effect/Option"
+import * as R from "effect/Record"
 
-const projectRoot = join(dirname(fileURLToPath(import.meta.url)), "..")
+const projectPath = (path: string) => new URL(path, import.meta.url).pathname
 
 export const DB_STACK_NAME = "SharedPostgres"
 export const APP_STACK_NAME = "ExampleViteApp"
@@ -19,14 +19,14 @@ export const projects = {
     resourcePrefix: "ProjectA",
     workerName: "project-a-web",
     logicalDatabaseName: "project_a",
-    migrationsDir: join(projectRoot, "migrations/project_a"),
+    migrationsDir: projectPath("../migrations/project_a"),
   },
   project_b: {
     slug: "project_b",
     resourcePrefix: "ProjectB",
     workerName: "project-b-web",
     logicalDatabaseName: "project_b",
-    migrationsDir: join(projectRoot, "migrations/project_b"),
+    migrationsDir: projectPath("../migrations/project_b"),
   },
 } as const
 
@@ -34,15 +34,19 @@ export type ProjectSlug = keyof typeof projects
 export type ProjectConfig = (typeof projects)[ProjectSlug]
 
 export function projectSlugs(): readonly ProjectSlug[] {
-  return Object.keys(projects) as ProjectSlug[]
+  return R.keys(projects) as ProjectSlug[]
 }
 
-export function getProject(slug: string): ProjectConfig {
-  if (slug in projects) {
-    return projects[slug as ProjectSlug]
-  }
-
+function unknownProjectSlug(slug: string): never {
   throw new Error(`Unknown APP_SLUG "${slug}". Expected one of: ${projectSlugs().join(", ")}.`)
 }
 
-export const appRoot = join(projectRoot, "app")
+export const getProject = (slug: string): ProjectConfig =>
+  R.get(projects, slug as ProjectSlug).pipe(
+    Option.match({
+      onSome: (project) => project,
+      onNone: () => unknownProjectSlug(slug),
+    }),
+  )
+
+export const appRoot = projectPath("../app")

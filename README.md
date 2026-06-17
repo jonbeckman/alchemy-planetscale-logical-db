@@ -59,27 +59,22 @@ const program = Effect.gen(function* () {
 
   return yield* PlanetscaleLogicalDb.PostgresLogicalDatabase("AppDatabase", {
     adminOrigin: adminRole.origin,
-    appRoleName: Output.map(
-      appRole.username,
-      PlanetscaleLogicalDb.postgresRoleNameFromUsername,
-    ),
+    appRoleName: Output.map(appRole.username, PlanetscaleLogicalDb.postgresRoleNameFromUsername),
     appRolePrivilegesVersion: 1,
     migrationsDir: "./migrations/app",
     name: "app",
   })
 })
 
-export class DatabaseStack extends Alchemy.Stack<DatabaseStack, unknown>()(
-  "Database",
-) {}
+export class DatabaseStack extends Alchemy.Stack<DatabaseStack, unknown>()("Database") {}
 
-export default DatabaseStack.make({
-  providers: Layer.mergeAll(
-    Planetscale.providers(),
-    PlanetscaleLogicalDb.providers(),
-  ),
-  state: Alchemy.localState(),
-}, program)
+export default DatabaseStack.make(
+  {
+    providers: Layer.mergeAll(Planetscale.providers(), PlanetscaleLogicalDb.providers()),
+    state: Alchemy.localState(),
+  },
+  program,
+)
 ```
 
 ## API

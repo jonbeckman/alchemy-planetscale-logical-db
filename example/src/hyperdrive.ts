@@ -4,6 +4,9 @@ import * as Output from "alchemy/Output"
 import * as Planetscale from "alchemy/Planetscale"
 import * as PlanetscaleLogicalDb from "alchemy-planetscale-logical-db"
 import * as Effect from "effect/Effect"
+import * as HashSet from "effect/HashSet"
+import * as Match from "effect/Match"
+import * as Option from "effect/Option"
 import * as Redacted from "effect/Redacted"
 import { DB_STACK_NAME, type ProjectConfig } from "./config.ts"
 import { AppDbMode, requiredEnv, type AppDbMode as AppDbModeValue } from "./env.ts"
@@ -12,7 +15,7 @@ type LocalPostgresOrigin = Required<Cloudflare.HyperdriveDevOrigin>
 type PostgresScheme = LocalPostgresOrigin["scheme"]
 type PostgresSslMode = NonNullable<Cloudflare.HyperdriveDevOrigin["sslmode"]>
 
-const postgresSslModes = new Set<PostgresSslMode>([
+const postgresSslModes = HashSet.fromIterable<PostgresSslMode>([
   "disable",
   "prefer",
   "require",
@@ -20,23 +23,53 @@ const postgresSslModes = new Set<PostgresSslMode>([
   "verify-full",
 ])
 
-function parsePostgresSslMode(value: string | null): PostgresSslMode {
-  if (value === null) {
-    return "prefer"
-  }
-
-  if (postgresSslModes.has(value as PostgresSslMode)) {
-    return value as PostgresSslMode
-  }
-
+function invalidPostgresSslMode(value: string): never {
   throw new Error(`Invalid Postgres sslmode "${value}".`)
 }
 
-function assertPostgresScheme(value: string): asserts value is PostgresScheme {
-  if (value !== "postgres" && value !== "postgresql") {
-    throw new Error(`DATABASE_URL must use postgres/postgresql, got "${value}".`)
-  }
+const parsePresentPostgresSslMode = (value: string): PostgresSslMode =>
+  Match.value(HashSet.has(postgresSslModes, value as PostgresSslMode)).pipe(
+    Match.when(true, () => value as PostgresSslMode),
+    Match.when(false, () => invalidPostgresSslMode(value)),
+    Match.exhaustive,
+  )
+
+const parsePostgresSslMode = (value: string | null): PostgresSslMode =>
+  Option.fromNullOr(value).pipe(
+    Option.match({
+      onNone: () => "prefer",
+      onSome: parsePresentPostgresSslMode,
+    }),
+  )
+
+const isPostgresScheme = (value: string): value is PostgresScheme =>
+  value === "postgres" || value === "postgresql"
+
+function invalidPostgresScheme(value: string): never {
+  throw new Error(`DATABASE_URL must use postgres/postgresql, got "${value}".`)
 }
+
+function assertPostgresScheme(value: string): asserts value is PostgresScheme {
+  Match.value(isPostgresScheme(value)).pipe(
+    Match.when(true, () => undefined),
+    Match.when(false, () => invalidPostgresScheme(value)),
+    Match.exhaustive,
+  )
+}
+
+const hasLocalPostgresOriginParts = (url: URL, database: string) =>
+  url.hostname !== "" && url.port !== "" && url.username !== "" && database !== ""
+
+function missingLocalPostgresOriginParts(): never {
+  throw new Error("DATABASE_URL must include host, port, user, and database.")
+}
+
+const validateLocalPostgresOriginParts = (url: URL, database: string) =>
+  Match.value(hasLocalPostgresOriginParts(url, database)).pipe(
+    Match.when(true, () => undefined),
+    Match.when(false, () => missingLocalPostgresOriginParts()),
+    Match.exhaustive,
+  )
 
 export function parseLocalPostgresOrigin(databaseUrl: string): LocalPostgresOrigin {
   const url = new URL(databaseUrl)
@@ -44,10 +77,7 @@ export function parseLocalPostgresOrigin(databaseUrl: string): LocalPostgresOrig
   const database = decodeURIComponent(url.pathname.replace(/^\//, ""))
 
   assertPostgresScheme(scheme)
-
-  if (!url.hostname || !url.port || !url.username || !database) {
-    throw new Error("DATABASE_URL must include host, port, user, and database.")
-  }
+  validateLocalPostgresOriginParts(url, database)
 
   return {
     database,
@@ -60,22 +90,21 @@ export function parseLocalPostgresOrigin(databaseUrl: string): LocalPostgresOrig
   }
 }
 
-export function createProjectHyperdrive(project: ProjectConfig, appDbMode: AppDbModeValue) {
-  switch (appDbMode) {
-    case AppDbMode.local:
-      return createLocalHyperdrive(project)
-    case AppDbMode.remote:
-      return createRemoteHyperdrive(project)
-  }
-}
+export const createProjectHyperdrive = (project: ProjectConfig, appDbMode: AppDbModeValue) =>
+  Match.value(appDbMode).pipe(
+    Match.when(AppDbMode.local, () => createLocalHyperdrive(project)),
+    Match.when(AppDbMode.remote, () => createRemoteHyperdrive(project)),
+    Match.exhaustive,
+  )
 
 function createLocalHyperdrive(project: ProjectConfig) {
   return Effect.gen(function* () {
     const context = yield* Alchemy.AlchemyContext
-
-    if (!context.dev) {
-      return yield* Effect.die(new Error("APP_DB_MODE=local is only supported with `alchemy dev`."))
-    }
+    const isNotDevMode = Effect.succeed(!context.dev)
+    yield* Effect.die(new Error("APP_DB_MODE=local is only supported with `alchemy dev`.")).pipe(
+      Effect.when(isNotDevMode),
+      Effect.asVoid,
+    )
 
     const origin = parseLocalPostgresOrigin(requiredEnv("DATABASE_URL"))
 
@@ -91,9 +120,12 @@ function createLocalHyperdrive(project: ProjectConfig) {
 
 function createRemoteHyperdrive(project: ProjectConfig) {
   return Effect.gen(function* () {
-    const appRole = yield* Planetscale.PostgresRole.ref(`${project.resourcePrefix}PostgresAppRole`, {
-      stack: DB_STACK_NAME,
-    })
+    const appRole = yield* Planetscale.PostgresRole.ref(
+      `${project.resourcePrefix}PostgresAppRole`,
+      {
+        stack: DB_STACK_NAME,
+      },
+    )
     const logicalDatabase = yield* PlanetscaleLogicalDb.PostgresLogicalDatabase.ref(
       `${project.resourcePrefix}PostgresDatabase`,
       { stack: DB_STACK_NAME },
