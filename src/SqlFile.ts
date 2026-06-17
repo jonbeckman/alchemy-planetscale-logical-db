@@ -55,7 +55,7 @@ export const readSqlFile = (directory: string, name: string) =>
   Effect.gen(function* () {
     const fs = yield* FileSystem.FileSystem
     const path = yield* Path.Path
-    const sql = yield* fs.stream(path.join(directory, name)).pipe(
+    const sql = yield* fs.stream(path.resolve(directory, name)).pipe(
       Stream.decodeText(),
       Stream.runFold(
         () => "",

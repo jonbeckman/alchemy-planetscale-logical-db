@@ -1,5 +1,7 @@
 import * as Provider from "alchemy/Provider"
+import type { StackServices } from "alchemy/Stack"
 import * as Layer from "effect/Layer"
+import type { Layer as EffectLayer } from "effect/Layer"
 import {
   PostgresLogicalDatabase,
   PostgresLogicalDatabaseProvider,
@@ -14,7 +16,7 @@ export class Providers extends Provider.ProviderCollection<Providers>()(
 
 export type ProviderRequirements = Layer.Services<ReturnType<typeof providers>>
 
-export const providers = () =>
+export const providers = (): EffectLayer<Providers, never, StackServices> =>
   Layer.effect(Providers, Provider.collection([PostgresLogicalDatabase])).pipe(
     Layer.provide(PostgresLogicalDatabaseProvider()),
   )
