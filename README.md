@@ -15,6 +15,8 @@ Postgres admin role and reconciles database-local state:
 
 ## Install
 
+![NPM Version](https://img.shields.io/npm/v/alchemy-planetscale-logical-db)
+
 ```sh
 pnpm add alchemy-planetscale-logical-db
 ```

@@ -1,6 +1,6 @@
 {
   "name": "alchemy-planetscale-logical-db",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Alchemy v2 resource for managing logical PostgreSQL databases inside PlanetScale Postgres clusters.",
   "bugs": {
     "url": "https://github.com/jonbeckman/alchemy-planetscale-logical-db/issues"
