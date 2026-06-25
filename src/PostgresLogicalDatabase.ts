@@ -577,6 +577,8 @@ export function PostgresLogicalDatabaseProvider() {
   return Provider.effect(
     PostgresLogicalDatabase,
     Effect.succeed({
+      list: () => Effect.succeed([]),
+
       diff: Effect.fn(function* ({ id, news, output }) {
         return yield* Arr.matchLeft(
           Option.toArray(

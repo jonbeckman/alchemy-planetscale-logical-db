@@ -41,15 +41,15 @@
     "@oxlint/plugins": "1.66.0",
     "@types/node": "^25.9.1",
     "@types/pg": "^8.15.6",
-    "alchemy": "2.0.0-beta.55",
-    "effect": "4.0.0-beta.78",
+    "alchemy": "2.0.0-beta.58",
+    "effect": "4.0.0-beta.88",
     "oxfmt": "^0.48.0",
     "oxlint": "1.66.0",
     "typescript": "^6.0.3"
   },
   "peerDependencies": {
-    "alchemy": ">=2.0.0-beta.55",
-    "effect": "4.0.0-beta.78"
+    "alchemy": ">=2.0.0-beta.58",
+    "effect": "4.0.0-beta.88"
   },
   "engines": {
     "node": ">=24",
