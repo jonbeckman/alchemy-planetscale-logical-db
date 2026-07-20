@@ -11,9 +11,9 @@ import * as Redacted from "effect/Redacted"
 import { DB_STACK_NAME, type ProjectConfig } from "./config.ts"
 import { AppDbMode, requiredEnv, type AppDbMode as AppDbModeValue } from "./env.ts"
 
-type LocalPostgresOrigin = Required<Cloudflare.HyperdriveDevOrigin>
+type LocalPostgresOrigin = Required<Cloudflare.Hyperdrive.DevOrigin>
 type PostgresScheme = LocalPostgresOrigin["scheme"]
-type PostgresSslMode = NonNullable<Cloudflare.HyperdriveDevOrigin["sslmode"]>
+type PostgresSslMode = NonNullable<Cloudflare.Hyperdrive.DevOrigin["sslmode"]>
 
 const postgresSslModes = HashSet.fromIterable<PostgresSslMode>([
   "disable",
@@ -108,7 +108,7 @@ function createLocalHyperdrive(project: ProjectConfig) {
 
     const origin = parseLocalPostgresOrigin(requiredEnv("DATABASE_URL"))
 
-    return yield* Cloudflare.Hyperdrive(`${project.resourcePrefix}PostgresHyperdrive`, {
+    return yield* Cloudflare.Hyperdrive.Connection(`${project.resourcePrefix}PostgresHyperdrive`, {
       caching: { disabled: true },
       dev: origin,
       name: `${project.workerName}-local-db`,
@@ -139,7 +139,7 @@ function createRemoteHyperdrive(project: ProjectConfig) {
       }),
     )
 
-    return yield* Cloudflare.Hyperdrive(`${project.resourcePrefix}PostgresHyperdrive`, {
+    return yield* Cloudflare.Hyperdrive.Connection(`${project.resourcePrefix}PostgresHyperdrive`, {
       caching: { disabled: true },
       name: `${project.workerName}-db`,
       origin,
