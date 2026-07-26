@@ -21,7 +21,7 @@ const ExampleViteAppProgram = Effect.fn("ExampleViteAppProgram")(function* () {
   const project = getProject(requiredEnv("APP_SLUG"))
   const db = yield* createProjectHyperdrive(project, appDbMode)
 
-  yield* Cloudflare.Vite(`${project.resourcePrefix}Web`, {
+  yield* Cloudflare.Website.Vite(`${project.resourcePrefix}Web`, {
     compatibility: {
       date: "2026-05-24",
       flags: ["nodejs_compat"],
@@ -45,4 +45,4 @@ const ExampleViteAppProgram = Effect.fn("ExampleViteAppProgram")(function* () {
   } satisfies ExampleViteAppOutput
 })
 
-export default ExampleViteApp.make(stackOptions(), ExampleViteAppProgram())
+export default ExampleViteApp.make(stackOptions(), ExampleViteAppProgram().pipe(Effect.orDie))
