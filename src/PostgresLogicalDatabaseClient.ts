@@ -18,12 +18,9 @@ type TrackedSqlFileAction = "reject" | "reapply"
 
 const POSTGRES_IDENTIFIER = /^[a-z][a-z0-9_]*$/
 
-class TrackedSqlFileError extends Schema.TaggedErrorClass<TrackedSqlFileError>()(
-  "TrackedSqlFileError",
-  {
-    message: Schema.String,
-  },
-) {}
+class TrackedSqlFileError extends Schema.TaggedError<TrackedSqlFileError>()("TrackedSqlFileError", {
+  message: Schema.String,
+}) {}
 
 export interface PostgresLogicalDatabaseOwner {
   readonly logicalId: string

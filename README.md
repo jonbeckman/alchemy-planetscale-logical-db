@@ -24,7 +24,7 @@ nub add alchemy-planetscale-logical-db
 The package expects Alchemy v2 and Effect from the consuming project:
 
 ```sh
-nub add alchemy@2.0.0-beta.63 effect@4.0.0-beta.97
+nub add alchemy@2.0.0-beta.72 effect@4.0.0-beta.107
 ```
 
 ## Usage

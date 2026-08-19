@@ -35,7 +35,6 @@ const ExampleViteAppProgram = Effect.fn("ExampleViteAppProgram")(function* () {
     },
     name: project.workerName,
     rootDir: appRoot,
-    url: true,
   })
 
   return {
