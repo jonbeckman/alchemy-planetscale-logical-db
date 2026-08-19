@@ -35,6 +35,7 @@
     "lint:fix": "oxlint --fix",
     "lint:fix:max": "oxlint --fix --fix-suggestions --fix-dangerously",
     "prepublishOnly": "nub run build",
+    "tegami": "tsx scripts/tegami.mts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -49,6 +50,8 @@
     "effect": "4.0.0-beta.107",
     "oxfmt": "^0.48.0",
     "oxlint": "1.79.0",
+    "tegami": "1.3.5",
+    "tsx": "^4.23.12",
     "typescript": "7.0.2"
   },
   "peerDependencies": {

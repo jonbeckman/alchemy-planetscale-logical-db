@@ -31,9 +31,12 @@ Create a focused branch, keep changes scoped, and add or update tests for behavi
 
 ## Releases
 
-Published versions follow `package.json` and `CHANGELOG.md` through the existing Release workflow.
-Do not bump the package version or rewrite `CHANGELOG.md` for toolchain, CI, or documentation-only
-work.
+This repository uses Tegami to version and publish the one npm package. Read
+[docs/releasing.md](docs/releasing.md) for changelog format, the version pull
+request, and npm publish. Do not bump `package.json` or `VERSION`, or rewrite
+`CHANGELOG.md`, in a feature pull request. Add a `.tegami/` entry when the
+published package has an observable change. Use the `release:none` label when
+it does not.
 
 ## Validation
 

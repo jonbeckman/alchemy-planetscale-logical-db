@@ -105,4 +105,5 @@ two logical databases and one Cloudflare Hyperdrive-backed Vite Worker.
 ## Development
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for Node/Nub setup, validation, and pull
-request expectations.
+request expectations. See [docs/releasing.md](docs/releasing.md) for Tegami
+versioning and npm publish.
