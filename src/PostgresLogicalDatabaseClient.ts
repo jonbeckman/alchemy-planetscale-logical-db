@@ -7,7 +7,6 @@ import * as HashSet from "effect/HashSet"
 import * as Match from "effect/Match"
 import * as Option from "effect/Option"
 import * as Order from "effect/Order"
-import * as P from "effect/Predicate"
 import * as R from "effect/Record"
 import * as Redacted from "effect/Redacted"
 import * as Schema from "effect/Schema"
@@ -75,14 +74,11 @@ function quoteExternalIdentifier(label: string, value: string) {
 const quoteQualifiedIdentifier = (schema: string, value: string) =>
   `${quoteIdentifier(schema)}.${quoteIdentifier(value)}`
 
-const postgresErrorCode = (error: unknown) =>
-  Option.liftPredicate(error, P.isObject).pipe(
-    Option.filter((value) => "code" in value),
-    Option.map((value) => String((value as { code?: unknown }).code)),
-    Option.getOrUndefined,
-  )
+const PostgresClientError = Schema.Struct({
+  code: Schema.String,
+})
 
-const hashJson = (value: object) => sha256Object(value)
+const hashPrivilegeChecks = (checks: readonly PrivilegeCheck[]) => sha256Object(checks)
 
 function originConnectionUrl(origin: PostgresOrigin, database: string) {
   const url = new URL(`${origin.scheme}://localhost`)
@@ -192,7 +188,7 @@ const createDatabase = (client: Client, databaseName: string) =>
   ).pipe(
     Effect.asVoid,
     Effect.catchIf(
-      (error) => postgresErrorCode(error) === "42P04",
+      (error) => Schema.is(PostgresClientError)(error) && error.code === "42P04",
       () => Effect.void,
     ),
   )
@@ -579,7 +575,7 @@ const appRoleMissingPrivilegeState = (roleName: string) =>
   Effect.gen(function* () {
     const checks = [{ name: `role:${roleName}:exists`, ok: false }]
     return {
-      hash: yield* hashJson(checks),
+      hash: yield* hashPrivilegeChecks(checks),
       ready: false,
     } satisfies AppRolePrivilegeState
   })
@@ -622,7 +618,7 @@ const appRolePrivilegeState = (checks: readonly PrivilegeCheck[]) =>
   Effect.gen(function* () {
     const sortedChecks = Arr.sort(checks, privilegeCheckOrder)
     return {
-      hash: yield* hashJson(sortedChecks),
+      hash: yield* hashPrivilegeChecks(sortedChecks),
       ready: sortedChecks.every((check) => check.ok),
     } satisfies AppRolePrivilegeState
   })

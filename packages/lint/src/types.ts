@@ -1,6 +1,6 @@
 import type { ESTree } from "@oxlint/plugins"
 
-export type NodeLike = ESTree.Node & Record<string, unknown>
+export type NodeLike = ESTree.Node
 
 export type RuleReporter = (node: NodeLike, message?: string) => void
 

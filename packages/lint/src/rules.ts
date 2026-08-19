@@ -35,26 +35,26 @@ import {
   typeNameText,
 } from "./ast.ts"
 import { isLintAllowedDynamicImportBoundary } from "./lint-boundaries.ts"
-import { makeRule } from "./make-rule.ts"
+import { defineLintRule } from "./make-rule.ts"
 import type { LintRuleName } from "./rule-names.ts"
 import type { NodeLike } from "./types.ts"
 
-export const rules: Record<LintRuleName, Rule> = {
-  "no-if-statement": makeRule("no-if-statement", ({ report, shouldRun }) => ({
+export const rules = {
+  "no-if-statement": defineLintRule("no-if-statement", ({ report, shouldRun }) => ({
     IfStatement(node) {
       if (shouldRun()) {
         report(nodeChild(node, "test") ?? node)
       }
     },
   })),
-  "no-ternary": makeRule("no-ternary", ({ report, shouldRun }) => ({
+  "no-ternary": defineLintRule("no-ternary", ({ report, shouldRun }) => ({
     ConditionalExpression(node) {
       if (shouldRun()) {
         report(nodeChild(node, "test") ?? node)
       }
     },
   })),
-  "no-pipe-ladder": makeRule("no-pipe-ladder", ({ report, shouldRun }) => ({
+  "no-pipe-ladder": defineLintRule("no-pipe-ladder", ({ report, shouldRun }) => ({
     CallExpression(node) {
       if (!shouldRun() || !isPipeCall(node)) {
         return
@@ -67,7 +67,7 @@ export const rules: Record<LintRuleName, Rule> = {
       }
     },
   })),
-  "no-flatmap-ladder": makeRule("no-flatmap-ladder", ({ report, shouldRun }) => ({
+  "no-flatmap-ladder": defineLintRule("no-flatmap-ladder", ({ report, shouldRun }) => ({
     CallExpression(node) {
       if (!shouldRun()) {
         return
@@ -89,7 +89,7 @@ export const rules: Record<LintRuleName, Rule> = {
       }
     },
   })),
-  "no-effect-ladder": makeRule("no-effect-ladder", ({ report, shouldRun }) => ({
+  "no-effect-ladder": defineLintRule("no-effect-ladder", ({ report, shouldRun }) => ({
     CallExpression(node) {
       if (!shouldRun() || !isEffectCall(node)) {
         return
@@ -100,7 +100,7 @@ export const rules: Record<LintRuleName, Rule> = {
       }
     },
   })),
-  "no-effect-call-in-effect-arg": makeRule(
+  "no-effect-call-in-effect-arg": defineLintRule(
     "no-effect-call-in-effect-arg",
     ({ report, shouldRun }) => ({
       CallExpression(node) {
@@ -114,7 +114,7 @@ export const rules: Record<LintRuleName, Rule> = {
       },
     }),
   ),
-  "no-nested-effect-call": makeRule("no-nested-effect-call", ({ report, shouldRun }) => ({
+  "no-nested-effect-call": defineLintRule("no-nested-effect-call", ({ report, shouldRun }) => ({
     CallExpression(node) {
       if (!shouldRun() || !isEffectCall(node)) {
         return
@@ -125,14 +125,14 @@ export const rules: Record<LintRuleName, Rule> = {
       }
     },
   })),
-  "no-effect-as": makeRule("no-effect-as", ({ report, shouldRun }) => ({
+  "no-effect-as": defineLintRule("no-effect-as", ({ report, shouldRun }) => ({
     CallExpression(node) {
       if (shouldRun() && isEffectCall(node, "as")) {
         report(node)
       }
     },
   })),
-  "no-call-tower": makeRule("no-call-tower", ({ report, shouldRun }) => ({
+  "no-call-tower": defineLintRule("no-call-tower", ({ report, shouldRun }) => ({
     CallExpression(node) {
       if (
         shouldRun() &&
@@ -143,14 +143,14 @@ export const rules: Record<LintRuleName, Rule> = {
       }
     },
   })),
-  "no-option-as": makeRule("no-option-as", ({ report, shouldRun }) => ({
+  "no-option-as": defineLintRule("no-option-as", ({ report, shouldRun }) => ({
     CallExpression(node) {
       if (shouldRun() && isCallTo(node, "Option", "as")) {
         report(node)
       }
     },
   })),
-  "no-arrow-ladder": makeRule("no-arrow-ladder", ({ report, shouldRun }) => ({
+  "no-arrow-ladder": defineLintRule("no-arrow-ladder", ({ report, shouldRun }) => ({
     CallExpression(node) {
       if (!shouldRun() || !isIife(node)) {
         return
@@ -164,7 +164,7 @@ export const rules: Record<LintRuleName, Rule> = {
       }
     },
   })),
-  "no-branch-in-object": makeRule("no-branch-in-object", ({ report, shouldRun }) => ({
+  "no-branch-in-object": defineLintRule("no-branch-in-object", ({ report, shouldRun }) => ({
     ObjectExpression(node) {
       if (!shouldRun()) {
         return
@@ -178,14 +178,14 @@ export const rules: Record<LintRuleName, Rule> = {
       }
     },
   })),
-  "no-iife-wrapper": makeRule("no-iife-wrapper", ({ report, shouldRun }) => ({
+  "no-iife-wrapper": defineLintRule("no-iife-wrapper", ({ report, shouldRun }) => ({
     CallExpression(node) {
       if (shouldRun() && isIife(node)) {
         report(node)
       }
     },
   })),
-  "no-return-in-arrow": makeRule("no-return-in-arrow", ({ report, shouldRun }) => ({
+  "no-return-in-arrow": defineLintRule("no-return-in-arrow", ({ report, shouldRun }) => ({
     ArrowFunctionExpression(node) {
       if (!shouldRun() || !isNodeType(functionBody(node), "BlockStatement")) {
         return
@@ -200,7 +200,7 @@ export const rules: Record<LintRuleName, Rule> = {
       }
     },
   })),
-  "no-effect-never": makeRule("no-effect-never", ({ report, shouldRun }) => ({
+  "no-effect-never": defineLintRule("no-effect-never", ({ report, shouldRun }) => ({
     MemberExpression(node) {
       if (shouldRun() && isEffectMember(node, "never")) {
         report(node)
@@ -212,14 +212,14 @@ export const rules: Record<LintRuleName, Rule> = {
       }
     },
   })),
-  "no-effect-async": makeRule("no-effect-async", ({ report, shouldRun }) => ({
+  "no-effect-async": defineLintRule("no-effect-async", ({ report, shouldRun }) => ({
     CallExpression(node) {
       if (shouldRun() && isEffectCall(node, "async")) {
         report(node)
       }
     },
   })),
-  "no-effect-do": makeRule("no-effect-do", ({ report, shouldRun }) => ({
+  "no-effect-do": defineLintRule("no-effect-do", ({ report, shouldRun }) => ({
     MemberExpression(node) {
       if (shouldRun() && isEffectMember(node, "Do")) {
         report(node)
@@ -231,14 +231,14 @@ export const rules: Record<LintRuleName, Rule> = {
       }
     },
   })),
-  "no-effect-bind": makeRule("no-effect-bind", ({ report, shouldRun }) => ({
+  "no-effect-bind": defineLintRule("no-effect-bind", ({ report, shouldRun }) => ({
     CallExpression(node) {
       if (shouldRun() && isEffectCall(node, "bind")) {
         report(node)
       }
     },
   })),
-  "no-nested-effect-gen": makeRule("no-nested-effect-gen", ({ report, shouldRun }) => ({
+  "no-nested-effect-gen": defineLintRule("no-nested-effect-gen", ({ report, shouldRun }) => ({
     CallExpression(node) {
       if (!shouldRun() || !isEffectCall(node, "gen")) {
         return
@@ -256,7 +256,7 @@ export const rules: Record<LintRuleName, Rule> = {
       }
     },
   })),
-  "no-match-void-branch": makeRule("no-match-void-branch", ({ report, shouldRun }) => ({
+  "no-match-void-branch": defineLintRule("no-match-void-branch", ({ report, shouldRun }) => ({
     CallExpression(node) {
       if (
         !shouldRun() ||
@@ -271,7 +271,7 @@ export const rules: Record<LintRuleName, Rule> = {
       }
     },
   })),
-  "no-match-effect-branch": makeRule("no-match-effect-branch", ({ report, shouldRun }) => ({
+  "no-match-effect-branch": defineLintRule("no-match-effect-branch", ({ report, shouldRun }) => ({
     CallExpression(node) {
       if (!shouldRun()) {
         return
@@ -296,7 +296,7 @@ export const rules: Record<LintRuleName, Rule> = {
       }
     },
   })),
-  "warn-effect-sync-wrapper": makeRule("warn-effect-sync-wrapper", ({ report, shouldRun }) => ({
+  "warn-effect-sync-wrapper": defineLintRule("warn-effect-sync-wrapper", ({ report, shouldRun }) => ({
     CallExpression(node) {
       if (!shouldRun() || !isEffectCall(node, "sync")) {
         return
@@ -312,7 +312,7 @@ export const rules: Record<LintRuleName, Rule> = {
       }
     },
   })),
-  "no-effect-side-effect-wrapper": makeRule(
+  "no-effect-side-effect-wrapper": defineLintRule(
     "no-effect-side-effect-wrapper",
     ({ report, shouldRun }) => ({
       CallExpression(node) {
@@ -325,7 +325,7 @@ export const rules: Record<LintRuleName, Rule> = {
       },
     }),
   ),
-  "no-effect-orElse-ladder": makeRule("no-effect-orElse-ladder", ({ report, shouldRun }) => ({
+  "no-effect-orElse-ladder": defineLintRule("no-effect-orElse-ladder", ({ report, shouldRun }) => ({
     CallExpression(node) {
       if (!shouldRun() || !isEffectCall(node, "orElse")) {
         return
@@ -341,7 +341,7 @@ export const rules: Record<LintRuleName, Rule> = {
       }
     },
   })),
-  "no-return-in-callback": makeRule("no-return-in-callback", ({ report, shouldRun }) => ({
+  "no-return-in-callback": defineLintRule("no-return-in-callback", ({ report, shouldRun }) => ({
     ArrowFunctionExpression(node) {
       if (!shouldRun() || !isNodeType(functionBody(node), "BlockStatement")) {
         return
@@ -356,7 +356,7 @@ export const rules: Record<LintRuleName, Rule> = {
       }
     },
   })),
-  "no-manual-effect-channels": makeRule("no-manual-effect-channels", ({ report, shouldRun }) => ({
+  "no-manual-effect-channels": defineLintRule("no-manual-effect-channels", ({ report, shouldRun }) => ({
     TSTypeReference(node) {
       if (!shouldRun()) {
         return
@@ -367,7 +367,7 @@ export const rules: Record<LintRuleName, Rule> = {
       }
     },
   })),
-  "prevent-dynamic-imports": makeRule(
+  "prevent-dynamic-imports": defineLintRule(
     "prevent-dynamic-imports",
     ({ report }, context) => ({
       ImportExpression(node) {
@@ -379,14 +379,14 @@ export const rules: Record<LintRuleName, Rule> = {
     }),
     { requiresEffectFile: false },
   ),
-  "prefer-option-over-null": makeRule("prefer-option-over-null", ({ report, shouldRun }) => ({
+  "prefer-option-over-null": defineLintRule("prefer-option-over-null", ({ report, shouldRun }) => ({
     TSUnionType(node) {
       if (shouldRun() && hasNullishUnionMember(node) && isNullableLocalOrReturnType(node)) {
         report(node)
       }
     },
   })),
-  "avoid-untagged-errors": makeRule("avoid-untagged-errors", ({ report, shouldRun }) => {
+  "avoid-untagged-errors": defineLintRule("avoid-untagged-errors", ({ report, shouldRun }) => {
     const reported = new Set<NodeLike>()
     const reportBareErrors = (node: NodeLike | undefined) => {
       if (!shouldRun()) {
@@ -437,4 +437,4 @@ export const rules: Record<LintRuleName, Rule> = {
       },
     }
   }),
-}
+} satisfies Record<LintRuleName, Rule>

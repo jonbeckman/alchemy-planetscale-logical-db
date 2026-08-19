@@ -3,9 +3,9 @@ import type { Context, Rule, Visitor } from "@oxlint/plugins"
 import { hasEffectSignal, isLintAllowedBackendEffectBoundary } from "./lint-boundaries.ts"
 import { messages } from "./messages.ts"
 import type { LintRuleName } from "./rule-names.ts"
-import type { NodeLike, RuleReporter, RuleRuntime, VisitorMap } from "./types.ts"
+import type { RuleReporter, RuleRuntime, VisitorMap } from "./types.ts"
 
-export function makeRule(
+export function defineLintRule(
   name: LintRuleName,
   createVisitors: (runtime: RuleRuntime, context: Context) => VisitorMap,
   options: {
@@ -32,17 +32,18 @@ export function makeRule(
         report,
         shouldRun: () => matchingFile && (!requiresEffectFile || effectFile),
       }
-      return {
+      const visitors: Visitor = {
         before() {
           effectFile = false
           const allowedBackendBoundary = isLintAllowedBackendEffectBoundary(context.filename)
           matchingFile = !allowedBackendBoundary
         },
-        Program(node: NodeLike) {
+        Program(node) {
           effectFile = hasEffectSignal(node)
         },
         ...createVisitors(runtime, context),
-      } as unknown as Visitor
+      }
+      return visitors
     },
   })
 }

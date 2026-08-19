@@ -1,6 +1,6 @@
 import type { LintRuleName } from "./rule-names.ts"
 
-export const messages: Record<LintRuleName, string> = {
+export const messages = {
   "no-if-statement":
     "Rule: avoid imperative if branching. Why: it hides control flow in Effect code. Fix: use Option.match/Either.match/Match.value or data combinators, then run one Effect pipeline.",
   "no-ternary":
@@ -59,4 +59,4 @@ export const messages: Record<LintRuleName, string> = {
     "Rule: avoid nullable return/local types in Effect-bearing code. Why: nullable unions hide absence in plain TypeScript control flow. Fix: return Option.Option<T> and branch with Option.match, Option.map, or Option.flatMap.",
   "avoid-untagged-errors":
     "Rule: avoid bare Error values in recoverable Effect failure channels. Why: untagged errors cannot be handled precisely with catchTag/catchTags. Fix: use Schema.TaggedError for API errors, Data.TaggedError for internal Effect errors, or Effect.die for unrecoverable defects.",
-}
+} satisfies Record<LintRuleName, string>

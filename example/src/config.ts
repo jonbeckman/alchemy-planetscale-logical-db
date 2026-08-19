@@ -1,5 +1,5 @@
+import * as Arr from "effect/Array"
 import * as Option from "effect/Option"
-import * as R from "effect/Record"
 
 const projectPath = (path: string) => new URL(path, import.meta.url).pathname
 
@@ -33,8 +33,10 @@ export const projects = {
 export type ProjectSlug = keyof typeof projects
 export type ProjectConfig = (typeof projects)[ProjectSlug]
 
+const projectSlugList = ["project_a", "project_b"] as const satisfies readonly ProjectSlug[]
+
 export function projectSlugs(): readonly ProjectSlug[] {
-  return R.keys(projects) as ProjectSlug[]
+  return projectSlugList
 }
 
 function unknownProjectSlug(slug: string): never {
@@ -42,9 +44,9 @@ function unknownProjectSlug(slug: string): never {
 }
 
 export const getProject = (slug: string): ProjectConfig =>
-  R.get(projects, slug as ProjectSlug).pipe(
+  Arr.findFirst(projectSlugList, (projectSlug) => projectSlug === slug).pipe(
     Option.match({
-      onSome: (project) => project,
+      onSome: (projectSlug) => projects[projectSlug],
       onNone: () => unknownProjectSlug(slug),
     }),
   )
