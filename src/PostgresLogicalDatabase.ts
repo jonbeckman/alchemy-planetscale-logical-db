@@ -230,8 +230,7 @@ const renameError = (oldName: string, newName: string) =>
       "Database renames can break downstream connection references; perform an explicit manual cutover instead.",
   )
 
-const isUsablePostgresOrigin = (origin: PostgresOrigin) =>
-  origin.host !== "" && origin.user !== ""
+const isUsablePostgresOrigin = (origin: PostgresOrigin) => origin.host !== "" && origin.user !== ""
 
 const hasReadableLogicalDatabaseProps = (
   value: PostgresLogicalDatabaseProps | undefined,

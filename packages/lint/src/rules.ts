@@ -296,22 +296,25 @@ export const rules = {
       }
     },
   })),
-  "warn-effect-sync-wrapper": defineLintRule("warn-effect-sync-wrapper", ({ report, shouldRun }) => ({
-    CallExpression(node) {
-      if (!shouldRun() || !isEffectCall(node, "sync")) {
-        return
-      }
-      const firstArgument = callArguments(node)[0]
-      if (
-        hasCallbackReturning(
-          firstArgument,
-          (body) => isCallExpression(body) && !isConsoleCall(body),
-        )
-      ) {
-        report(node)
-      }
-    },
-  })),
+  "warn-effect-sync-wrapper": defineLintRule(
+    "warn-effect-sync-wrapper",
+    ({ report, shouldRun }) => ({
+      CallExpression(node) {
+        if (!shouldRun() || !isEffectCall(node, "sync")) {
+          return
+        }
+        const firstArgument = callArguments(node)[0]
+        if (
+          hasCallbackReturning(
+            firstArgument,
+            (body) => isCallExpression(body) && !isConsoleCall(body),
+          )
+        ) {
+          report(node)
+        }
+      },
+    }),
+  ),
   "no-effect-side-effect-wrapper": defineLintRule(
     "no-effect-side-effect-wrapper",
     ({ report, shouldRun }) => ({
@@ -356,17 +359,20 @@ export const rules = {
       }
     },
   })),
-  "no-manual-effect-channels": defineLintRule("no-manual-effect-channels", ({ report, shouldRun }) => ({
-    TSTypeReference(node) {
-      if (!shouldRun()) {
-        return
-      }
-      const typeName = typeNameText(nodeChild(node, "typeName"))
-      if (typeName === "Effect.Effect" || typeName === "Layer.Layer") {
-        report(node)
-      }
-    },
-  })),
+  "no-manual-effect-channels": defineLintRule(
+    "no-manual-effect-channels",
+    ({ report, shouldRun }) => ({
+      TSTypeReference(node) {
+        if (!shouldRun()) {
+          return
+        }
+        const typeName = typeNameText(nodeChild(node, "typeName"))
+        if (typeName === "Effect.Effect" || typeName === "Layer.Layer") {
+          report(node)
+        }
+      },
+    }),
+  ),
   "prevent-dynamic-imports": defineLintRule(
     "prevent-dynamic-imports",
     ({ report }, context) => ({
