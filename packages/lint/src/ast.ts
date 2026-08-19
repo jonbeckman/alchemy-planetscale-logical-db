@@ -10,53 +10,78 @@ const effectHandlerMethods = new Set([
   "tryPromise",
 ])
 
-export function isNode(value: unknown): value is NodeLike {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    typeof (value as { type?: unknown }).type === "string"
-  )
+export function isNode(
+  value: NodeLike | readonly NodeLike[] | string | number | boolean | bigint | null | undefined,
+): value is NodeLike {
+  return value !== null && value !== undefined && Object(value) === value && "type" in value
 }
 
-export function isNodeType(node: unknown, type: string): node is NodeLike {
+export function isNodeType(node: NodeLike | undefined, type: string): node is NodeLike {
   return isNode(node) && node.type === type
 }
 
-export function nodeValue(node: NodeLike, key: string): unknown {
-  return node[key]
+function ownProperty(node: NodeLike, key: string): NodeLike | readonly NodeLike[] | undefined {
+  for (const [name, value] of Object.entries(node)) {
+    if (name !== key) {
+      continue
+    }
+    if (isNode(value)) {
+      return value
+    }
+    if (Array.isArray(value)) {
+      return value.filter(isNode)
+    }
+    return undefined
+  }
+  return undefined
 }
 
 export function nodeChild(node: NodeLike, key: string): NodeLike | undefined {
-  const value = nodeValue(node, key)
+  const value = ownProperty(node, key)
   return isNode(value) ? value : undefined
 }
 
 export function nodeChildren(node: NodeLike, key: string): NodeLike[] {
-  const value = nodeValue(node, key)
+  const value = ownProperty(node, key)
   return Array.isArray(value) ? value.filter(isNode) : []
 }
 
 export function parentNode(node: NodeLike): NodeLike | undefined {
-  const parent = nodeValue(node, "parent")
-  return isNode(parent) ? parent : undefined
+  return isNode(node.parent) ? node.parent : undefined
 }
 
-function readString(value: unknown): string | undefined {
-  return typeof value === "string" ? value : undefined
+function isExactString(
+  value: string | number | boolean | bigint | null | undefined,
+): value is string {
+  return value !== null && value !== undefined && value === `${value}`
 }
 
-export function literalValue(node: NodeLike | undefined): unknown {
-  if (!node) {
+export function literalValue(
+  node: NodeLike | undefined,
+): string | number | boolean | bigint | null | undefined {
+  if (node === undefined || node.type !== "Literal") {
     return undefined
   }
-  return nodeValue(node, "value")
+  const value = node.value
+  if (value instanceof RegExp) {
+    return undefined
+  }
+  return value
 }
 
 export function identifierName(node: NodeLike | undefined): string | undefined {
-  if (!node) {
+  if (node === undefined) {
     return undefined
   }
-  return readString(nodeValue(node, "name")) ?? readString(nodeValue(node, "value"))
+  if (
+    node.type === "Identifier" ||
+    node.type === "PrivateIdentifier" ||
+    node.type === "JSXIdentifier"
+  ) {
+    return node.name
+  }
+  const value = literalValue(node)
+  return isExactString(value) ? value : undefined
 }
 
 export function unwrapExpression(node: NodeLike | undefined): NodeLike | undefined {
@@ -160,12 +185,8 @@ export function memberParts(node: NodeLike | undefined): string[] | undefined {
   if (!current) {
     return undefined
   }
-  const currentType = current.type as string
-  if (
-    currentType === "Identifier" ||
-    currentType === "IdentifierReference" ||
-    currentType === "IdentifierName"
-  ) {
+  const currentType = current.type
+  if (currentType === "Identifier") {
     const name = identifierName(current)
     return name ? [name] : undefined
   }
@@ -332,7 +353,7 @@ function isSideEffectCall(node: NodeLike): boolean {
     (object === "SubscriptionRef" && method === "set") ||
     (object === "Reactivity" && method === "invalidate") ||
     (object === "Fiber" && method === "interrupt") ||
-    (parts[0] === "Effect" && typeof method === "string" && method.startsWith("log")) ||
+    (parts[0] === "Effect" && method !== undefined && method.startsWith("log")) ||
     parts[0] === "console"
   )
 }
@@ -435,7 +456,8 @@ export function propertyKeyName(node: NodeLike | undefined): string | undefined 
     return undefined
   }
   const key = nodeChild(node, "key")
-  return identifierName(key) ?? readString(literalValue(key))
+  const value = literalValue(key)
+  return identifierName(key) ?? (isExactString(value) ? value : undefined)
 }
 
 export function propertyValue(node: NodeLike | undefined): NodeLike | undefined {

@@ -25,7 +25,6 @@ import * as Effect from "effect/Effect"
 import * as Match from "effect/Match"
 import * as Option from "effect/Option"
 import * as Order from "effect/Order"
-import * as P from "effect/Predicate"
 import * as R from "effect/Record"
 
 const DEFAULT_MIGRATIONS_TABLE = "__alchemy_migrations"
@@ -231,16 +230,12 @@ const renameError = (oldName: string, newName: string) =>
       "Database renames can break downstream connection references; perform an explicit manual cutover instead.",
   )
 
-const isReadablePostgresOrigin = (value: unknown): value is PostgresOrigin =>
-  P.isObject(value) &&
-  P.isString((value as Partial<Record<keyof PostgresOrigin, unknown>>).scheme) &&
-  P.isString((value as Partial<Record<keyof PostgresOrigin, unknown>>).host) &&
-  P.isNumber((value as Partial<Record<keyof PostgresOrigin, unknown>>).port) &&
-  P.isString((value as Partial<Record<keyof PostgresOrigin, unknown>>).user) &&
-  !P.isUndefined((value as Partial<Record<keyof PostgresOrigin, unknown>>).password)
+const isUsablePostgresOrigin = (origin: PostgresOrigin) => origin.host !== "" && origin.user !== ""
 
-const hasReadableLogicalDatabaseProps = (value: PostgresLogicalDatabaseProps | undefined) =>
-  P.isObject(value) && isReadablePostgresOrigin(value.adminOrigin)
+const hasReadableLogicalDatabaseProps = (
+  value: PostgresLogicalDatabaseProps | undefined,
+): value is PostgresLogicalDatabaseProps =>
+  value !== undefined && isUsablePostgresOrigin(value.adminOrigin)
 
 const appRolePrivilegesHash = (privileges: AppRolePrivilegeState | undefined) => privileges?.hash
 
@@ -256,7 +251,7 @@ const readLogicalDatabaseSqlFiles = (input: {
     const migrations = yield* Arr.matchLeft(
       Option.toArray(optionalNonEmptyString(input.migrationsDir)),
       {
-        onEmpty: () => Effect.succeed([] as readonly SqlFile[]),
+        onEmpty: () => Effect.succeed<readonly SqlFile[]>([]),
         onNonEmpty: (directory) => listSqlFiles(directory),
       },
     )

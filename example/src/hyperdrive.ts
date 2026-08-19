@@ -4,7 +4,6 @@ import * as Output from "alchemy/Output"
 import * as Planetscale from "alchemy/Planetscale"
 import * as PlanetscaleLogicalDb from "alchemy-planetscale-logical-db"
 import * as Effect from "effect/Effect"
-import * as HashSet from "effect/HashSet"
 import * as Match from "effect/Match"
 import * as Option from "effect/Option"
 import * as Redacted from "effect/Redacted"
@@ -15,23 +14,18 @@ type LocalPostgresOrigin = Required<Cloudflare.Hyperdrive.DevOrigin>
 type PostgresScheme = LocalPostgresOrigin["scheme"]
 type PostgresSslMode = NonNullable<Cloudflare.Hyperdrive.DevOrigin["sslmode"]>
 
-const postgresSslModes = HashSet.fromIterable<PostgresSslMode>([
-  "disable",
-  "prefer",
-  "require",
-  "verify-ca",
-  "verify-full",
-])
-
 function invalidPostgresSslMode(value: string): never {
   throw new Error(`Invalid Postgres sslmode "${value}".`)
 }
 
 const parsePresentPostgresSslMode = (value: string): PostgresSslMode =>
-  Match.value(HashSet.has(postgresSslModes, value as PostgresSslMode)).pipe(
-    Match.when(true, () => value as PostgresSslMode),
-    Match.when(false, () => invalidPostgresSslMode(value)),
-    Match.exhaustive,
+  Match.value(value).pipe(
+    Match.when("disable", (mode) => mode),
+    Match.when("prefer", (mode) => mode),
+    Match.when("require", (mode) => mode),
+    Match.when("verify-ca", (mode) => mode),
+    Match.when("verify-full", (mode) => mode),
+    Match.orElse(() => invalidPostgresSslMode(value)),
   )
 
 const parsePostgresSslMode = (value: string | null): PostgresSslMode =>
