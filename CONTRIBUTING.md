@@ -24,6 +24,12 @@ nub install --frozen-lockfile
 Keep the root + `example` + `packages/*` workspace layout. Do not introduce a second package
 manager. Keep oxlint and oxfmt; do not add eslint, prettier, biome, or dprint.
 
+`nub run lint` runs Oxlint with the workspace `lint` plugin, `@mpsuesser/oxlint-plugin-effect`,
+and `anti-slop` from `github:dmmulroy/anti-slop`. This repository also enables the opt-in
+`anti-slop-effect` plugin because the package depends on Effect. Those anti-slop rules run
+at `warn`. Lint loads the GitHub package through `tsx` because that package ships TypeScript
+source.
+
 For the example, copy `example/.env.example` to `example/.env` and fill in credentials locally.
 Do not commit `.env` files.
 

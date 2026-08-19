@@ -26,7 +26,10 @@ importers:
         version: 8.23.1
       alchemy:
         specifier: 2.0.0-beta.72
-        version: 2.0.0-beta.72(@effect/platform-node@4.0.0-beta.107(effect@4.0.0-beta.107)(ioredis@5.11.1))(effect@4.0.0-beta.107)(pg@8.23.0)(typescript@7.0.2)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(tsx@4.23.12)(yaml@2.9.0))(vitest@4.1.10(@types/node@25.9.5)(vite@8.2.1(@types/node@25.9.5)(tsx@4.23.12)))(ws@8.21.3)
+        version: 2.0.0-beta.72(@effect/platform-node@4.0.0-beta.107(effect@4.0.0-beta.107)(ioredis@5.11.1))(effect@4.0.0-beta.107)(pg@8.23.0)(typescript@7.0.2)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(tsx@4.23.12)(yaml@2.9.0))(vitest@4.1.10(@types/node@25.9.5)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(tsx@4.23.12)(yaml@2.9.0)))(ws@8.21.3)
+      anti-slop:
+        specifier: github:dmmulroy/anti-slop
+        version: https://codeload.github.com/dmmulroy/anti-slop/tar.gz/6d538555cb151d4121ed51a27db81890eacf8ae9
       effect:
         specifier: 4.0.0-beta.107
         version: 4.0.0-beta.107
@@ -56,7 +59,7 @@ importers:
         version: 0.1.6(@electric-sql/pglite@0.4.6)
       alchemy:
         specifier: 2.0.0-beta.72
-        version: 2.0.0-beta.72(@effect/platform-node@4.0.0-beta.107(effect@4.0.0-beta.107)(ioredis@5.11.1))(effect@4.0.0-beta.107)(pg@8.23.0)(typescript@7.0.2)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(tsx@4.23.12)(yaml@2.9.0))(vitest@4.1.10(@types/node@25.9.5)(vite@8.2.1(@types/node@25.9.5)(tsx@4.23.12)))(ws@8.21.3)
+        version: 2.0.0-beta.72(@effect/platform-node@4.0.0-beta.107(effect@4.0.0-beta.107)(ioredis@5.11.1))(effect@4.0.0-beta.107)(pg@8.23.0)(typescript@7.0.2)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(tsx@4.23.12)(yaml@2.9.0))(vitest@4.1.10(@types/node@25.9.5)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(tsx@4.23.12)(yaml@2.9.0)))(ws@8.21.3)
       alchemy-planetscale-logical-db:
         specifier: workspace:*
         version: 1.0.3
@@ -1117,6 +1120,10 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@oxlint/plugins@1.78.0':
+    resolution: {integrity: sha512-Ypt8KeRYw+4jUtlPirfcHWMrn5ms12VrrFPD+Mds477/7tJxG1Kcz2Yrg2nVcTQEUx/GdlhS+BUg1kmxNm04Ug==}
+    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+
   '@oxlint/plugins@1.79.0':
     resolution: {integrity: sha512-S0uyoxakDINJ4DPgqxGlEEvrdSMeQb7Z2lKVjxoY2gwsbZbfg2Xr8Klfeo5ZeraHmmdBCELFUHkSe6KEmBpMvg==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
@@ -1628,6 +1635,10 @@ packages:
   ansi-styles@6.2.3:
     resolution: {integrity: sha512-4Dj6M28JB+oAH8kFkTLUo+a2jwOFkuqb3yucU0CANcRRUbxS0cP0nZYCGjcc3BNXwRIsUVmDGgzawme7zvJHvg==}
     engines: {node: '>=12'}
+
+  anti-slop@https://codeload.github.com/dmmulroy/anti-slop/tar.gz/6d538555cb151d4121ed51a27db81890eacf8ae9:
+    resolution: {gitHosted: true, integrity: sha512-FuQtJiLn0RfYVFGRyJjk4lC0m9O1XREORQVoziCbhz7dxxIx8Oi4VKWNv6ybZm3xIMskmumFH4Ex0PGpYfmjFA==, tarball: https://codeload.github.com/dmmulroy/anti-slop/tar.gz/6d538555cb151d4121ed51a27db81890eacf8ae9}
+    version: 0.1.0
 
   anynum@1.0.1:
     resolution: {integrity: sha512-N6//FLET/tXYNM/F6ABca1oH6fWB+KlTt909Le28WMDBk8oaT4vY17DCrwg2MvmuqUKt3Ni4N5dGJ/EoBgcO6A==}
@@ -3123,10 +3134,10 @@ snapshots:
     dependencies:
       effect: 4.0.0-beta.107
 
-  '@effect/vitest@4.0.0-rc.110(effect@4.0.0-beta.107)(vitest@4.1.10(@types/node@25.9.5)(vite@8.2.1(@types/node@25.9.5)(tsx@4.23.12)))(yaml@2.9.0)':
+  '@effect/vitest@4.0.0-rc.110(effect@4.0.0-beta.107)(vitest@4.1.10(@types/node@25.9.5)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(tsx@4.23.12)(yaml@2.9.0)))':
     dependencies:
       effect: 4.0.0-beta.107
-      vitest: 4.1.10(@types/node@25.9.5)(vite@8.2.1(@types/node@25.9.5)(tsx@4.23.12))(yaml@2.9.0)
+      vitest: 4.1.10(@types/node@25.9.5)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(tsx@4.23.12)(yaml@2.9.0))
 
   '@electric-sql/pglite-socket@0.0.20(@electric-sql/pglite@0.3.15)':
     dependencies:
@@ -3649,6 +3660,8 @@ snapshots:
   '@oxlint/binding-win32-x64-msvc@1.79.0':
     optional: true
 
+  '@oxlint/plugins@1.78.0': {}
+
   '@oxlint/plugins@1.79.0': {}
 
   '@prisma/debug@7.2.0': {}
@@ -3959,12 +3972,12 @@ snapshots:
       chai: 6.2.2
       tinyrainbow: 3.1.1
 
-  '@vitest/mocker@4.1.10(vite@8.2.1(@types/node@25.9.5)(tsx@4.23.12))(yaml@2.9.0)':
+  '@vitest/mocker@4.1.10(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(tsx@4.23.12)(yaml@2.9.0))':
     dependencies:
       '@vitest/spy': 4.1.10
       estree-walker: 3.0.3
       magic-string: 0.30.21
-      vite: 8.2.1(@types/node@25.9.5)(tsx@4.23.12)(yaml@2.9.0)
+      vite: 8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(tsx@4.23.12)(yaml@2.9.0)
 
   '@vitest/pretty-format@4.1.10':
     dependencies:
@@ -3992,7 +4005,7 @@ snapshots:
 
   agent-base@7.1.4: {}
 
-  alchemy@2.0.0-beta.72(@effect/platform-node@4.0.0-beta.107(effect@4.0.0-beta.107)(ioredis@5.11.1))(effect@4.0.0-beta.107)(pg@8.23.0)(typescript@7.0.2)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(tsx@4.23.12)(yaml@2.9.0))(vitest@4.1.10(@types/node@25.9.5)(vite@8.2.1(@types/node@25.9.5)(tsx@4.23.12)))(ws@8.21.3):
+  alchemy@2.0.0-beta.72(@effect/platform-node@4.0.0-beta.107(effect@4.0.0-beta.107)(ioredis@5.11.1))(effect@4.0.0-beta.107)(pg@8.23.0)(typescript@7.0.2)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(tsx@4.23.12)(yaml@2.9.0))(vitest@4.1.10(@types/node@25.9.5)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(tsx@4.23.12)(yaml@2.9.0)))(ws@8.21.3):
     dependencies:
       '@alchemy.run/cloudflare-runtime': 2.0.0-beta.72(@distilled.cloud/cloudflare@1.0.0-rc.4(effect@4.0.0-beta.107))(@effect/platform-node@4.0.0-beta.107(effect@4.0.0-beta.107)(ioredis@5.11.1))(effect@4.0.0-beta.107)(rolldown@1.1.5)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(tsx@4.23.12)(yaml@2.9.0))
       '@alchemy.run/node-utils': 0.0.5
@@ -4007,7 +4020,7 @@ snapshots:
       '@effect/platform-node': 4.0.0-beta.107(effect@4.0.0-beta.107)(ioredis@5.11.1)
       '@effect/sql-d1': 4.0.0-rc.110(effect@4.0.0-beta.107)
       '@effect/sql-sqlite-do': 4.0.0-rc.110(effect@4.0.0-beta.107)
-      '@effect/vitest': 4.0.0-rc.110(effect@4.0.0-beta.107)(vitest@4.1.10(@types/node@25.9.5)(vite@8.2.1(@types/node@25.9.5)(tsx@4.23.12)))(yaml@2.9.0)
+      '@effect/vitest': 4.0.0-rc.110(effect@4.0.0-beta.107)(vitest@4.1.10(@types/node@25.9.5)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(tsx@4.23.12)(yaml@2.9.0)))
       '@libsql/client': 0.17.4
       '@octokit/rest': 22.0.1
       '@octokit/webhooks': 14.2.0
@@ -4058,6 +4071,10 @@ snapshots:
       color-convert: 2.0.1
 
   ansi-styles@6.2.3: {}
+
+  anti-slop@https://codeload.github.com/dmmulroy/anti-slop/tar.gz/6d538555cb151d4121ed51a27db81890eacf8ae9:
+    dependencies:
+      '@oxlint/plugins': 1.78.0
 
   anynum@1.0.1: {}
 
@@ -5160,37 +5177,11 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.3
 
-  vite@8.2.1(@types/node@25.9.5)(tsx@4.23.12):
-    dependencies:
-      '@types/node': 25.9.5
-      lightningcss: 1.33.0
-      picomatch: 4.0.5
-      postcss: 8.5.26
-      rolldown: 1.2.4
-      tinyglobby: 0.2.17
-      tsx: 4.23.12
-    optionalDependencies:
-      fsevents: 2.3.3
-    optional: true
-
-  vite@8.2.1(@types/node@25.9.5)(tsx@4.23.12)(yaml@2.9.0):
-    dependencies:
-      '@types/node': 25.9.5
-      lightningcss: 1.33.0
-      picomatch: 4.0.5
-      postcss: 8.5.26
-      rolldown: 1.2.4
-      tinyglobby: 0.2.17
-      tsx: 4.23.12
-      yaml: 2.9.0
-    optionalDependencies:
-      fsevents: 2.3.3
-
-  vitest@4.1.10(@types/node@25.9.5)(vite@8.2.1(@types/node@25.9.5)(tsx@4.23.12))(yaml@2.9.0):
+  vitest@4.1.10(@types/node@25.9.5)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(tsx@4.23.12)(yaml@2.9.0)):
     dependencies:
       '@types/node': 25.9.5
       '@vitest/expect': 4.1.10
-      '@vitest/mocker': 4.1.10(vite@8.2.1(@types/node@25.9.5)(tsx@4.23.12))(yaml@2.9.0)
+      '@vitest/mocker': 4.1.10(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(tsx@4.23.12)(yaml@2.9.0))
       '@vitest/pretty-format': 4.1.10
       '@vitest/runner': 4.1.10
       '@vitest/snapshot': 4.1.10
@@ -5207,7 +5198,7 @@ snapshots:
       tinyexec: 1.3.0
       tinyglobby: 0.2.17
       tinyrainbow: 3.1.1
-      vite: 8.2.1(@types/node@25.9.5)(tsx@4.23.12)(yaml@2.9.0)
+      vite: 8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(tsx@4.23.12)(yaml@2.9.0)
       why-is-node-running: 2.3.0
     transitivePeerDependencies:
       - msw
