@@ -10,8 +10,10 @@ const effectHandlerMethods = new Set([
   "tryPromise",
 ])
 
-export function isNode(value: NodeLike | null | undefined): value is NodeLike {
-  return value !== null && value !== undefined && "type" in value
+export function isNode(
+  value: NodeLike | readonly NodeLike[] | string | number | boolean | bigint | null | undefined,
+): value is NodeLike {
+  return value !== null && value !== undefined && Object(value) === value && "type" in value
 }
 
 export function isNodeType(node: NodeLike | undefined, type: string): node is NodeLike {
