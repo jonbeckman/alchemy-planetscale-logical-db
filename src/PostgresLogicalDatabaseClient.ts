@@ -18,7 +18,7 @@ type TrackedSqlFileAction = "reject" | "reapply"
 
 const POSTGRES_IDENTIFIER = /^[a-z][a-z0-9_]*$/
 
-class TrackedSqlFileError extends Schema.TaggedErrorClass<TrackedSqlFileError>()(
+class TrackedSqlFileError extends Schema.TaggedError<TrackedSqlFileError>()(
   "TrackedSqlFileError",
   {
     message: Schema.String,
