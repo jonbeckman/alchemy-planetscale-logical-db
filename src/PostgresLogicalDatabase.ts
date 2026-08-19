@@ -231,7 +231,7 @@ const renameError = (oldName: string, newName: string) =>
   )
 
 const isUsablePostgresOrigin = (origin: PostgresOrigin) =>
-  origin.host !== "" && origin.user !== "" && origin.scheme !== ""
+  origin.host !== "" && origin.user !== ""
 
 const hasReadableLogicalDatabaseProps = (
   value: PostgresLogicalDatabaseProps | undefined,
