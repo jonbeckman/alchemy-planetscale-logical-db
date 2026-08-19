@@ -25,7 +25,7 @@ migrations/project_b   # migrations for logical DB project_b
 From the repository root:
 
 ```sh
-pnpm install
+nub install
 cd example
 cp .env.example .env
 ```
@@ -46,8 +46,8 @@ Edit `example/src/config.ts` first if you want a different cluster name,
 region, size, or logical database names.
 
 ```sh
-pnpm plan:db
-pnpm deploy:db
+nub run plan:db
+nub run deploy:db
 ```
 
 `alchemy.db.run.ts` creates:
@@ -66,14 +66,14 @@ database name.
 Terminal 1:
 
 ```sh
-pnpm dev:db
+nub run dev:db
 ```
 
 Terminal 2:
 
 ```sh
-pnpm migrate:local
-pnpm dev:app
+nub run migrate:local
+nub run dev:app
 ```
 
 In local mode, the app script sets:
@@ -95,8 +95,8 @@ PlanetScale.
 Deploy the DB stack first, then deploy the app stack:
 
 ```sh
-pnpm plan:app:remote
-pnpm deploy:app:remote
+nub run plan:app:remote
+nub run deploy:app:remote
 ```
 
 In remote mode, the app script sets:

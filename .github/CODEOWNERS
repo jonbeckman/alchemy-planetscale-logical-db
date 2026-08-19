@@ -1,0 +1,5 @@
+# Default owner for repository changes.
+* @jonbeckman
+
+# Security-sensitive and release-critical surfaces.
+/.github/ @jonbeckman

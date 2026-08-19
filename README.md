@@ -18,13 +18,13 @@ Postgres admin role and reconciles database-local state:
 ![NPM Version](https://img.shields.io/npm/v/alchemy-planetscale-logical-db)
 
 ```sh
-pnpm add alchemy-planetscale-logical-db
+nub add alchemy-planetscale-logical-db
 ```
 
 The package expects Alchemy v2 and Effect from the consuming project:
 
 ```sh
-pnpm add alchemy@2.0.0-beta.63 effect@4.0.0-beta.97
+nub add alchemy@2.0.0-beta.63 effect@4.0.0-beta.97
 ```
 
 ## Usage
@@ -101,3 +101,8 @@ compatibility with the original upstream branch.
 The original PlanetScale + PGLite + Hyperdrive example lives in
 [`example/`](./example). It shows one shared PlanetScale Postgres cluster with
 two logical databases and one Cloudflare Hyperdrive-backed Vite Worker.
+
+## Development
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for Node/Nub setup, validation, and pull
+request expectations.

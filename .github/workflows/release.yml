@@ -74,26 +74,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Nub
+        uses: nubjs/setup-nub@v0.4.0
         with:
+          nub-version: 0.4.11
           node-version-file: .node-version
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node.js cache
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .node-version
-          cache: pnpm
+          cache-dependency-path: nub.lock
           registry-url: "https://registry.npmjs.org"
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: nub install --frozen-lockfile
 
       - name: Build
-        run: pnpm build
+        run: nub run build
 
       - name: Publish to npm
         run: npm publish --provenance

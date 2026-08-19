@@ -11,5 +11,7 @@
   "python.languageServer": "None",
   "python.linting.enabled": false,
   "python.formatting.provider": "none",
-  "python.terminal.activateEnvironment": false
+  "python.terminal.activateEnvironment": false,
+  "js/ts.experimental.useTsgo": true,
+  "js/ts.tsdk.path": "./node_modules/typescript"
 }
