@@ -7,13 +7,13 @@
     "dev:db": "pglite-server --db .pglite/project_a --host 127.0.0.1 --port 15432 --max-connections 100",
     "migrate:local": "APP_SLUG=project_a DATABASE_URL=\"postgresql://postgres:postgres@127.0.0.1:15432/postgres?sslmode=disable\" tsx scripts/migrate-local.ts",
     "dev:app": "APP_DB_MODE=local APP_SLUG=project_a DATABASE_URL=\"postgresql://postgres:postgres@127.0.0.1:15432/postgres?sslmode=disable\" alchemy dev alchemy.app.run.ts --stage dev --env-file .env",
-    "preplan:db": "pnpm --dir .. build",
+    "preplan:db": "nub run --cwd .. build",
     "plan:db": "alchemy plan alchemy.db.run.ts --stage prod --env-file .env",
-    "predeploy:db": "pnpm --dir .. build",
+    "predeploy:db": "nub run --cwd .. build",
     "deploy:db": "alchemy deploy alchemy.db.run.ts --stage prod --env-file .env --yes",
-    "preplan:app:remote": "pnpm --dir .. build",
+    "preplan:app:remote": "nub run --cwd .. build",
     "plan:app:remote": "APP_DB_MODE=remote APP_SLUG=project_a alchemy plan alchemy.app.run.ts --stage prod --env-file .env",
-    "predeploy:app:remote": "pnpm --dir .. build",
+    "predeploy:app:remote": "nub run --cwd .. build",
     "deploy:app:remote": "APP_DB_MODE=remote APP_SLUG=project_a alchemy deploy alchemy.app.run.ts --stage prod --env-file .env --yes",
     "typecheck": "tsc --noEmit"
   },
@@ -31,6 +31,6 @@
     "@effect/platform-node": "4.0.0-beta.97",
     "@types/node": "^25.9.1",
     "tsx": "^4.22.3",
-    "typescript": "^6.0.3"
+    "typescript": "7.0.2"
   }
 }

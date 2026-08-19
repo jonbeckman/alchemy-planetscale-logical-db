@@ -24,13 +24,13 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "check": "pnpm typecheck && pnpm lint && pnpm format && pnpm build && pnpm --dir example typecheck",
+    "check": "nub run typecheck && nub run lint && nub run format && nub run build && nub run --cwd example typecheck",
     "format": "oxfmt --check",
     "format:fix": "oxfmt",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "lint:fix:max": "oxlint --fix --fix-suggestions --fix-dangerously",
-    "prepublishOnly": "pnpm build",
+    "prepublishOnly": "nub run build",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -45,15 +45,34 @@
     "effect": "4.0.0-beta.97",
     "oxfmt": "^0.48.0",
     "oxlint": "1.66.0",
-    "typescript": "^6.0.3"
+    "typescript": "7.0.2"
   },
   "peerDependencies": {
     "alchemy": ">=2.0.0-beta.63",
     "effect": "4.0.0-beta.97"
   },
-  "engines": {
-    "node": ">=24",
-    "pnpm": ">=11 <12"
+  "devEngines": {
+    "packageManager": {
+      "name": "nub",
+      "version": "0.4.11",
+      "onFail": "warn"
+    },
+    "runtime": {
+      "name": "node",
+      "version": "24.15.0"
+    }
   },
-  "packageManager": "pnpm@11.5.2"
+  "engines": {
+    "node": ">=24.15.0 <25"
+  },
+  "packageManager": "nub@0.4.11",
+  "workspaces": [
+    "example",
+    "packages/*"
+  ],
+  "allowBuilds": {
+    "esbuild": true,
+    "msgpackr-extract": true,
+    "workerd": true
+  }
 }

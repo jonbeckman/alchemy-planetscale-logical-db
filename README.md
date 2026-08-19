@@ -18,13 +18,13 @@ Postgres admin role and reconciles database-local state:
 ![NPM Version](https://img.shields.io/npm/v/alchemy-planetscale-logical-db)
 
 ```sh
-pnpm add alchemy-planetscale-logical-db
+nub add alchemy-planetscale-logical-db
 ```
 
 The package expects Alchemy v2 and Effect from the consuming project:
 
 ```sh
-pnpm add alchemy@2.0.0-beta.63 effect@4.0.0-beta.97
+nub add alchemy@2.0.0-beta.63 effect@4.0.0-beta.97
 ```
 
 ## Usage
