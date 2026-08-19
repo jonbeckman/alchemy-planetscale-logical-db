@@ -1,0 +1,6 @@
+{
+  "setup-worktree": [
+    "nub install --frozen-lockfile",
+    "if [ -f \"$ROOT_WORKTREE_PATH/example/.env\" ]; then cp \"$ROOT_WORKTREE_PATH/example/.env\" example/.env; fi"
+  ]
+}
