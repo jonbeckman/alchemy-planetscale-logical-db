@@ -1,0 +1,12 @@
+core:changelogs:
+  - content: "---\npackages:\n  alchemy-planetscale-logical-db:\n    type: minor\n---\n\n## Require Alchemy 72, Effect 107, and Node 24.15\n\nThis package now peers `alchemy` at `>=2.0.0-beta.72` and `effect` at exact\n`4.0.0-beta.107`. Internal SQL-file tracking failures still use the\n`TrackedSqlFileError` tag; they are constructed with Effect 107\n`Schema.TaggedError` instead of `TaggedErrorClass`. Resource props and\nattributes are unchanged. The published `engines.node` range is now\n`>=24.15.0 <25`.\n\n**Required action:** upgrade the consuming app to `alchemy@2.0.0-beta.72` or\nlater and `effect@4.0.0-beta.107`, and run Node `>=24.15.0 <25`.\n"
+    filename: 2026-08-20-require-alchemy-72-effect-107.md
+    v: 0.0.0
+core:packages:
+  - changelogIds:
+      - 2026-08-20-require-alchemy-72-effect-107.md
+    id: npm:alchemy-planetscale-logical-db
+    updated: true
+npm:packages:
+  - id: npm:alchemy-planetscale-logical-db
+  - id: npm:alchemy-planetscale-logical-db-example
