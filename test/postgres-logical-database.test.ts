@@ -14,6 +14,7 @@ import {
 } from "../src/PostgresLogicalDatabase.ts"
 import {
   existingTrackedSqlFileRecord,
+  isDuplicateDatabaseError,
   removedRecordNames,
   trackedSqlFileApplyDecision,
   validateIdentifier,
@@ -58,6 +59,20 @@ describe("validateIdentifier", () => {
     assert.throws(() => validateIdentifier("Postgres identifier", "1app"))
     assert.throws(() => validateIdentifier("Postgres identifier", "app-name"))
     assert.throws(() => validateIdentifier("Postgres identifier", ""))
+  })
+})
+
+describe("isDuplicateDatabaseError", () => {
+  it("matches a plain pg-style object with code 42P04", () => {
+    assert.equal(isDuplicateDatabaseError({ code: "42P04" }), true)
+    assert.equal(isDuplicateDatabaseError({ code: "42P04", message: "already exists" }), true)
+    assert.equal(isDuplicateDatabaseError(Object.assign(new Error("dup"), { code: "42P04" })), true)
+  })
+
+  it("rejects other errors", () => {
+    assert.equal(isDuplicateDatabaseError({ code: "42P01" }), false)
+    assert.equal(isDuplicateDatabaseError({ message: "already exists" }), false)
+    assert.equal(isDuplicateDatabaseError(new Error("dup")), false)
   })
 })
 

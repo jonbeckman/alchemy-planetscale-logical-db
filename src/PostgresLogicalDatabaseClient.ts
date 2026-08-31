@@ -75,9 +75,14 @@ function quoteExternalIdentifier(label: string, value: string) {
 const quoteQualifiedIdentifier = (schema: string, value: string) =>
   `${quoteIdentifier(schema)}.${quoteIdentifier(value)}`
 
-const PostgresClientError = Schema.Struct({
+class PostgresClientError extends Schema.Class<PostgresClientError>("PostgresClientError")({
   code: Schema.String,
-})
+}) {}
+
+export const isDuplicateDatabaseError = <E>(error: E) =>
+  Schema.decodeUnknownOption(PostgresClientError)(error).pipe(
+    Option.exists((decoded) => decoded.code === "42P04"),
+  )
 
 const hashPrivilegeChecks = (checks: readonly PrivilegeCheck[]) => sha256Object(checks)
 
@@ -188,10 +193,7 @@ const createDatabase = (client: Client, databaseName: string) =>
     `CREATE DATABASE ${quoteIdentifier(databaseName)} WITH ENCODING 'UTF8' LC_COLLATE 'C' LC_CTYPE 'C' TEMPLATE template0`,
   ).pipe(
     Effect.asVoid,
-    Effect.catchIf(
-      (error) => Schema.is(PostgresClientError)(error) && error.code === "42P04",
-      () => Effect.void,
-    ),
+    Effect.catchIf(isDuplicateDatabaseError, () => Effect.void),
   )
 
 export const databaseExists = (origin: PostgresOrigin, databaseName: string) =>
