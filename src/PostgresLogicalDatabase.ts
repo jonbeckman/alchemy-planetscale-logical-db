@@ -42,7 +42,11 @@ const optionalString = (value: string | undefined): Option.Option<string> =>
 const optionalNonEmptyString = (value: string | undefined): Option.Option<string> =>
   optionalString(value).pipe(Option.filter((present) => present !== ""))
 
-export { importFilePathIdentity, importFilePathsEqual, validateImportFilePath } from "./ImportFilePath.ts"
+export {
+  importFilePathIdentity,
+  importFilePathsEqual,
+  validateImportFilePath,
+} from "./ImportFilePath.ts"
 
 /**
  * Properties for creating or updating a logical PostgreSQL database inside a

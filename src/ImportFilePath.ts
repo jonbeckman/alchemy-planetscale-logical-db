@@ -21,7 +21,10 @@ const isUnstableImportPath = (filePath: string) =>
   hasEmptyOrParentSegment(filePath)
 
 const dropDotSegments = (filePath: string) =>
-  filePath.split("/").filter((segment) => segment !== ".").join("/")
+  filePath
+    .split("/")
+    .filter((segment) => segment !== ".")
+    .join("/")
 
 /**
  * Stable import identity used to compare desired `importFiles` with existing

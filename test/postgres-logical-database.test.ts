@@ -119,10 +119,9 @@ describe("removedRecordNames import identity", () => {
   })
 
   it("still rejects a tracking row that is a different file", () => {
-    assert.deepEqual(
-      removedRecordNames([{ id: "seed/users.sql" }], { "./other.sql": "abc" }),
-      ["./other.sql"],
-    )
+    assert.deepEqual(removedRecordNames([{ id: "seed/users.sql" }], { "./other.sql": "abc" }), [
+      "./other.sql",
+    ])
   })
 
   it("finds the legacy dotted row when looking up a canonical file id", () => {

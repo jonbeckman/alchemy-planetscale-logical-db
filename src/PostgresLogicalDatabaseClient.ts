@@ -422,11 +422,9 @@ const deleteReplacedTrackedName = (input: {
     {
       onEmpty: () => Effect.void,
       onNonEmpty: (staleName) =>
-        query(
-          input.client,
-          `DELETE FROM ${quoteIdentifier(input.tableName)} WHERE name = $1`,
-          [staleName],
-        ).pipe(Effect.asVoid),
+        query(input.client, `DELETE FROM ${quoteIdentifier(input.tableName)} WHERE name = $1`, [
+          staleName,
+        ]).pipe(Effect.asVoid),
     },
   )
 
