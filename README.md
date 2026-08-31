@@ -97,7 +97,9 @@ export default DatabaseStack.make(
   as mutable imports/seed data. Use forward slashes without empty, `.`, or `..`
   segments. The resource rejects absolute and non-normalized paths before any
   database reconciliation because these strings are persisted as stable import
-  identities.
+  identities. Existing tracking rows that stored a dotted form such as
+  `./seed/users.sql` still match `seed/users.sql` and are not treated as
+  removed.
 - `importsTable`: import tracking table, defaulting to `__alchemy_imports`.
 
 The resource type remains `Planetscale.PostgresLogicalDatabase` for state

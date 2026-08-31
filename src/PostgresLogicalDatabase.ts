@@ -17,6 +17,7 @@ import {
   type AppRolePrivilegeState,
   type PostgresLogicalDatabaseOwner,
 } from "./PostgresLogicalDatabaseClient.ts"
+import { validateImportFilePath } from "./ImportFilePath.ts"
 import { listSqlFiles, readSqlFile, type SqlFile } from "./SqlFile.ts"
 import type { Providers } from "./Providers.ts"
 import { recordsEqual } from "./recordsEqual.ts"
@@ -41,31 +42,7 @@ const optionalString = (value: string | undefined): Option.Option<string> =>
 const optionalNonEmptyString = (value: string | undefined): Option.Option<string> =>
   optionalString(value).pipe(Option.filter((present) => present !== ""))
 
-const importFilePathError = (filePath: string) =>
-  new Error(
-    `Import file path "${filePath}" must be a normalized, repository-relative path using "/" separators (for example "seeds/users.sql"). Absolute paths, backslashes, empty segments, ".", and ".." are not stable tracked identifiers.`,
-  )
-
-const hasWindowsPathPrefix = (filePath: string) =>
-  /^[a-zA-Z]:/.test(filePath) || filePath.startsWith("\\\\")
-
-const hasUnstablePathSegment = (filePath: string) =>
-  filePath.split("/").some((segment) => segment === "" || segment === "." || segment === "..")
-
-export const validateImportFilePath = (filePath: string) =>
-  Match.value(
-    filePath !== "" &&
-      !filePath.startsWith("/") &&
-      !filePath.includes("\\") &&
-      !hasWindowsPathPrefix(filePath) &&
-      !hasUnstablePathSegment(filePath),
-  ).pipe(
-    Match.when(true, () => filePath),
-    Match.when(false, () => {
-      throw importFilePathError(filePath)
-    }),
-    Match.exhaustive,
-  )
+export { importFilePathIdentity, importFilePathsEqual, validateImportFilePath } from "./ImportFilePath.ts"
 
 /**
  * Properties for creating or updating a logical PostgreSQL database inside a
@@ -123,8 +100,9 @@ export interface PostgresLogicalDatabaseProps {
    * imports/seed data. Use forward slashes and do not include empty, ".", or
    * ".." segments. Absolute and non-normalized paths are rejected before
    * database reconciliation because each value is persisted as the import's
-   * stable identity. Imports are re-applied when the file hash changes, while
-   * removed tracked import records are rejected.
+   * stable identity. Existing tracking rows that stored a dotted form such as
+   * "./seed/users.sql" still match this identity. Imports are re-applied when
+   * the file hash changes, while removed tracked import records are rejected.
    */
   importFiles?: ReadonlyArray<string>
 
