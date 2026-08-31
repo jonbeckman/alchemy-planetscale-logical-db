@@ -8,10 +8,13 @@ import * as Option from "effect/Option"
 import * as Path from "effect/Path"
 import * as Stream from "effect/Stream"
 import {
+  importFilePathsEqual,
   readLogicalDatabaseSqlFiles,
   validateImportFilePath,
 } from "../src/PostgresLogicalDatabase.ts"
 import {
+  existingTrackedSqlFileRecord,
+  removedRecordNames,
   trackedSqlFileApplyDecision,
   validateIdentifier,
 } from "../src/PostgresLogicalDatabaseClient.ts"
@@ -89,6 +92,46 @@ describe("validateImportFilePath", () => {
         filePath,
       )
     }
+  })
+})
+
+describe("importFilePath identity", () => {
+  it("treats canonical and ./ forms as the same tracked identity", () => {
+    assert.equal(importFilePathsEqual("seed/users.sql", "./seed/users.sql"), true)
+    assert.equal(importFilePathsEqual("seed/users.sql", "seed/./users.sql"), true)
+    assert.equal(importFilePathsEqual("./seed/users.sql", "seed/users.sql"), true)
+  })
+
+  it("does not treat parent or absolute paths as the same identity", () => {
+    assert.equal(importFilePathsEqual("seed/users.sql", "../seed/users.sql"), false)
+    assert.equal(importFilePathsEqual("seed/users.sql", "/seed/users.sql"), false)
+    assert.equal(importFilePathsEqual("seed/users.sql", "C:/seed/users.sql"), false)
+    assert.equal(importFilePathsEqual("seed/users.sql", "other/users.sql"), false)
+  })
+})
+
+describe("removedRecordNames import identity", () => {
+  it("does not reject a legacy dotted tracking row when importFiles is canonical", () => {
+    assert.deepEqual(
+      removedRecordNames([{ id: "seed/users.sql" }], { "./seed/users.sql": "abc" }),
+      [],
+    )
+  })
+
+  it("still rejects a tracking row that is a different file", () => {
+    assert.deepEqual(
+      removedRecordNames([{ id: "seed/users.sql" }], { "./other.sql": "abc" }),
+      ["./other.sql"],
+    )
+  })
+
+  it("finds the legacy dotted row when looking up a canonical file id", () => {
+    const record = existingTrackedSqlFileRecord({ "./seed/users.sql": "abc" }, "seed/users.sql")
+    assert.equal(Option.isSome(record), true)
+    assert.deepEqual(Option.getOrUndefined(record), {
+      hash: "abc",
+      storedName: "./seed/users.sql",
+    })
   })
 })
 
