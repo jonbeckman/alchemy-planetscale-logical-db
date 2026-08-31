@@ -52,9 +52,9 @@ Run the repository checks before opening a pull request:
 nub run check
 ```
 
-That script typechecks the package, lints, checks formatting, builds, and typechecks `example`.
-This repository has no test suite. If a check cannot run in your environment, explain why in the
-pull request.
+That script typechecks the package, lints, checks formatting, runs unit tests, builds, and
+typechecks `example`. Unit tests live in `test/` and run through Node's test runner. If a
+check cannot run in your environment, explain why in the pull request.
 
 ## Pull requests
 

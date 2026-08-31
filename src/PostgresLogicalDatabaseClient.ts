@@ -11,11 +11,12 @@ import * as R from "effect/Record"
 import * as Redacted from "effect/Redacted"
 import * as Schema from "effect/Schema"
 import { Client, type QueryResultRow } from "pg"
+import { importFilePathIdentity, importFilePathsEqual } from "./ImportFilePath.ts"
 import type { SqlFile } from "./SqlFile.ts"
 
-type TrackedSqlFileAction = "reject" | "reapply"
+export type TrackedSqlFileAction = "reject" | "reapply"
 
-const POSTGRES_IDENTIFIER = /^[a-z][a-z0-9_]*$/
+const POSTGRES_IDENTIFIER = /^[a-z_][a-z0-9_]*$/
 
 class TrackedSqlFileError extends Schema.TaggedError<TrackedSqlFileError>()("TrackedSqlFileError", {
   message: Schema.String,
@@ -39,11 +40,11 @@ interface PrivilegeCheck {
 
 function throwInvalidIdentifier(label: string, value: string): never {
   throw new Error(
-    `${label} "${value}" must start with a lowercase letter and contain only lowercase letters, numbers, and underscores.`,
+    `${label} "${value}" must start with a lowercase letter or underscore and contain only lowercase letters, numbers, and underscores.`,
   )
 }
 
-const validateIdentifier = (label: string, value: string) =>
+export const validateIdentifier = (label: string, value: string) =>
   Match.value(POSTGRES_IDENTIFIER.test(value)).pipe(
     Match.when(true, () => undefined),
     Match.when(false, () => throwInvalidIdentifier(label, value)),
@@ -74,9 +75,14 @@ function quoteExternalIdentifier(label: string, value: string) {
 const quoteQualifiedIdentifier = (schema: string, value: string) =>
   `${quoteIdentifier(schema)}.${quoteIdentifier(value)}`
 
-const PostgresClientError = Schema.Struct({
+class PostgresClientError extends Schema.Class<PostgresClientError>("PostgresClientError")({
   code: Schema.String,
-})
+}) {}
+
+export const isDuplicateDatabaseError = <E>(error: E) =>
+  Schema.decodeUnknownOption(PostgresClientError)(error).pipe(
+    Option.exists((decoded) => decoded.code === "42P04"),
+  )
 
 const hashPrivilegeChecks = (checks: readonly PrivilegeCheck[]) => sha256Object(checks)
 
@@ -187,10 +193,7 @@ const createDatabase = (client: Client, databaseName: string) =>
     `CREATE DATABASE ${quoteIdentifier(databaseName)} WITH ENCODING 'UTF8' LC_COLLATE 'C' LC_CTYPE 'C' TEMPLATE template0`,
   ).pipe(
     Effect.asVoid,
-    Effect.catchIf(
-      (error) => Schema.is(PostgresClientError)(error) && error.code === "42P04",
-      () => Effect.void,
-    ),
+    Effect.catchIf(isDuplicateDatabaseError, () => Effect.void),
   )
 
 export const databaseExists = (origin: PostgresOrigin, databaseName: string) =>
@@ -356,12 +359,35 @@ export function removedRecordNames(
   desiredFiles: readonly Pick<SqlFile, "id">[],
   existingRecords: Record<string, string>,
 ) {
-  const desiredNames = HashSet.fromIterable(desiredFiles.map((file) => file.id))
+  const desiredIdentities = HashSet.fromIterable(
+    desiredFiles.map((file) => importFilePathIdentity(file.id)),
+  )
   return Arr.sort(
-    R.keys(existingRecords).filter((name) => !HashSet.has(desiredNames, name)),
+    R.keys(existingRecords).filter(
+      (name) => !HashSet.has(desiredIdentities, importFilePathIdentity(name)),
+    ),
     Order.String,
   )
 }
+
+const matchingTrackedNames = (existingRecords: Record<string, string>, fileId: string) =>
+  Arr.sort(
+    R.keys(existingRecords).filter((name) => importFilePathsEqual(name, fileId)),
+    Order.String,
+  )
+
+export const existingTrackedSqlFileRecord = (
+  existingRecords: Record<string, string>,
+  fileId: string,
+) =>
+  Arr.findFirst(matchingTrackedNames(existingRecords, fileId), (name) => name === fileId).pipe(
+    Option.orElse(() => Arr.head(matchingTrackedNames(existingRecords, fileId))),
+    Option.flatMap((storedName) =>
+      Option.fromUndefinedOr(existingRecords[storedName]).pipe(
+        Option.map((hash) => ({ hash, storedName })),
+      ),
+    ),
+  )
 
 const rejectRemovedTrackedSqlFiles = (tableName: string, removedNames: readonly string[]) =>
   Arr.match(removedNames, {
@@ -387,10 +413,28 @@ const transaction = <Use extends Effect.All.EffectAny>(client: Client, use: Use)
       }),
   )
 
+const deleteReplacedTrackedName = (input: {
+  readonly client: Client
+  readonly storedName: Option.Option<string>
+  readonly tableName: string
+  readonly canonicalName: string
+}) =>
+  Arr.matchLeft(
+    Option.toArray(input.storedName.pipe(Option.filter((name) => name !== input.canonicalName))),
+    {
+      onEmpty: () => Effect.void,
+      onNonEmpty: (staleName) =>
+        query(input.client, `DELETE FROM ${quoteIdentifier(input.tableName)} WHERE name = $1`, [
+          staleName,
+        ]).pipe(Effect.asVoid),
+    },
+  )
+
 const writeTrackedSqlFileTransaction = Effect.fn("writeTrackedSqlFileTransaction")(
   function* (input: {
     readonly client: Client
     readonly file: SqlFile
+    readonly storedName: Option.Option<string>
     readonly tableName: string
   }) {
     yield* query(input.client, input.file.sql)
@@ -401,12 +445,19 @@ const writeTrackedSqlFileTransaction = Effect.fn("writeTrackedSqlFileTransaction
        ON CONFLICT (name) DO UPDATE SET hash = excluded.hash, applied_at = now()`,
       [input.file.id, input.file.hash],
     )
+    yield* deleteReplacedTrackedName({
+      client: input.client,
+      storedName: input.storedName,
+      tableName: input.tableName,
+      canonicalName: input.file.id,
+    })
   },
 )
 
 function writeTrackedSqlFile(input: {
   readonly client: Client
   readonly file: SqlFile
+  readonly storedName: Option.Option<string>
   readonly tableName: string
 }) {
   return transaction(input.client, writeTrackedSqlFileTransaction(input))
@@ -417,29 +468,52 @@ const changedSqlFileError = (file: SqlFile) =>
     message: `Refusing to reapply changed SQL file ${file.id}; create a new migration/import file instead.`,
   })
 
+const existingFileHashChanged = (existingHash: Option.Option<string>, fileHash: string) =>
+  existingHash.pipe(
+    Option.match({
+      onSome: (hash) => hash !== fileHash,
+      onNone: () => false,
+    }),
+  )
+
+const trackedFileShouldWrite = (existingHash: Option.Option<string>, fileHash: string) =>
+  existingHash.pipe(
+    Option.match({
+      onSome: (hash) => hash !== fileHash,
+      onNone: () => true,
+    }),
+  )
+
+export const trackedSqlFileApplyDecision = (input: {
+  readonly changedFileAction: TrackedSqlFileAction
+  readonly existingHash: Option.Option<string>
+  readonly fileHash: string
+}) => ({
+  hasChangedExistingFile: existingFileHashChanged(input.existingHash, input.fileHash),
+  rejectsChangedFile:
+    existingFileHashChanged(input.existingHash, input.fileHash) &&
+    input.changedFileAction === "reject",
+  shouldWrite: trackedFileShouldWrite(input.existingHash, input.fileHash),
+})
+
 const applyTrackedSqlFile = (input: {
   readonly changedFileAction: TrackedSqlFileAction
   readonly client: Client
+  readonly existingRecords: Record<string, string>
   readonly file: SqlFile
   readonly tableName: string
 }) =>
   Effect.gen(function* () {
-    const existing = yield* query<{ hash: string }>(
-      input.client,
-      `SELECT hash FROM ${quoteIdentifier(input.tableName)} WHERE name = $1`,
-      [input.file.id],
-    )
-    const existingHash = Option.fromUndefinedOr(existing.rows[0]?.hash)
-    const changed = existingHash.pipe(
-      Option.match({
-        onSome: (hash) => hash !== input.file.hash,
-        onNone: () => true,
-      }),
-    )
-    const rejectsChangedFile = changed && input.changedFileAction === "reject"
-    const shouldWrite = changed && !rejectsChangedFile
+    const existingRecord = existingTrackedSqlFileRecord(input.existingRecords, input.file.id)
+    const existingHash = existingRecord.pipe(Option.map((record) => record.hash))
+    const storedName = existingRecord.pipe(Option.map((record) => record.storedName))
+    const { rejectsChangedFile, shouldWrite } = trackedSqlFileApplyDecision({
+      changedFileAction: input.changedFileAction,
+      existingHash,
+      fileHash: input.file.hash,
+    })
     const rejectChange = Effect.fail(changedSqlFileError(input.file))
-    const writeChange = writeTrackedSqlFile(input)
+    const writeChange = writeTrackedSqlFile({ ...input, storedName })
     const rejectsChangedFileEffect = Effect.succeed(rejectsChangedFile)
     const shouldWriteEffect = Effect.succeed(shouldWrite)
     yield* rejectChange.pipe(Effect.when(rejectsChangedFileEffect), Effect.asVoid)
@@ -449,6 +523,7 @@ const applyTrackedSqlFile = (input: {
 const applyChangedTrackedSqlFiles = (input: {
   readonly changedFileAction: TrackedSqlFileAction
   readonly client: Client
+  readonly existingRecords: Record<string, string>
   readonly files: readonly SqlFile[]
   readonly tableName: string
 }) =>
@@ -470,6 +545,7 @@ const applyChangedTrackedSqlFiles = (input: {
         applyTrackedSqlFile({
           changedFileAction: input.changedFileAction,
           client: input.client,
+          existingRecords: input.existingRecords,
           file,
           tableName: input.tableName,
         }),
@@ -500,6 +576,7 @@ const applyTrackedSqlFilesWithClient = (input: {
         applyChangedTrackedSqlFiles({
           changedFileAction: input.changedFileAction,
           client: input.client,
+          existingRecords: existingHashes,
           files,
           tableName: input.tableName,
         }),

@@ -28,7 +28,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "check": "nub run typecheck && nub run lint && nub run format && nub run build && nub run --cwd example typecheck",
+    "check": "nub run typecheck && nub run lint && nub run format && nub run test && nub run build && nub run --cwd example typecheck",
     "format": "oxfmt --check",
     "format:fix": "oxfmt",
     "lint": "NODE_OPTIONS='--import tsx' oxlint",
@@ -36,7 +36,8 @@
     "lint:fix:max": "NODE_OPTIONS='--import tsx' oxlint --fix --fix-suggestions --fix-dangerously",
     "prepublishOnly": "nub run build",
     "tegami": "tsx scripts/tegami.mts",
-    "typecheck": "tsc --noEmit"
+    "test": "node --import tsx --test test/*.test.ts",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit"
   },
   "dependencies": {
     "pg": "^8.16.3"
