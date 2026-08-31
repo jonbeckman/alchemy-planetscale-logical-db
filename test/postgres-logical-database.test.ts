@@ -3,6 +3,7 @@ import { describe, it } from "node:test"
 import * as Effect from "effect/Effect"
 import * as FileSystem from "effect/FileSystem"
 import * as Layer from "effect/Layer"
+import * as Match from "effect/Match"
 import * as Option from "effect/Option"
 import * as Path from "effect/Path"
 import * as Stream from "effect/Stream"
@@ -17,15 +18,17 @@ import {
 
 const textEncoder = new TextEncoder()
 
-const importRootFiles: Record<string, string> = {
-  "/repo/seeds/users.sql": "INSERT INTO users VALUES (1);",
-  "/cwd/seeds/users.sql": "INSERT INTO users VALUES (99);",
-}
+const mockSqlForPath = (filePath: string) =>
+  Match.value(filePath).pipe(
+    Match.when("/repo/seeds/users.sql", () => "INSERT INTO users VALUES (1);"),
+    Match.when("/cwd/seeds/users.sql", () => "INSERT INTO users VALUES (99);"),
+    Match.orElse(() => ""),
+  )
 
 const sqlFileTestLayer = Layer.mergeAll(
   Path.layer,
   FileSystem.layerNoop({
-    stream: (filePath) => Stream.make(textEncoder.encode(importRootFiles[filePath] ?? "")),
+    stream: (filePath) => Stream.make(textEncoder.encode(mockSqlForPath(filePath))),
   }),
 )
 

@@ -417,30 +417,33 @@ const changedSqlFileError = (file: SqlFile) =>
     message: `Refusing to reapply changed SQL file ${file.id}; create a new migration/import file instead.`,
   })
 
+const existingFileHashChanged = (existingHash: Option.Option<string>, fileHash: string) =>
+  existingHash.pipe(
+    Option.match({
+      onSome: (hash) => hash !== fileHash,
+      onNone: () => false,
+    }),
+  )
+
+const trackedFileShouldWrite = (existingHash: Option.Option<string>, fileHash: string) =>
+  existingHash.pipe(
+    Option.match({
+      onSome: (hash) => hash !== fileHash,
+      onNone: () => true,
+    }),
+  )
+
 export const trackedSqlFileApplyDecision = (input: {
   readonly changedFileAction: TrackedSqlFileAction
   readonly existingHash: Option.Option<string>
   readonly fileHash: string
-}) => {
-  const hasChangedExistingFile = input.existingHash.pipe(
-    Option.match({
-      onSome: (hash) => hash !== input.fileHash,
-      onNone: () => false,
-    }),
-  )
-  const shouldWrite = input.existingHash.pipe(
-    Option.match({
-      onSome: (hash) => hash !== input.fileHash,
-      onNone: () => true,
-    }),
-  )
-  const rejectsChangedFile = hasChangedExistingFile && input.changedFileAction === "reject"
-  return {
-    hasChangedExistingFile,
-    rejectsChangedFile,
-    shouldWrite,
-  }
-}
+}) => ({
+  hasChangedExistingFile: existingFileHashChanged(input.existingHash, input.fileHash),
+  rejectsChangedFile:
+    existingFileHashChanged(input.existingHash, input.fileHash) &&
+    input.changedFileAction === "reject",
+  shouldWrite: trackedFileShouldWrite(input.existingHash, input.fileHash),
+})
 
 const applyTrackedSqlFile = (input: {
   readonly changedFileAction: TrackedSqlFileAction
