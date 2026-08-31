@@ -13,9 +13,9 @@ import * as Schema from "effect/Schema"
 import { Client, type QueryResultRow } from "pg"
 import type { SqlFile } from "./SqlFile.ts"
 
-type TrackedSqlFileAction = "reject" | "reapply"
+export type TrackedSqlFileAction = "reject" | "reapply"
 
-const POSTGRES_IDENTIFIER = /^[a-z][a-z0-9_]*$/
+const POSTGRES_IDENTIFIER = /^[a-z_][a-z0-9_]*$/
 
 class TrackedSqlFileError extends Schema.TaggedError<TrackedSqlFileError>()("TrackedSqlFileError", {
   message: Schema.String,
@@ -39,11 +39,11 @@ interface PrivilegeCheck {
 
 function throwInvalidIdentifier(label: string, value: string): never {
   throw new Error(
-    `${label} "${value}" must start with a lowercase letter and contain only lowercase letters, numbers, and underscores.`,
+    `${label} "${value}" must start with a lowercase letter or underscore and contain only lowercase letters, numbers, and underscores.`,
   )
 }
 
-const validateIdentifier = (label: string, value: string) =>
+export const validateIdentifier = (label: string, value: string) =>
   Match.value(POSTGRES_IDENTIFIER.test(value)).pipe(
     Match.when(true, () => undefined),
     Match.when(false, () => throwInvalidIdentifier(label, value)),
@@ -417,6 +417,31 @@ const changedSqlFileError = (file: SqlFile) =>
     message: `Refusing to reapply changed SQL file ${file.id}; create a new migration/import file instead.`,
   })
 
+export const trackedSqlFileApplyDecision = (input: {
+  readonly changedFileAction: TrackedSqlFileAction
+  readonly existingHash: Option.Option<string>
+  readonly fileHash: string
+}) => {
+  const hasChangedExistingFile = input.existingHash.pipe(
+    Option.match({
+      onSome: (hash) => hash !== input.fileHash,
+      onNone: () => false,
+    }),
+  )
+  const shouldWrite = input.existingHash.pipe(
+    Option.match({
+      onSome: (hash) => hash !== input.fileHash,
+      onNone: () => true,
+    }),
+  )
+  const rejectsChangedFile = hasChangedExistingFile && input.changedFileAction === "reject"
+  return {
+    hasChangedExistingFile,
+    rejectsChangedFile,
+    shouldWrite,
+  }
+}
+
 const applyTrackedSqlFile = (input: {
   readonly changedFileAction: TrackedSqlFileAction
   readonly client: Client
@@ -430,14 +455,11 @@ const applyTrackedSqlFile = (input: {
       [input.file.id],
     )
     const existingHash = Option.fromUndefinedOr(existing.rows[0]?.hash)
-    const changed = existingHash.pipe(
-      Option.match({
-        onSome: (hash) => hash !== input.file.hash,
-        onNone: () => true,
-      }),
-    )
-    const rejectsChangedFile = changed && input.changedFileAction === "reject"
-    const shouldWrite = changed && !rejectsChangedFile
+    const { rejectsChangedFile, shouldWrite } = trackedSqlFileApplyDecision({
+      changedFileAction: input.changedFileAction,
+      existingHash,
+      fileHash: input.file.hash,
+    })
     const rejectChange = Effect.fail(changedSqlFileError(input.file))
     const writeChange = writeTrackedSqlFile(input)
     const rejectsChangedFileEffect = Effect.succeed(rejectsChangedFile)

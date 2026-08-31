@@ -44,6 +44,9 @@ jobs:
       - name: Check formatting
         run: nub run format
 
+      - name: Test
+        run: nub run test
+
       - name: Build
         run: nub run build
 

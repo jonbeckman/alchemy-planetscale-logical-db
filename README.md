@@ -90,7 +90,14 @@ export default DatabaseStack.make(
 - `migrationsDir`: directory of forward-only `.sql` migration files.
 - `migrationsTable`: migration tracking table, defaulting to
   `__alchemy_migrations`.
-- `importFiles`: SQL files to apply as mutable imports/seed data.
+- `importRootDir`: filesystem root used to resolve imports, defaulting to the
+  Alchemy process working directory. Set it to the repository root when deploys
+  can run from different working directories. This value is not persisted.
+- `importFiles`: normalized, repository-relative SQL file identifiers to apply
+  as mutable imports/seed data. Use forward slashes without empty, `.`, or `..`
+  segments. The resource rejects absolute and non-normalized paths before any
+  database reconciliation because these strings are persisted as stable import
+  identities.
 - `importsTable`: import tracking table, defaulting to `__alchemy_imports`.
 
 The resource type remains `Planetscale.PostgresLogicalDatabase` for state

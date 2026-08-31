@@ -41,6 +41,32 @@ const optionalString = (value: string | undefined): Option.Option<string> =>
 const optionalNonEmptyString = (value: string | undefined): Option.Option<string> =>
   optionalString(value).pipe(Option.filter((present) => present !== ""))
 
+const importFilePathError = (filePath: string) =>
+  new Error(
+    `Import file path "${filePath}" must be a normalized, repository-relative path using "/" separators (for example "seeds/users.sql"). Absolute paths, backslashes, empty segments, ".", and ".." are not stable tracked identifiers.`,
+  )
+
+const hasWindowsPathPrefix = (filePath: string) =>
+  /^[a-zA-Z]:/.test(filePath) || filePath.startsWith("\\\\")
+
+const hasUnstablePathSegment = (filePath: string) =>
+  filePath.split("/").some((segment) => segment === "" || segment === "." || segment === "..")
+
+export const validateImportFilePath = (filePath: string) =>
+  Match.value(
+    filePath !== "" &&
+      !filePath.startsWith("/") &&
+      !filePath.includes("\\") &&
+      !hasWindowsPathPrefix(filePath) &&
+      !hasUnstablePathSegment(filePath),
+  ).pipe(
+    Match.when(true, () => filePath),
+    Match.when(false, () => {
+      throw importFilePathError(filePath)
+    }),
+    Match.exhaustive,
+  )
+
 /**
  * Properties for creating or updating a logical PostgreSQL database inside a
  * PlanetScale PostgreSQL database branch.
@@ -86,8 +112,19 @@ export interface PostgresLogicalDatabaseProps {
   migrationsTable?: string
 
   /**
-   * SQL files to apply as imports/seed data. Imports are re-applied when the
-   * file hash changes, while removed tracked import records are rejected.
+   * Root directory used to resolve import files. This filesystem location is
+   * not persisted as part of an import's identity.
+   * @default process.cwd()
+   */
+  importRootDir?: string
+
+  /**
+   * Normalized, repository-relative SQL file identifiers to apply as
+   * imports/seed data. Use forward slashes and do not include empty, ".", or
+   * ".." segments. Absolute and non-normalized paths are rejected before
+   * database reconciliation because each value is persisted as the import's
+   * stable identity. Imports are re-applied when the file hash changes, while
+   * removed tracked import records are rejected.
    */
   importFiles?: ReadonlyArray<string>
 
@@ -167,7 +204,7 @@ export interface PostgresLogicalDatabaseAttributes {
  * const logicalDb = yield* PlanetscaleLogicalDb.PostgresLogicalDatabase("SeededDb", {
  *   name: "seeded",
  *   adminOrigin: adminRole.origin,
- *   importFiles: ["./seed/users.sql"],
+ *   importFiles: ["seeds/users.sql"],
  * });
  * ```
  */
@@ -242,8 +279,9 @@ const appRolePrivilegesHash = (privileges: AppRolePrivilegeState | undefined) =>
 const recordHashes = (files: readonly SqlFile[]) =>
   R.fromEntries(files.map((file) => [file.id, file.hash]))
 
-const readLogicalDatabaseSqlFiles = (input: {
+export const readLogicalDatabaseSqlFiles = (input: {
   readonly importFiles?: ReadonlyArray<string>
+  readonly importRootDir?: string
   readonly migrationsDir?: string
   readonly rootDir: string
 }) =>
@@ -255,9 +293,11 @@ const readLogicalDatabaseSqlFiles = (input: {
         onNonEmpty: (directory) => listSqlFiles(directory),
       },
     )
+    const importRootDir = input.importRootDir ?? input.rootDir
+    const importFiles = (input.importFiles ?? []).map(validateImportFilePath)
     const imports = yield* Effect.forEach(
-      Arr.sort(input.importFiles ?? [], Order.String),
-      (filePath) => readSqlFile(input.rootDir, filePath),
+      Arr.sort(importFiles, Order.String),
+      (filePath) => readSqlFile(importRootDir, filePath),
       { concurrency: "unbounded" },
     )
 
@@ -523,6 +563,7 @@ const diffResolvedDatabase = (input: {
     const owner = logicalDatabaseOwner(input.id)
     const { imports, migrations } = yield* readLogicalDatabaseSqlFiles({
       importFiles: input.news.importFiles,
+      importRootDir: input.news.importRootDir,
       migrationsDir: input.news.migrationsDir,
       rootDir: input.rootDir,
     })
@@ -620,6 +661,7 @@ export function PostgresLogicalDatabaseProvider() {
         const owner = logicalDatabaseOwner(id)
         const { imports, migrations } = yield* readLogicalDatabaseSqlFiles({
           importFiles: news.importFiles,
+          importRootDir: news.importRootDir,
           migrationsDir: news.migrationsDir,
           rootDir,
         })
