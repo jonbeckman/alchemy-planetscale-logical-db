@@ -1,10 +1,10 @@
 core:changelogs:
-  - content: "---\npackages:\n  alchemy-planetscale-logical-db:\n    type: minor\n---\n\n## Require Alchemy 72, Effect 107, and Node 24.15\n\nThis package now peers `alchemy` at `>=2.0.0-beta.72` and `effect` at exact\n`4.0.0-beta.107`. Internal SQL-file tracking failures still use the\n`TrackedSqlFileError` tag; they are constructed with Effect 107\n`Schema.TaggedError` instead of `TaggedErrorClass`. Resource props and\nattributes are unchanged. The published `engines.node` range is now\n`>=24.15.0 <25`.\n\n**Required action:** upgrade the consuming app to `alchemy@2.0.0-beta.72` or\nlater and `effect@4.0.0-beta.107`, and run Node `>=24.15.0 <25`.\n"
-    filename: 2026-08-20-require-alchemy-72-effect-107.md
+  - content: "---\npackages:\n  alchemy-planetscale-logical-db:\n    type: major\n---\n\n## Breaking: repo-relative import identities\n\nThis is a breaking change. Do not take this release on a normal `^1.x` range.\nPreviously documented `importFiles` values such as `./seed/users.sql` are\nrejected.\n\nThis release lets consumers pin import files to a repository path, even when\nthe Alchemy process starts in another working directory. It also accepts\nPostgres identifiers that start with an underscore, including the default\ntracking tables.\n\n`importFiles` values are now stable import identities. Use a normalized,\nrepository-relative path with `/` separators. Do not use empty, `.`, or `..`\nsegments. Absolute paths, backslashes, and Windows prefixes are rejected\nbefore any database work.\n\nExisting tracking rows that stored a dotted form such as `./seed/users.sql`\nstill match the canonical identity `seed/users.sql`. The resource does not\ntreat that row as removed. A later rewrite stores the canonical identity.\n\nA new tracked SQL file is written on first apply, including when the action is\n`reject`. The resource still rejects a changed existing migration or import\nwhen the action is `reject`. Unchanged existing files are not rewritten.\n\n**Required action:** pass repository-relative `importFiles` such as\n`seeds/users.sql`. Paths such as `./seed/users.sql` are no longer accepted.\nSet `importRootDir` when deploys do not run from the repository root. That\nfilesystem root is not persisted. Change the version pin to the new major.\nDo not let a `^1.x` range select this release.\n"
+    filename: 2026-08-31-import-root-and-underscore-identifiers.md
     v: 0.0.0
 core:packages:
   - changelogIds:
-      - 2026-08-20-require-alchemy-72-effect-107.md
+      - 2026-08-31-import-root-and-underscore-identifiers.md
     id: npm:alchemy-planetscale-logical-db
     updated: true
 npm:packages:
