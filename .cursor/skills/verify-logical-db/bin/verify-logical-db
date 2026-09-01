@@ -1,0 +1,825 @@
+#!/usr/bin/env bash
+# verify-logical-db: launch, doctor, drive, snapshot, and cleanup for
+# alchemy-planetscale-logical-db. JSON on stdout. Human text on stderr.
+set -euo pipefail
+
+skill_bin_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+skill_dir="$(cd "$skill_bin_dir/.." && pwd)"
+default_repo_root="$(cd "$skill_dir/../../.." && pwd)"
+repo_root="${VERIFY_REPO_ROOT:-$default_repo_root}"
+
+run_dir="${VERIFY_STATE_DIR:-$skill_dir/.run}"
+state_file="${VERIFY_STATE:-$run_dir/state.json}"
+default_port="${VERIFY_PGLITE_PORT:-25432}"
+
+json_out() {
+  node --input-type=module -e 'process.stdout.write(JSON.stringify(JSON.parse(process.argv[1]), null, 2) + "\n")' "$1"
+}
+
+die() {
+  local message="$1"
+  local extra="${2:-{}}"
+  json_out "$(node --input-type=module -e '
+    const extra = JSON.parse(process.argv[2])
+    process.stdout.write(JSON.stringify({ ok: false, error: process.argv[1], ...extra }))
+  ' "$message" "$extra")"
+  exit 1
+}
+
+require_repo() {
+  local name
+  name="$(node --input-type=module -e '
+    import { readFileSync } from "node:fs"
+    const pkg = JSON.parse(readFileSync(process.argv[1], "utf8"))
+    process.stdout.write(String(pkg.name ?? ""))
+  ' "$repo_root/package.json")"
+  if [ "$name" != "alchemy-planetscale-logical-db" ]; then
+    die "repo root is not alchemy-planetscale-logical-db" "{\"repoRoot\":$(node --input-type=module -e 'process.stdout.write(JSON.stringify(process.argv[1]))' "$repo_root")}"
+  fi
+}
+
+load_nub() {
+  export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+  if [ -s "$NVM_DIR/nvm.sh" ]; then
+    # nvm writes to stdout
+    # shellcheck disable=SC1090
+    . "$NVM_DIR/nvm.sh" >/dev/null
+    nvm use 24.15.0 >/dev/null 2>&1 || true
+  fi
+  export PATH="${HOME}/.nub/bin:${PATH}"
+  hash -r
+  if ! command -v nub >/dev/null 2>&1; then
+    die "nub is not on PATH"
+  fi
+}
+
+mkdir_run() {
+  mkdir -p "$run_dir"
+}
+
+read_state() {
+  if [ ! -f "$state_file" ]; then
+    echo ""
+    return 0
+  fi
+  cat "$state_file"
+}
+
+write_state() {
+  mkdir_run
+  node --input-type=module -e '
+    import { writeFileSync } from "node:fs"
+    writeFileSync(process.argv[1], JSON.stringify(JSON.parse(process.argv[2]), null, 2) + "\n")
+  ' "$state_file" "$1"
+}
+
+state_get() {
+  local key="$1"
+  local raw
+  raw="$(read_state)"
+  if [ -z "$raw" ]; then
+    echo ""
+    return 0
+  fi
+  node --input-type=module -e '
+    const state = JSON.parse(process.argv[1])
+    const key = process.argv[2]
+    const value = key.split(".").reduce((cur, part) => (cur == null ? cur : cur[part]), state)
+    if (value === undefined || value === null) process.stdout.write("")
+    else if (typeof value === "string" || typeof value === "number") process.stdout.write(String(value))
+    else process.stdout.write(JSON.stringify(value))
+  ' "$raw" "$key"
+}
+
+evidence_dir_for() {
+  local run_id="$1"
+  echo "${VERIFY_EVIDENCE_DIR:-$skill_dir/artifacts}/${run_id}"
+}
+
+new_run_id() {
+  if [ -n "${VERIFY_RUN_ID:-}" ]; then
+    echo "$VERIFY_RUN_ID"
+    return 0
+  fi
+  date -u +"%Y%m%dT%H%M%SZ-$$"
+}
+
+port_owner_pid() {
+  local port="$1"
+  node --input-type=module -e '
+    import { execFileSync } from "node:child_process"
+    const port = process.argv[1]
+    try {
+      const out = execFileSync("ss", ["-ltnp"], { encoding: "utf8" })
+      const needle = ":" + port + " "
+      for (const line of out.split("\n")) {
+        if (!line.includes(needle) && !line.includes(":" + port + "\n")) continue
+        const match = line.match(/pid=(\d+)/)
+        if (match) {
+          process.stdout.write(match[1])
+          process.exit(0)
+        }
+      }
+    } catch {}
+    process.stdout.write("")
+  ' "$port"
+}
+
+pid_alive() {
+  local pid="$1"
+  [ -n "$pid" ] && [ -d "/proc/$pid" ]
+}
+
+pid_cmdline() {
+  local pid="$1"
+  if ! pid_alive "$pid"; then
+    echo ""
+    return 0
+  fi
+  tr '\0' ' ' < "/proc/$pid/cmdline"
+}
+
+kill_recorded_pid() {
+  local pid="$1"
+  local expect="$2"
+  if ! pid_alive "$pid"; then
+    return 0
+  fi
+  local cmd
+  cmd="$(pid_cmdline "$pid")"
+  if [[ "$cmd" != *"$expect"* ]]; then
+    echo "refusing to kill pid $pid; cmdline does not contain $expect" >&2
+    return 1
+  fi
+  kill "$pid" 2>/dev/null || true
+  for _ in 1 2 3 4 5 6 7 8 9 10; do
+    if ! pid_alive "$pid"; then
+      return 0
+    fi
+    sleep 0.2
+  done
+  kill -9 "$pid" 2>/dev/null || true
+}
+
+wait_for_port() {
+  local host="$1"
+  local port="$2"
+  local tries=40
+  local i
+  for i in $(seq 1 "$tries"); do
+    if node --input-type=module -e '
+      import net from "node:net"
+      const host = process.argv[1]
+      const port = Number(process.argv[2])
+      const socket = net.connect({ host, port })
+      socket.on("connect", () => { socket.end(); process.exit(0) })
+      socket.on("error", () => process.exit(1))
+      setTimeout(() => process.exit(1), 250)
+    ' "$host" "$port"; then
+      return 0
+    fi
+    sleep 0.25
+  done
+  return 1
+}
+
+run_nub() {
+  (
+    cd "$repo_root"
+    nub "$@"
+  )
+}
+
+cmd_features() {
+  json_out '{
+    "ok": true,
+    "features": [
+      "import-path-validation",
+      "import-identity",
+      "sql-apply-policy",
+      "role-name-from-username",
+      "example-local-migrate"
+    ],
+    "defaultFeature": "import-path-validation"
+  }'
+}
+
+cmd_launch() {
+  require_repo
+  load_nub
+  mkdir_run
+
+  local surface="library"
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --surface)
+        surface="$2"
+        shift 2
+        ;;
+      --surface=*)
+        surface="${1#--surface=}"
+        shift
+        ;;
+      *)
+        die "unknown launch argument: $1"
+        ;;
+    esac
+  done
+
+  if [ "$surface" != "library" ] && [ "$surface" != "example" ] && [ "$surface" != "all" ]; then
+    die "unknown surface: $surface" '{"allowed":["library","example","all"]}'
+  fi
+
+  local run_id
+  run_id="$(state_get runId)"
+  if [ -z "$run_id" ]; then
+    run_id="$(new_run_id)"
+  fi
+  local evidence
+  evidence="$(evidence_dir_for "$run_id")"
+  mkdir -p "$evidence/launch"
+
+  local test_log="$evidence/launch/test.log"
+  local build_log="$evidence/launch/build.log"
+  local test_ok=false
+  local build_ok=false
+
+  if [ ! -d "$repo_root/node_modules" ]; then
+    run_nub install --frozen-lockfile >"$evidence/launch/install.log" 2>&1 || die "nub install failed" "{\"log\":\"$evidence/launch/install.log\"}"
+  fi
+
+  if run_nub run test >"$test_log" 2>&1; then
+    test_ok=true
+  fi
+  if run_nub run build >"$build_log" 2>&1; then
+    build_ok=true
+  fi
+
+  local library_ready=false
+  if [ "$test_ok" = true ] && [ "$build_ok" = true ] && [ -f "$repo_root/dist/index.js" ]; then
+    library_ready=true
+  fi
+
+  local example_ready=false
+  local example_pid=""
+  local example_port=""
+  local example_data=""
+  local example_log=""
+
+  if [ "$surface" = "example" ] || [ "$surface" = "all" ]; then
+    example_port="${VERIFY_PGLITE_PORT:-$default_port}"
+    example_data="$run_dir/pglite-$run_id"
+    example_log="$evidence/launch/pglite.log"
+    mkdir -p "$example_data"
+
+    local existing_pid
+    existing_pid="$(state_get surfaces.example.pid)"
+    if [ -n "$existing_pid" ] && pid_alive "$existing_pid"; then
+      example_pid="$existing_pid"
+      example_port="$(state_get surfaces.example.port)"
+      example_data="$(state_get surfaces.example.dataDir)"
+      example_ready=true
+    else
+      local owner
+      owner="$(port_owner_pid "$example_port")"
+      if [ -n "$owner" ]; then
+        die "pglite port $example_port is already owned by pid $owner" "{\"port\":$example_port,\"pid\":\"$owner\"}"
+      fi
+      local pglite_bin="$repo_root/example/node_modules/.bin/pglite-server"
+      if [ ! -x "$pglite_bin" ]; then
+        die "pglite-server is missing; run nub install --frozen-lockfile" "{\"bin\":\"$pglite_bin\"}"
+      fi
+      "$pglite_bin" --db "$example_data" --host 127.0.0.1 --port "$example_port" --max-connections 100 >"$example_log" 2>&1 &
+      example_pid="$!"
+      echo "$example_pid" >"$run_dir/pglite.pid"
+      if ! wait_for_port 127.0.0.1 "$example_port"; then
+        kill_recorded_pid "$example_pid" "pglite-server" || true
+        die "pglite-server did not open 127.0.0.1:$example_port" "{\"log\":\"$example_log\"}"
+      fi
+      example_ready=true
+    fi
+  fi
+
+  local payload
+  payload="$(node --input-type=module -e '
+    const input = JSON.parse(process.argv[1])
+    process.stdout.write(JSON.stringify({
+      runId: input.runId,
+      repoRoot: input.repoRoot,
+      skillDir: input.skillDir,
+      createdAt: new Date().toISOString(),
+      surfaces: {
+        library: {
+          ready: input.libraryReady,
+          testOk: input.testOk,
+          buildOk: input.buildOk,
+          testLog: input.testLog,
+          buildLog: input.buildLog,
+          dist: input.dist
+        },
+        example: {
+          ready: input.exampleReady,
+          pid: input.examplePid || null,
+          port: input.examplePort ? Number(input.examplePort) : null,
+          host: "127.0.0.1",
+          dataDir: input.exampleData || null,
+          log: input.exampleLog || null
+        }
+      }
+    }))
+  ' "$(node --input-type=module -e '
+    process.stdout.write(JSON.stringify({
+      runId: process.argv[1],
+      repoRoot: process.argv[2],
+      skillDir: process.argv[3],
+      libraryReady: process.argv[4] === "true",
+      testOk: process.argv[5] === "true",
+      buildOk: process.argv[6] === "true",
+      testLog: process.argv[7],
+      buildLog: process.argv[8],
+      dist: process.argv[9],
+      exampleReady: process.argv[10] === "true",
+      examplePid: process.argv[11],
+      examplePort: process.argv[12],
+      exampleData: process.argv[13],
+      exampleLog: process.argv[14]
+    }))
+  ' "$run_id" "$repo_root" "$skill_dir" "$library_ready" "$test_ok" "$build_ok" "$test_log" "$build_log" "$repo_root/dist/index.js" "$example_ready" "$example_pid" "$example_port" "$example_data" "$example_log")")"
+
+  write_state "$payload"
+
+  local ok=true
+  if [ "$library_ready" != true ]; then
+    ok=false
+  fi
+  if [ "$surface" != "library" ] && [ "$example_ready" != true ]; then
+    ok=false
+  fi
+
+  json_out "$(node --input-type=module -e '
+    const state = JSON.parse(process.argv[1])
+    process.stdout.write(JSON.stringify({
+      ok: process.argv[2] === "true",
+      runId: state.runId,
+      evidenceDir: process.argv[3],
+      surfaces: state.surfaces
+    }))
+  ' "$payload" "$ok" "$evidence")"
+  if [ "$ok" != true ]; then
+    exit 1
+  fi
+}
+
+doctor_payload() {
+  require_repo
+  local raw
+  raw="$(read_state)"
+  if [ -z "$raw" ]; then
+    echo '{"ok":false,"worth_driving":false,"error":"no state; run launch first"}'
+    return 0
+  fi
+
+  load_nub
+  local nub_ok=false
+  if command -v nub >/dev/null 2>&1; then
+    nub_ok=true
+  fi
+
+  node --input-type=module -e '
+    import { existsSync, readFileSync } from "node:fs"
+    const state = JSON.parse(process.argv[1])
+    const nubOk = process.argv[2] === "true"
+    const distExists = existsSync(state.surfaces.library.dist)
+    const testFile = state.repoRoot + "/test/postgres-logical-database.test.ts"
+    const testExists = existsSync(testFile)
+    const packageName = JSON.parse(readFileSync(state.repoRoot + "/package.json", "utf8")).name
+    let nodeVersion = process.version
+    try {
+      const engines = JSON.parse(readFileSync(state.repoRoot + "/package.json", "utf8")).engines?.node ?? ""
+      nodeVersion = process.version + " engines.node=" + engines
+    } catch {
+      nodeVersion = process.version
+    }
+    const example = state.surfaces.example
+    let examplePidAlive = false
+    let exampleCmdOk = false
+    if (example.pid) {
+      try {
+        const cmd = readFileSync("/proc/" + example.pid + "/cmdline", "utf8")
+        examplePidAlive = true
+        exampleCmdOk = cmd.includes("pglite-server")
+      } catch {
+        examplePidAlive = false
+      }
+    }
+    const libraryOk = state.surfaces.library.ready === true && distExists && testExists && packageName === "alchemy-planetscale-logical-db" && nubOk
+    const exampleRequired = example.ready === true
+    const exampleOk = !exampleRequired || (examplePidAlive && exampleCmdOk)
+    const worth = libraryOk && exampleOk
+    process.stdout.write(JSON.stringify({
+      ok: worth,
+      worth_driving: worth,
+      runId: state.runId,
+      packageName,
+      nodeVersion,
+      nubOk,
+      library: {
+        ready: state.surfaces.library.ready === true,
+        distExists,
+        testExists,
+        testOk: state.surfaces.library.testOk === true,
+        buildOk: state.surfaces.library.buildOk === true
+      },
+      example: {
+        required: exampleRequired,
+        ready: example.ready === true,
+        pid: example.pid,
+        pidAlive: examplePidAlive,
+        cmdlineHasPglite: exampleCmdOk,
+        port: example.port,
+        dataDir: example.dataDir
+      }
+    }))
+  ' "$raw" "$nub_ok"
+}
+
+cmd_doctor() {
+  local payload
+  payload="$(doctor_payload)"
+  json_out "$payload"
+  node --input-type=module -e 'process.exit(JSON.parse(process.argv[1]).worth_driving ? 0 : 1)' "$payload"
+}
+
+feature_dir() {
+  local run_id="$1"
+  local feature="$2"
+  echo "$(evidence_dir_for "$run_id")/drive-$feature"
+}
+
+drive_import_path_validation() {
+  local dest="$1"
+  node --import tsx --input-type=module -e '
+    import { writeFileSync } from "node:fs"
+    import { pathToFileURL } from "node:url"
+    const dest = process.argv[2]
+    const { validateImportFilePath } = await import(pathToFileURL(process.argv[1]).href)
+    const accepted = ["seeds/users.sql", "a.sql", "_private/seed.sql", "nested/deep/file.sql"]
+    const rejected = ["", "./seed/users.sql", "../secrets.sql", "/abs/path.sql", "seeds\\\\users.sql", "C:/seeds/users.sql", "seeds//users.sql", "seeds/./users.sql", "seeds/../users.sql"]
+    const accepts = []
+    const rejects = []
+    for (const path of accepted) {
+      const value = validateImportFilePath(path)
+      if (value !== path) throw new Error("accepted path changed: " + path)
+      accepts.push(path)
+    }
+    for (const path of rejected) {
+      let threw = false
+      try { validateImportFilePath(path) } catch (error) {
+        threw = String(error).includes("normalized, repository-relative path")
+      }
+      if (!threw) throw new Error("expected reject: " + path)
+      rejects.push(path)
+    }
+    const result = { ok: true, feature: "import-path-validation", module: "src/index.ts", accepts, rejects }
+    writeFileSync(dest + "/stdout.json", JSON.stringify(result, null, 2) + "\n")
+    process.stdout.write(JSON.stringify(result))
+  ' "$repo_root/src/index.ts" "$dest"
+}
+
+drive_import_identity() {
+  local dest="$1"
+  node --import tsx --input-type=module -e '
+    import { writeFileSync } from "node:fs"
+    import { pathToFileURL } from "node:url"
+    import * as Option from "effect/Option"
+    const dest = process.argv[3]
+    const paths = await import(pathToFileURL(process.argv[1]).href)
+    const client = await import(pathToFileURL(process.argv[2]).href)
+    const same = paths.importFilePathsEqual("seed/users.sql", "./seed/users.sql")
+    const sameInner = paths.importFilePathsEqual("seed/users.sql", "seed/./users.sql")
+    const notParent = paths.importFilePathsEqual("seed/users.sql", "../seed/users.sql") === false
+    const notAbs = paths.importFilePathsEqual("seed/users.sql", "/seed/users.sql") === false
+    const removed = client.removedRecordNames([{ id: "seed/users.sql" }], { "./seed/users.sql": "abc" })
+    const record = client.existingTrackedSqlFileRecord({ "./seed/users.sql": "abc" }, "seed/users.sql")
+    const stored = Option.getOrUndefined(record)
+    const ok = same && sameInner && notParent && notAbs && removed.length === 0 && stored?.storedName === "./seed/users.sql" && stored?.hash === "abc"
+    const result = {
+      ok,
+      feature: "import-identity",
+      module: "src/PostgresLogicalDatabase.ts",
+      checks: { same, sameInner, notParent, notAbs, removed, stored }
+    }
+    writeFileSync(dest + "/stdout.json", JSON.stringify(result, null, 2) + "\n")
+    process.stdout.write(JSON.stringify(result))
+    if (!ok) process.exit(1)
+  ' "$repo_root/src/PostgresLogicalDatabase.ts" "$repo_root/src/PostgresLogicalDatabaseClient.ts" "$dest"
+}
+
+drive_sql_apply_policy() {
+  local dest="$1"
+  node --import tsx --input-type=module -e '
+    import { writeFileSync } from "node:fs"
+    import { pathToFileURL } from "node:url"
+    import * as Option from "effect/Option"
+    const dest = process.argv[2]
+    const { trackedSqlFileApplyDecision } = await import(pathToFileURL(process.argv[1]).href)
+    const none = Option.none()
+    const existing = Option.some("abc")
+    const cases = {
+      newRejectWrites: trackedSqlFileApplyDecision({ changedFileAction: "reject", existingHash: none, fileHash: "new" }),
+      newReapplyWrites: trackedSqlFileApplyDecision({ changedFileAction: "reapply", existingHash: none, fileHash: "new" }),
+      unchangedSkips: trackedSqlFileApplyDecision({ changedFileAction: "reject", existingHash: existing, fileHash: "abc" }),
+      changedRejects: trackedSqlFileApplyDecision({ changedFileAction: "reject", existingHash: existing, fileHash: "changed" }),
+      changedReapplies: trackedSqlFileApplyDecision({ changedFileAction: "reapply", existingHash: existing, fileHash: "changed" })
+    }
+    const ok =
+      cases.newRejectWrites.shouldWrite === true && cases.newRejectWrites.rejectsChangedFile === false &&
+      cases.newReapplyWrites.shouldWrite === true &&
+      cases.unchangedSkips.shouldWrite === false &&
+      cases.changedRejects.rejectsChangedFile === true && cases.changedRejects.shouldWrite === true &&
+      cases.changedReapplies.rejectsChangedFile === false && cases.changedReapplies.shouldWrite === true
+    const result = { ok, feature: "sql-apply-policy", module: "src/PostgresLogicalDatabaseClient.ts", cases }
+    writeFileSync(dest + "/stdout.json", JSON.stringify(result, null, 2) + "\n")
+    process.stdout.write(JSON.stringify(result))
+    if (!ok) process.exit(1)
+  ' "$repo_root/src/PostgresLogicalDatabaseClient.ts" "$dest"
+}
+
+drive_role_name() {
+  local dest="$1"
+  node --import tsx --input-type=module -e '
+    import { writeFileSync } from "node:fs"
+    import { pathToFileURL } from "node:url"
+    const dest = process.argv[2]
+    const { postgresRoleNameFromUsername } = await import(pathToFileURL(process.argv[1]).href)
+    const cases = {
+      suffixed: postgresRoleNameFromUsername("app.branch.id"),
+      plain: postgresRoleNameFromUsername("app"),
+      empty: postgresRoleNameFromUsername("")
+    }
+    const ok = cases.suffixed === "app" && cases.plain === "app" && cases.empty === ""
+    const result = { ok, feature: "role-name-from-username", module: "src/index.ts", cases }
+    writeFileSync(dest + "/stdout.json", JSON.stringify(result, null, 2) + "\n")
+    process.stdout.write(JSON.stringify(result))
+    if (!ok) process.exit(1)
+  ' "$repo_root/src/index.ts" "$dest"
+}
+
+drive_example_local_migrate() {
+  local dest="$1"
+  local raw
+  raw="$(read_state)"
+  local port data_dir
+  port="$(state_get surfaces.example.port)"
+  data_dir="$(state_get surfaces.example.dataDir)"
+  if [ -z "$port" ] || [ "$(state_get surfaces.example.ready)" != "true" ]; then
+    die "example surface is not launched; run launch --surface example"
+  fi
+  load_nub
+  local url="postgresql://postgres:postgres@127.0.0.1:${port}/postgres?sslmode=disable"
+  local migrate_log="$dest/migrate.log"
+  if ! (
+    cd "$repo_root/example"
+    APP_SLUG=project_a DATABASE_URL="$url" nubx tsx scripts/migrate-local.ts
+  ) >"$migrate_log" 2>&1; then
+    die "example migrate-local failed" "{\"log\":\"$migrate_log\"}"
+  fi
+  node --import tsx --input-type=module -e '
+    import { writeFileSync } from "node:fs"
+    import { Client } from "pg"
+    const dest = process.argv[1]
+    const url = process.argv[2]
+    const log = process.argv[3]
+    const client = new Client({ connectionString: url, ssl: false })
+    await client.connect()
+    const notes = await client.query("SELECT to_regclass($1) AS name", ["public.notes"])
+    const bookmarks = await client.query("SELECT to_regclass($1) AS name", ["public.bookmarks"])
+    await client.end()
+    const notesName = notes.rows[0]?.name
+    const result = {
+      ok: notesName === "notes",
+      feature: "example-local-migrate",
+      command: "nubx tsx scripts/migrate-local.ts",
+      databaseUrlHost: "127.0.0.1",
+      notesRegclass: notesName,
+      bookmarksAbsent: bookmarks.rows[0]?.name == null,
+      migrateLog: log,
+      skipped: {
+        libraryClient: true,
+        reason: "PostgresLogicalDatabaseClient sets ssl rejectUnauthorized:true and is PlanetScale-only. This drive uses the example migrate-local script."
+      }
+    }
+    writeFileSync(dest + "/stdout.json", JSON.stringify(result, null, 2) + "\n")
+    process.stdout.write(JSON.stringify(result))
+    if (!result.ok) process.exit(1)
+  ' "$dest" "$url" "$migrate_log"
+}
+
+cmd_drive() {
+  local feature=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --feature)
+        feature="$2"
+        shift 2
+        ;;
+      --feature=*)
+        feature="${1#--feature=}"
+        shift
+        ;;
+      *)
+        die "unknown drive argument: $1"
+        ;;
+    esac
+  done
+  if [ -z "$feature" ]; then
+    die "drive requires --feature"
+  fi
+
+  local doctor
+  doctor="$(doctor_payload)"
+  if ! node --input-type=module -e 'process.exit(JSON.parse(process.argv[1]).worth_driving ? 0 : 1)' "$doctor"; then
+    json_out "$doctor"
+    exit 1
+  fi
+
+  local run_id
+  run_id="$(state_get runId)"
+  local dest
+  dest="$(feature_dir "$run_id" "$feature")"
+  mkdir -p "$dest"
+
+  local started ended exit_code=0
+  started="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+  local stdout_json=""
+  case "$feature" in
+    import-path-validation)
+      stdout_json="$(drive_import_path_validation "$dest")" || exit_code=$?
+      ;;
+    import-identity)
+      stdout_json="$(drive_import_identity "$dest")" || exit_code=$?
+      ;;
+    sql-apply-policy)
+      stdout_json="$(drive_sql_apply_policy "$dest")" || exit_code=$?
+      ;;
+    role-name-from-username)
+      stdout_json="$(drive_role_name "$dest")" || exit_code=$?
+      ;;
+    example-local-migrate)
+      stdout_json="$(drive_example_local_migrate "$dest")" || exit_code=$?
+      ;;
+    *)
+      die "unknown feature: $feature" '{"allowed":["import-path-validation","import-identity","sql-apply-policy","role-name-from-username","example-local-migrate"]}'
+      ;;
+  esac
+  ended="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+
+  node --input-type=module -e '
+    import { writeFileSync } from "node:fs"
+    const dest = process.argv[1]
+    const feature = process.argv[2]
+    const started = process.argv[3]
+    const ended = process.argv[4]
+    const exitCode = Number(process.argv[5])
+    let stdout = {}
+    try { stdout = JSON.parse(process.argv[6] || "{}") } catch { stdout = { raw: process.argv[6] } }
+    const assertions = { ok: exitCode === 0 && stdout.ok === true, feature, exitCode, started, ended }
+    writeFileSync(dest + "/assertions.json", JSON.stringify(assertions, null, 2) + "\n")
+  ' "$dest" "$feature" "$started" "$ended" "$exit_code" "$stdout_json"
+
+  json_out "$(node --input-type=module -e '
+    const stdout = JSON.parse(process.argv[1] || "{}")
+    process.stdout.write(JSON.stringify({
+      ok: Number(process.argv[2]) === 0 && stdout.ok === true,
+      feature: process.argv[3],
+      evidenceDir: process.argv[4],
+      exitCode: Number(process.argv[2]),
+      result: stdout
+    }))
+  ' "${stdout_json:-{}}" "$exit_code" "$feature" "$dest")"
+  exit "$exit_code"
+}
+
+cmd_snapshot() {
+  local export_dir=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --export)
+        export_dir="$2"
+        shift 2
+        ;;
+      --export=*)
+        export_dir="${1#--export=}"
+        shift
+        ;;
+      *)
+        die "unknown snapshot argument: $1"
+        ;;
+    esac
+  done
+  local run_id
+  run_id="$(state_get runId)"
+  if [ -z "$run_id" ]; then
+    die "no state; run launch first"
+  fi
+  local evidence
+  evidence="$(evidence_dir_for "$run_id")"
+  mkdir -p "$evidence/snapshot"
+  node --input-type=module -e '
+    import { cpSync, existsSync, mkdirSync, readdirSync, statSync, writeFileSync } from "node:fs"
+    import { join } from "node:path"
+    const evidence = process.argv[1]
+    const exportDir = process.argv[2]
+    const runId = process.argv[3]
+    const walk = (dir) => {
+      if (!existsSync(dir)) return []
+      const out = []
+      for (const name of readdirSync(dir)) {
+        const path = join(dir, name)
+        if (statSync(path).isDirectory()) out.push(...walk(path))
+        else out.push(path)
+      }
+      return out
+    }
+    const files = walk(evidence)
+    const snapshot = { ok: true, runId, evidenceDir: evidence, files }
+    writeFileSync(join(evidence, "snapshot", "snapshot.json"), JSON.stringify(snapshot, null, 2) + "\n")
+    if (exportDir) {
+      mkdirSync(exportDir, { recursive: true })
+      cpSync(evidence, join(exportDir, runId), { recursive: true })
+    }
+    process.stdout.write(JSON.stringify({
+      ok: true,
+      runId,
+      evidenceDir: evidence,
+      exportDir: exportDir || null,
+      files
+    }))
+  ' "$evidence" "$export_dir" "$run_id" | node --input-type=module -e '
+    let raw = ""
+    process.stdin.on("data", (c) => raw += c)
+    process.stdin.on("end", () => {
+      process.stdout.write(JSON.stringify(JSON.parse(raw), null, 2) + "\n")
+    })
+  '
+}
+
+cmd_cleanup() {
+  local raw
+  raw="$(read_state)"
+  local run_id=""
+  local evidence=""
+  local killed=()
+  if [ -n "$raw" ]; then
+    run_id="$(state_get runId)"
+    evidence="$(evidence_dir_for "$run_id")"
+    local pid
+    pid="$(state_get surfaces.example.pid)"
+    if [ -n "$pid" ]; then
+      if kill_recorded_pid "$pid" "pglite-server"; then
+        killed+=("$pid")
+      fi
+    fi
+  fi
+  if [ -d "$run_dir" ]; then
+    rm -rf "$run_dir"
+  fi
+  local survived=()
+  if [ -n "$evidence" ] && [ -d "$evidence" ]; then
+    while IFS= read -r -d '' file; do
+      survived+=("$file")
+    done < <(find "$evidence" -type f -print0)
+  fi
+  json_out "$(node --input-type=module -e '
+    process.stdout.write(JSON.stringify({
+      ok: true,
+      runId: process.argv[1] || null,
+      killedPids: JSON.parse(process.argv[2]),
+      evidenceDir: process.argv[3] || null,
+      evidence_survived: JSON.parse(process.argv[4])
+    }))
+  ' "$run_id" "$(node --input-type=module -e 'process.stdout.write(JSON.stringify(process.argv.slice(1)))' "${killed[@]:-}")" "$evidence" "$(node --input-type=module -e 'process.stdout.write(JSON.stringify(process.argv.slice(1)))' "${survived[@]:-}")")"
+}
+
+usage() {
+  die "usage: verify-logical-db <launch|doctor|drive|snapshot|cleanup|features> [args]"
+}
+
+main() {
+  local cmd="${1:-}"
+  if [ -z "$cmd" ]; then
+    usage
+  fi
+  shift || true
+  case "$cmd" in
+    launch) cmd_launch "$@" ;;
+    doctor) cmd_doctor "$@" ;;
+    drive) cmd_drive "$@" ;;
+    snapshot) cmd_snapshot "$@" ;;
+    cleanup) cmd_cleanup "$@" ;;
+    features) cmd_features "$@" ;;
+    *) usage ;;
+  esac
+}
+
+main "$@"
