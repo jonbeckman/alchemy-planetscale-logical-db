@@ -13,7 +13,15 @@ state_file="${VERIFY_STATE:-$run_dir/state.json}"
 default_port="${VERIFY_PGLITE_PORT:-25432}"
 
 json_out() {
-  node --input-type=module -e 'process.stdout.write(JSON.stringify(JSON.parse(process.argv[1]), null, 2) + "\n")' "$1"
+  printf '%s\n' "$1" | node --input-type=module -e '
+    let raw = ""
+    process.stdin.on("data", (chunk) => {
+      raw += chunk
+    })
+    process.stdin.on("end", () => {
+      process.stdout.write(JSON.stringify(JSON.parse(raw), null, 2) + "\n")
+    })
+  '
 }
 
 die() {
@@ -45,6 +53,13 @@ load_nub() {
     # shellcheck disable=SC1090
     . "$NVM_DIR/nvm.sh" >/dev/null
     nvm use 24.15.0 >/dev/null 2>&1 || true
+    if command -v nvm >/dev/null 2>&1; then
+      local nvm_node
+      nvm_node="$(dirname "$(nvm which 24.15.0 2>/dev/null || true)")"
+      if [ -n "$nvm_node" ] && [ -d "$nvm_node" ]; then
+        export PATH="${nvm_node}:${PATH}"
+      fi
+    fi
   fi
   export PATH="${HOME}/.nub/bin:${PATH}"
   hash -r
@@ -674,29 +689,36 @@ cmd_drive() {
   esac
   ended="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 
+  if [ -n "$stdout_json" ] && [ ! -f "$dest/stdout.json" ]; then
+    node --input-type=module -e '
+      import { writeFileSync } from "node:fs"
+      writeFileSync(process.argv[1], process.argv[2] + "\n")
+    ' "$dest/stdout.json" "$stdout_json"
+  fi
+
   node --input-type=module -e '
-    import { writeFileSync } from "node:fs"
+    import { readFileSync, writeFileSync, existsSync } from "node:fs"
     const dest = process.argv[1]
     const feature = process.argv[2]
     const started = process.argv[3]
     const ended = process.argv[4]
     const exitCode = Number(process.argv[5])
     let stdout = {}
-    try { stdout = JSON.parse(process.argv[6] || "{}") } catch { stdout = { raw: process.argv[6] } }
+    if (existsSync(dest + "/stdout.json")) {
+      stdout = JSON.parse(readFileSync(dest + "/stdout.json", "utf8"))
+    }
     const assertions = { ok: exitCode === 0 && stdout.ok === true, feature, exitCode, started, ended }
     writeFileSync(dest + "/assertions.json", JSON.stringify(assertions, null, 2) + "\n")
-  ' "$dest" "$feature" "$started" "$ended" "$exit_code" "$stdout_json"
-
-  json_out "$(node --input-type=module -e '
-    const stdout = JSON.parse(process.argv[1] || "{}")
-    process.stdout.write(JSON.stringify({
-      ok: Number(process.argv[2]) === 0 && stdout.ok === true,
-      feature: process.argv[3],
-      evidenceDir: process.argv[4],
-      exitCode: Number(process.argv[2]),
+    writeFileSync(dest + "/drive.json", JSON.stringify({
+      ok: assertions.ok,
+      feature,
+      evidenceDir: dest,
+      exitCode,
       result: stdout
-    }))
-  ' "${stdout_json:-{}}" "$exit_code" "$feature" "$dest")"
+    }, null, 2) + "\n")
+  ' "$dest" "$feature" "$started" "$ended" "$exit_code"
+
+  json_out "$(cat "$dest/drive.json")"
   exit "$exit_code"
 }
 
@@ -726,7 +748,7 @@ cmd_snapshot() {
   evidence="$(evidence_dir_for "$run_id")"
   mkdir -p "$evidence/snapshot"
   node --input-type=module -e '
-    import { cpSync, existsSync, mkdirSync, readdirSync, statSync, writeFileSync } from "node:fs"
+    import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs"
     import { join } from "node:path"
     const evidence = process.argv[1]
     const exportDir = process.argv[2]
@@ -741,27 +763,31 @@ cmd_snapshot() {
       }
       return out
     }
+    const copyTree = (src, dest) => {
+      mkdirSync(dest, { recursive: true })
+      for (const name of readdirSync(src)) {
+        const from = join(src, name)
+        const to = join(dest, name)
+        if (statSync(from).isDirectory()) copyTree(from, to)
+        else writeFileSync(to, readFileSync(from))
+      }
+    }
     const files = walk(evidence)
     const snapshot = { ok: true, runId, evidenceDir: evidence, files }
     writeFileSync(join(evidence, "snapshot", "snapshot.json"), JSON.stringify(snapshot, null, 2) + "\n")
+    const allFiles = walk(evidence)
     if (exportDir) {
       mkdirSync(exportDir, { recursive: true })
-      cpSync(evidence, join(exportDir, runId), { recursive: true })
+      copyTree(evidence, join(exportDir, runId))
     }
     process.stdout.write(JSON.stringify({
       ok: true,
       runId,
       evidenceDir: evidence,
       exportDir: exportDir || null,
-      files
-    }))
-  ' "$evidence" "$export_dir" "$run_id" | node --input-type=module -e '
-    let raw = ""
-    process.stdin.on("data", (c) => raw += c)
-    process.stdin.on("end", () => {
-      process.stdout.write(JSON.stringify(JSON.parse(raw), null, 2) + "\n")
-    })
-  '
+      files: allFiles
+    }, null, 2) + "\n")
+  ' "$evidence" "$export_dir" "$run_id"
 }
 
 cmd_cleanup() {
@@ -790,15 +816,24 @@ cmd_cleanup() {
       survived+=("$file")
     done < <(find "$evidence" -type f -print0)
   fi
-  json_out "$(node --input-type=module -e '
-    process.stdout.write(JSON.stringify({
+  local cleanup_json="$skill_dir/artifacts/.cleanup-result.json"
+  if [ -n "$evidence" ]; then
+    cleanup_json="$evidence/cleanup.json"
+  fi
+  mkdir -p "$(dirname "$cleanup_json")"
+  node --input-type=module -e '
+    import { writeFileSync } from "node:fs"
+    const killed = process.argv[2] ? process.argv[2].split("\n").filter(Boolean) : []
+    const survived = process.argv[4] ? process.argv[4].split("\n").filter(Boolean) : []
+    writeFileSync(process.argv[5], JSON.stringify({
       ok: true,
       runId: process.argv[1] || null,
-      killedPids: JSON.parse(process.argv[2]),
+      killedPids: killed,
       evidenceDir: process.argv[3] || null,
-      evidence_survived: JSON.parse(process.argv[4])
-    }))
-  ' "$run_id" "$(node --input-type=module -e 'process.stdout.write(JSON.stringify(process.argv.slice(1)))' "${killed[@]:-}")" "$evidence" "$(node --input-type=module -e 'process.stdout.write(JSON.stringify(process.argv.slice(1)))' "${survived[@]:-}")")"
+      evidence_survived: survived
+    }, null, 2) + "\n")
+  ' "$run_id" "$(printf '%s\n' "${killed[@]+"${killed[@]}"}")" "$evidence" "$(printf '%s\n' "${survived[@]+"${survived[@]}"}")" "$cleanup_json"
+  json_out "$(cat "$cleanup_json")"
 }
 
 usage() {
@@ -806,6 +841,7 @@ usage() {
 }
 
 main() {
+  load_nub
   local cmd="${1:-}"
   if [ -z "$cmd" ]; then
     usage
