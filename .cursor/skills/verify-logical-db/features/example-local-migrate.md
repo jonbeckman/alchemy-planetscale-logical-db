@@ -31,6 +31,7 @@ Preconditions:
 ## Gotchas
 
 - `nub run --cwd example migrate:local` hardcodes port `15432`. The CLI overrides `DATABASE_URL` for the verify port.
+- Doctor `cmdlineHasPglite` is true when the recorded PID cmdline contains `pglite-server` or `pglite-socket`. Nub shims replace the binary name with `node` plus the `pglite-socket` server script.
 - The library client cannot target PGLite. It sets `ssl.rejectUnauthorized` to true.
 - `0001_init.sql` uses `create table if not exists`. A second drive on the same data dir still exits 0.
 - Do not treat this path as proof that `PostgresLogicalDatabase` reconciled ownership, migrations tables, or app-role grants.
