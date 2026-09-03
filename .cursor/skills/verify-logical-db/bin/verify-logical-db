@@ -154,6 +154,11 @@ pid_cmdline() {
   tr '\0' ' ' < "/proc/$pid/cmdline"
 }
 
+is_pglite_cmdline() {
+  local cmd="$1"
+  [[ "$cmd" == *"pglite-server"* || "$cmd" == *"pglite-socket"* ]]
+}
+
 kill_recorded_pid() {
   local pid="$1"
   local expect="$2"
@@ -162,7 +167,12 @@ kill_recorded_pid() {
   fi
   local cmd
   cmd="$(pid_cmdline "$pid")"
-  if [[ "$cmd" != *"$expect"* ]]; then
+  if [ "$expect" = "pglite-server" ]; then
+    if ! is_pglite_cmdline "$cmd"; then
+      echo "refusing to kill pid $pid; cmdline is not a pglite server" >&2
+      return 1
+    fi
+  elif [[ "$cmd" != *"$expect"* ]]; then
     echo "refusing to kill pid $pid; cmdline does not contain $expect" >&2
     return 1
   fi
@@ -418,11 +428,13 @@ doctor_payload() {
     const example = state.surfaces.example
     let examplePidAlive = false
     let exampleCmdOk = false
+    let exampleCmdline = ""
     if (example.pid) {
       try {
-        const cmd = readFileSync("/proc/" + example.pid + "/cmdline", "utf8")
+        const cmd = readFileSync("/proc/" + example.pid + "/cmdline", "utf8").replaceAll("\0", " ")
         examplePidAlive = true
-        exampleCmdOk = cmd.includes("pglite-server")
+        exampleCmdline = cmd.slice(0, 240)
+        exampleCmdOk = cmd.includes("pglite-server") || cmd.includes("pglite-socket")
       } catch {
         examplePidAlive = false
       }
@@ -451,6 +463,7 @@ doctor_payload() {
         pid: example.pid,
         pidAlive: examplePidAlive,
         cmdlineHasPglite: exampleCmdOk,
+        cmdline: exampleCmdline || null,
         port: example.port,
         dataDir: example.dataDir
       }

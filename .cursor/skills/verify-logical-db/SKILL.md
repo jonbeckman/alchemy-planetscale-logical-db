@@ -62,7 +62,7 @@ Worth driving only when `worth_driving` is true:
 - `library.testExists` is true (`test/postgres-logical-database.test.ts`)
 - `library.ready` is true from this run's launch
 - `nubOk` is true
-- Example is optional. If state has a PGLite PID, doctor checks that PID is alive and the cmdline still contains `pglite-server`
+- Example is optional. If state has a PGLite PID, doctor checks that PID is alive and the cmdline still contains `pglite-server` or `pglite-socket`. Nub shims exec `node` against the `pglite-socket` server script, so argv is not `pglite-server`.
 
 If doctor fails, stop driving. Cleanup residue, then relaunch.
 
@@ -102,7 +102,7 @@ Standards:
 "$VERIFY" cleanup
 ```
 
-Kills only recorded PGLite PIDs whose `/proc/<pid>/cmdline` still contains `pglite-server`. Removes `.run/` scratch (state, disposable PGLite data). Does not delete `artifacts/<run-id>/`. After cleanup, confirm `evidence_survived` is non-empty. A cleanup that eats the proof has failed.
+Kills only recorded PGLite PIDs whose `/proc/<pid>/cmdline` still contains `pglite-server` or `pglite-socket`. Removes `.run/` scratch (state, disposable PGLite data). Does not delete `artifacts/<run-id>/`. After cleanup, confirm `evidence_survived` is non-empty. A cleanup that eats the proof has failed.
 
 ## Feature map
 
