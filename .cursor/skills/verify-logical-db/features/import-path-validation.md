@@ -9,6 +9,7 @@ Import path validation lets a user pass `importFiles` on `PostgresLogicalDatabas
 - `import-reject-parent` rejects `../secrets.sql` and `seeds/../users.sql`.
 - `import-reject-absolute` rejects `/abs/path.sql` and `C:/seeds/users.sql`.
 - `import-reject-empty` rejects `""` and `seeds//users.sql`.
+- `import-reject-backslash` rejects `seeds\users.sql`.
 
 ## How to get to it (user POV)
 
@@ -24,9 +25,9 @@ Preconditions:
 - `"$VERIFY" doctor` reported `worth_driving: true`.
 
 - **Show the command.** Run `"$VERIFY" features` and confirm `import-path-validation` is listed.
-- **Run the public helper.** Run `"$VERIFY" drive --feature import-path-validation`. Exit code `0`. Stdout JSON has `ok: true`, `module: "src/index.ts"`, four accepted paths, and the rejected paths from the test file.
+- **Run the public helper.** Run `"$VERIFY" drive --feature import-path-validation`. Exit code `0`. Stdout JSON has `ok: true`, `module: "src/index.ts"`, the four accepted paths from Sub-features, and the rejected paths from Sub-features.
 - **Check the reject text.** Each reject throws a message that contains `normalized, repository-relative path`.
-- **Proof.** Keep `artifacts/<run-id>/drive-import-path-validation/stdout.json` and `assertions.json`. Both identify `src/index.ts`. Do not treat `nub run lint` as a substitute for this public helper.
+- **Proof.** Keep `artifacts/<run-id>/drive-import-path-validation/stdout.json` and `assertions.json`. `stdout.json` identifies `src/index.ts`. `assertions.json` records `ok`, `feature`, and `exitCode` only. Do not treat `nub run lint` as a substitute for this public helper.
 
 ## Gotchas
 
