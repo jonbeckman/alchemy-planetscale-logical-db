@@ -492,7 +492,7 @@ drive_import_path_validation() {
     const dest = process.argv[2]
     const { validateImportFilePath } = await import(pathToFileURL(process.argv[1]).href)
     const accepted = ["seeds/users.sql", "a.sql", "_private/seed.sql", "nested/deep/file.sql"]
-    const rejected = ["", "./seed/users.sql", "../secrets.sql", "/abs/path.sql", "seeds\\\\users.sql", "C:/seeds/users.sql", "seeds//users.sql", "seeds/./users.sql", "seeds/../users.sql"]
+    const rejected = ["", "./seed/users.sql", "../secrets.sql", "/abs/path.sql", "seeds\\users.sql", "C:/seeds/users.sql", "seeds//users.sql", "seeds/./users.sql", "seeds/../users.sql"]
     const accepts = []
     const rejects = []
     for (const path of accepted) {
