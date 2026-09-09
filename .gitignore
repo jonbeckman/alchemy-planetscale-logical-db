@@ -3,3 +3,7 @@
 .pglite/
 dist/
 node_modules/
+
+# verify-logical-db skill contract: run state and evidence stay untracked
+.cursor/skills/verify-logical-db/.run/
+.cursor/skills/verify-logical-db/artifacts/
