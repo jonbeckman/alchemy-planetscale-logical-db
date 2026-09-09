@@ -3,7 +3,6 @@ export {
   PostgresLogicalDatabaseProvider,
   postgresRoleNameFromUsername,
   validateImportFilePath,
-  type PostgresLogicalDatabase as PostgresLogicalDatabaseResource,
   type PostgresLogicalDatabaseAttributes,
   type PostgresLogicalDatabaseProps,
 } from "./PostgresLogicalDatabase.ts"
