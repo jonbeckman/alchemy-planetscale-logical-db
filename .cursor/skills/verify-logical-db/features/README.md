@@ -7,7 +7,7 @@ This directory is the maintained source for verifying the user-facing behavior o
 - Work from the repository root that contains `package.json` name `alchemy-planetscale-logical-db`.
 - Put `VERIFY=./.cursor/skills/verify-logical-db/bin/verify-logical-db` on your command line.
 - Run `"$VERIFY" launch` then `"$VERIFY" doctor`. Require `worth_driving: true`.
-- Never npm publish. Never run `example` `deploy:db` or `deploy:app:remote`.
+- Never npm publish. Never run `example` `deploy:db`.
 - Never drive a PGLite instance this run did not start.
 
 ## Driving conventions

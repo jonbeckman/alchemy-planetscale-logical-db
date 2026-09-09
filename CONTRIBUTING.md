@@ -3,7 +3,7 @@
 This repository is the Apache-2.0 Alchemy v2 resource
 [`alchemy-planetscale-logical-db`](https://github.com/jonbeckman/alchemy-planetscale-logical-db).
 Read the [README](README.md) for the product picture and the
-[example](example/README.md) for the PlanetScale + PGLite + Hyperdrive walkthrough.
+[example](example/README.md) for the PlanetScale + PGLite walkthrough.
 
 ## Before you start
 
