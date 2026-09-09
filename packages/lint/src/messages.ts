@@ -13,12 +13,8 @@ export const messages = {
     "Rule: avoid nested Effect combinators. Why: they hide sequencing and create laddered control flow. Fix: build context once (Effect.all/Effect.map) and then run a single flat pipeline.",
   "no-effect-call-in-effect-arg":
     "Rule: avoid Effect calls nested as arguments (Effect.xx(Effect.yy(...))). Why: it hides sequencing. Fix: build the inner Effect first, then use pipe/Effect.flatMap/Effect.andThen to keep a single flat pipeline.",
-  "no-nested-effect-call":
-    "Rule: avoid deeply nested Effect calls (Effect.xx(Effect.yy(Effect.zz(...)))). Why: they hide sequencing and spread flow. Fix: build values first, then run one flat Effect pipeline.",
   "no-effect-as":
     "Rule: avoid Effect.as. Why: it hides sequencing and turns effects into placeholders. Fix: use Effect.map for value mapping or Effect.asVoid after explicit pipeline steps.",
-  "no-call-tower":
-    "Rule: avoid nested Effect call towers (Effect.fn(Effect.fn(...))). Why: it hides sequencing. Fix: build the inner Effect first, then use pipe/Effect.flatMap/Effect.andThen for a single flat pipeline.",
   "no-option-as":
     "Rule: avoid Option.as. Why: it hides selection and encourages placeholder flows. Fix: use Option.map or Option.match and return the value explicitly.",
   "no-arrow-ladder":
@@ -49,8 +45,6 @@ export const messages = {
     "Rule: avoid Effect.as/Effect.zipRight for side effects. Why: they hide side effects and discard values. Fix: use explicit pipeline steps that return real values (Effect.flatMap/andThen/tap).",
   "no-effect-orElse-ladder":
     "Rule: avoid Effect.orElse around sequencing chains. Why: it hides error handling and splits the flow. Fix: move error handling to a single terminal decision after the pipeline.",
-  "no-return-in-callback":
-    "Rule: avoid return statements in callbacks. Why: they hide local control flow. Fix: use expression callbacks or move the branch into a named value before the Effect pipeline.",
   "no-manual-effect-channels":
     "Rule: avoid manual Effect channel tuples (`Effect.Effect<...>` / `Layer.Layer<...>`). Why: channels compose through the Effect pipeline and services; hand-written tuples desync from the real flow. Fix: drop the generic and let the return type infer from the Effect/Layer you return.",
   "prevent-dynamic-imports":

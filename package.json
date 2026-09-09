@@ -28,7 +28,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "check": "nub run typecheck && nub run lint && nub run format && nub run test && nub run build && nub run --cwd example typecheck",
+    "check": "nub run typecheck && nub run --cwd packages/lint typecheck && nub run lint && nub run format && nub run test && nub run build && nub run --cwd example typecheck",
     "format": "oxfmt --check",
     "format:fix": "oxfmt",
     "lint": "NODE_OPTIONS='--import tsx' oxlint",
