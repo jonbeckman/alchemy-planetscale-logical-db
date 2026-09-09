@@ -107,9 +107,8 @@ compatibility with the original upstream branch.
 
 ## Example
 
-The original PlanetScale + PGLite + Hyperdrive example lives in
-[`example/`](./example). It shows one shared PlanetScale Postgres cluster with
-two logical databases and one Cloudflare Hyperdrive-backed Vite Worker.
+The example in [`example/`](./example) shows one shared PlanetScale Postgres
+cluster with two logical databases, plus a local PGLite migrate walkthrough.
 
 ## Development
 

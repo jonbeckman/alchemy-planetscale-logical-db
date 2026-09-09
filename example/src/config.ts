@@ -4,7 +4,6 @@ import * as Option from "effect/Option"
 const projectPath = (path: string) => new URL(path, import.meta.url).pathname
 
 export const DB_STACK_NAME = "SharedPostgres"
-export const APP_STACK_NAME = "ExampleViteApp"
 
 export const postgresCluster = {
   name: "side-projects-postgres",
@@ -17,14 +16,12 @@ export const projects = {
   project_a: {
     slug: "project_a",
     resourcePrefix: "ProjectA",
-    workerName: "project-a-web",
     logicalDatabaseName: "project_a",
     migrationsDir: projectPath("../migrations/project_a"),
   },
   project_b: {
     slug: "project_b",
     resourcePrefix: "ProjectB",
-    workerName: "project-b-web",
     logicalDatabaseName: "project_b",
     migrationsDir: projectPath("../migrations/project_b"),
   },
@@ -50,5 +47,3 @@ export const getProject = (slug: string): ProjectConfig =>
       onNone: () => unknownProjectSlug(slug),
     }),
   )
-
-export const appRoot = projectPath("../app")

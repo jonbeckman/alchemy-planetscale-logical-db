@@ -1,15 +1,13 @@
 import { NodeRuntime, NodeServices } from "@effect/platform-node"
-import postgres from "postgres"
 import * as Arr from "effect/Array"
 import * as Console from "effect/Console"
 import * as Effect from "effect/Effect"
 import * as FileSystem from "effect/FileSystem"
 import * as Order from "effect/Order"
 import * as Path from "effect/Path"
+import { Client } from "pg"
 import { getProject, type ProjectConfig } from "../src/config.ts"
 import { requiredEnv } from "../src/env.ts"
-
-type SqlClient = ReturnType<typeof postgres>
 
 const sqlFiles = (entries: readonly string[]) =>
   Arr.sort(
@@ -17,15 +15,18 @@ const sqlFiles = (entries: readonly string[]) =>
     Order.String,
   )
 
-const openSqlClient = (databaseUrl: string) =>
-  Effect.try({
-    try: () => postgres(databaseUrl, { max: 1 }),
-    catch: (error) => error,
-  })
-
-const closeSqlClient = (sql: SqlClient) =>
+const connectSqlClient = (client: Client) =>
   Effect.tryPromise({
-    try: () => sql.end(),
+    try: () => client.connect(),
+    catch: (error) => error,
+  }).pipe(Effect.map(() => client))
+
+const openSqlClient = (databaseUrl: string) =>
+  connectSqlClient(new Client({ connectionString: databaseUrl, ssl: false }))
+
+const closeSqlClient = (client: Client) =>
+  Effect.tryPromise({
+    try: () => client.end(),
     catch: (error) => error,
   }).pipe(Effect.ignore)
 
@@ -34,14 +35,14 @@ const applyMigration = (input: {
   readonly fs: FileSystem.FileSystem
   readonly path: Path.Path
   readonly project: ProjectConfig
-  readonly sql: SqlClient
+  readonly sql: Client
 }) =>
   Effect.gen(function* () {
     const migration = yield* input.fs.readFileString(
       input.path.join(input.project.migrationsDir, input.file),
     )
     yield* Effect.tryPromise({
-      try: () => input.sql.unsafe(migration),
+      try: () => input.sql.query(migration),
       catch: (error) => error,
     })
     yield* Console.log(`applied ${input.project.slug}/${input.file}`)
@@ -51,7 +52,7 @@ const runMigrations = (input: {
   readonly fs: FileSystem.FileSystem
   readonly path: Path.Path
   readonly project: ProjectConfig
-  readonly sql: SqlClient
+  readonly sql: Client
 }) =>
   Effect.gen(function* () {
     const entries = yield* input.fs.readDirectory(input.project.migrationsDir)

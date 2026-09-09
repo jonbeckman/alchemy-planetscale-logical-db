@@ -1,14 +1,14 @@
 {
   "compilerOptions": {
     "allowImportingTsExtensions": true,
-    "lib": ["ES2024", "DOM"],
+    "lib": ["ES2024"],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "noEmit": true,
     "skipLibCheck": true,
     "strict": true,
     "target": "ES2024",
-    "types": ["@cloudflare/workers-types", "node"]
+    "types": ["node"]
   },
-  "include": ["*.ts", "src/**/*.ts", "scripts/**/*.ts", "app/src/**/*.ts"]
+  "include": ["*.ts", "src/**/*.ts", "scripts/**/*.ts"]
 }

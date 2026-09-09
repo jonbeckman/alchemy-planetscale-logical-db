@@ -7,7 +7,7 @@ description: Verify alchemy-planetscale-logical-db (Alchemy v2 logical Postgres 
 
 Read this cold. Drive the published library surface. Do not npm publish. Do not deploy `example/` to Alchemy, Cloudflare, or PlanetScale. Do not bump product dependencies.
 
-This repo is an npm library, not a live app. The user path is TypeScript import plus `nub run test`. `example/` is a secondary local PGLite walkthrough. Remote `nub run deploy:db` and `nub run deploy:app:remote` are out of scope.
+This repo is an npm library, not a live app. The user path is TypeScript import plus `nub run test`. `example/` is a secondary local PGLite walkthrough. Remote `nub run deploy:db` is out of scope.
 
 ## Helpers
 
