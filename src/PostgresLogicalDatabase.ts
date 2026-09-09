@@ -151,44 +151,6 @@ export interface PostgresLogicalDatabaseAttributes {
  * cluster. Use this resource when that cluster should contain multiple
  * PostgreSQL databases, each with separate migrations, imports, and app-role
  * grants.
- *
- * @section Creating a Logical Database
- * @example Logical database with migrations
- * ```typescript
- * const database = yield* Planetscale.PostgresDatabase("Database", {
- *   clusterSize: "PS_10",
- * });
- *
- * const adminRole = yield* Planetscale.PostgresRole("AdminRole", {
- *   database,
- *   inheritedRoles: ["postgres"],
- * });
- *
- * const applicationRole = yield* Planetscale.PostgresRole("ApplicationRole", {
- *   database,
- *   inheritedRoles: [],
- * });
- * const applicationRoleName = PlanetscaleLogicalDb.postgresRoleNameFromUsername(
- *   applicationRole.username,
- * );
- *
- * const logicalDb = yield* PlanetscaleLogicalDb.PostgresLogicalDatabase("AppDb", {
- *   name: "app",
- *   adminOrigin: adminRole.origin,
- *   appRoleName: applicationRoleName,
- *   migrationsDir: "./migrations",
- * });
- * ```
- *
- * @section Imports
- * @example Apply seed files
- * ```typescript
- * const logicalDb = yield* PlanetscaleLogicalDb.PostgresLogicalDatabase("SeededDb", {
- *   name: "seeded",
- *   adminOrigin: adminRole.origin,
- *   importFiles: ["seeds/users.sql"],
- * });
- * ```
  */
 export type PostgresLogicalDatabase = Resource<
   "Planetscale.PostgresLogicalDatabase",
