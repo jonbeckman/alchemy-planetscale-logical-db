@@ -34,7 +34,6 @@ import {
   returnStatements,
   typeNameText,
 } from "./ast.ts"
-import { isLintAllowedDynamicImportBoundary } from "./lint-boundaries.ts"
 import { defineLintRule } from "./make-rule.ts"
 import type { LintRuleName } from "./rule-names.ts"
 import type { NodeLike } from "./types.ts"
@@ -114,31 +113,9 @@ export const rules = {
       },
     }),
   ),
-  "no-nested-effect-call": defineLintRule("no-nested-effect-call", ({ report, shouldRun }) => ({
-    CallExpression(node) {
-      if (!shouldRun() || !isEffectCall(node)) {
-        return
-      }
-      const firstArgument = callArguments(node)[0]
-      if (isEffectCall(firstArgument) && firstNestedEffectCall(firstArgument)) {
-        report(node)
-      }
-    },
-  })),
   "no-effect-as": defineLintRule("no-effect-as", ({ report, shouldRun }) => ({
     CallExpression(node) {
       if (shouldRun() && isEffectCall(node, "as")) {
-        report(node)
-      }
-    },
-  })),
-  "no-call-tower": defineLintRule("no-call-tower", ({ report, shouldRun }) => ({
-    CallExpression(node) {
-      if (
-        shouldRun() &&
-        isEffectCall(node) &&
-        callArguments(node).some((argument) => isEffectCall(argument))
-      ) {
         report(node)
       }
     },
@@ -344,21 +321,6 @@ export const rules = {
       }
     },
   })),
-  "no-return-in-callback": defineLintRule("no-return-in-callback", ({ report, shouldRun }) => ({
-    ArrowFunctionExpression(node) {
-      if (!shouldRun() || !isNodeType(functionBody(node), "BlockStatement")) {
-        return
-      }
-      const call = parentCall(node)
-      if (isSchemaFilterCall(call)) {
-        return
-      }
-      const returned = returnStatements(functionBody(node))[0]
-      if (returned) {
-        report(returned)
-      }
-    },
-  })),
   "no-manual-effect-channels": defineLintRule(
     "no-manual-effect-channels",
     ({ report, shouldRun }) => ({
@@ -375,11 +337,8 @@ export const rules = {
   ),
   "prevent-dynamic-imports": defineLintRule(
     "prevent-dynamic-imports",
-    ({ report }, context) => ({
+    ({ report }) => ({
       ImportExpression(node) {
-        if (isLintAllowedDynamicImportBoundary(context.filename)) {
-          return
-        }
         report(node)
       },
     }),

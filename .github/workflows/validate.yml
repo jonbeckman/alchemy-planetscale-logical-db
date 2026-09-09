@@ -38,6 +38,9 @@ jobs:
       - name: Typecheck
         run: nub run typecheck
 
+      - name: Typecheck lint package
+        run: nub run --cwd packages/lint typecheck
+
       - name: Lint
         run: nub run lint
 

@@ -13,7 +13,11 @@ const effectHandlerMethods = new Set([
 export function isNode(
   value: NodeLike | readonly NodeLike[] | string | number | boolean | bigint | null | undefined,
 ): value is NodeLike {
-  return value !== null && value !== undefined && Object(value) === value && "type" in value
+  if (value === null || value === undefined) {
+    return false
+  }
+  const objectValue: object = Object(value)
+  return objectValue === value && "type" in objectValue
 }
 
 export function isNodeType(node: NodeLike | undefined, type: string): node is NodeLike {
@@ -73,11 +77,7 @@ export function identifierName(node: NodeLike | undefined): string | undefined {
   if (node === undefined) {
     return undefined
   }
-  if (
-    node.type === "Identifier" ||
-    node.type === "PrivateIdentifier" ||
-    node.type === "JSXIdentifier"
-  ) {
+  if (node.type === "Identifier" || node.type === "PrivateIdentifier") {
     return node.name
   }
   const value = literalValue(node)
@@ -185,7 +185,7 @@ export function memberParts(node: NodeLike | undefined): string[] | undefined {
   if (!current) {
     return undefined
   }
-  const currentType = current.type
+  const currentType: string = current.type
   if (currentType === "Identifier") {
     const name = identifierName(current)
     return name ? [name] : undefined
@@ -232,14 +232,6 @@ export function isCallTo(
     return false
   }
   return methodName === undefined || parts.at(-1) === methodName
-}
-
-function isIdentifierCall(node: NodeLike | undefined, name: string): boolean {
-  const call = unwrapExpression(node)
-  if (!isCallExpression(call)) {
-    return false
-  }
-  return identifierName(unwrapExpression(callee(call))) === name
 }
 
 export function isPipeCall(node: NodeLike | undefined): boolean {
@@ -338,9 +330,6 @@ function isSideEffectCall(node: NodeLike): boolean {
   if (!isCallExpression(node)) {
     return false
   }
-  if (isIdentifierCall(node, "setState") || isIdentifierCall(node, "invalidate")) {
-    return true
-  }
   const parts = memberParts(callee(node))
   if (!parts) {
     return false
@@ -348,10 +337,8 @@ function isSideEffectCall(node: NodeLike): boolean {
   const method = parts.at(-1)
   const object = parts.at(-2) ?? parts[0]
   return (
-    (object === "Atom" && method === "set") ||
     (object === "Ref" && method === "set") ||
     (object === "SubscriptionRef" && method === "set") ||
-    (object === "Reactivity" && method === "invalidate") ||
     (object === "Fiber" && method === "interrupt") ||
     (parts[0] === "Effect" && method !== undefined && method.startsWith("log")) ||
     parts[0] === "console"
@@ -562,4 +549,31 @@ export function isConsoleCall(node: NodeLike): boolean {
     return false
   }
   return isConsoleAccess(callee(node))
+}
+
+const effectUtilityImportSources = new Set(["effect/Clock", "effect/DateTime"])
+
+function isEffectModuleSource(
+  value: string | number | boolean | bigint | null | undefined,
+): value is string {
+  return (
+    value === "effect" ||
+    (value !== null &&
+      value !== undefined &&
+      value === `${value}` &&
+      value.startsWith("effect/") &&
+      !effectUtilityImportSources.has(value))
+  )
+}
+
+export function hasEffectSignal(program: NodeLike): boolean {
+  return containsNode(program, (candidate) => {
+    if (candidate.type === "ImportDeclaration") {
+      const source = nodeChild(candidate, "source")
+      const value = literalValue(source)
+      return isEffectModuleSource(value)
+    }
+    const parts = memberParts(candidate)
+    return parts?.[0] === "Effect" && parts.length > 1
+  })
 }

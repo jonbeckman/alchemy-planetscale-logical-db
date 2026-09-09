@@ -5,9 +5,7 @@ const compositionRuleNames = [
   "no-flatmap-ladder",
   "no-effect-ladder",
   "no-effect-call-in-effect-arg",
-  "no-nested-effect-call",
   "no-effect-as",
-  "no-call-tower",
   "no-option-as",
   "no-arrow-ladder",
   "no-branch-in-object",
@@ -23,7 +21,6 @@ const compositionRuleNames = [
   "warn-effect-sync-wrapper",
   "no-effect-side-effect-wrapper",
   "no-effect-orElse-ladder",
-  "no-return-in-callback",
   "no-manual-effect-channels",
   "prevent-dynamic-imports",
 ] as const
