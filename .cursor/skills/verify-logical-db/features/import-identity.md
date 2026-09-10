@@ -22,10 +22,10 @@ Preconditions:
 - `"$VERIFY" launch` reported `surfaces.library.ready`.
 - `"$VERIFY" doctor` reported `worth_driving: true`.
 
-- **Run identity checks.** Run `"$VERIFY" drive --feature import-identity`. Exit code `0`. Stdout JSON has `ok: true`.
-- **Check same identity.** `checks.same` and `checks.sameInner` are true.
-- **Check unstable paths.** `checks.notParent` and `checks.notAbs` are true.
-- **Check legacy rows.** `checks.removed` is `[]`. `checks.stored.storedName` is `./seed/users.sql` and `checks.stored.hash` is `abc`.
+- **Run identity checks.** Run `"$VERIFY" drive --feature import-identity`. Exit code `0`. CLI stdout has `ok: true`.
+- **Check same identity.** `result.checks.same` and `result.checks.sameInner` are true. Those fields are top-level under `checks` in `stdout.json`.
+- **Check unstable paths.** `result.checks.notParent` and `result.checks.notAbs` are true.
+- **Check legacy rows.** `result.checks.removed` is `[]`. `result.checks.stored.storedName` is `./seed/users.sql` and `result.checks.stored.hash` is `abc`.
 - **Proof.** Keep `artifacts/<run-id>/drive-import-identity/stdout.json`. A passing `validateImportFilePath` run is not this feature.
 
 ## Gotchas

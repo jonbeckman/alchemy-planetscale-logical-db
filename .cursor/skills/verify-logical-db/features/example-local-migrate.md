@@ -23,9 +23,9 @@ Preconditions:
 - The PGLite port is the verify-owned port from state, not `15432`, unless this run started `15432`.
 
 - **Show the surface.** Run `"$VERIFY" doctor` and confirm `example.pidAlive` and `example.cmdlineHasPglite`.
-- **Run migrate.** Run `"$VERIFY" drive --feature example-local-migrate`. Exit code `0`. Stdout JSON has `ok: true` and `notesRegclass: "notes"`.
-- **Check the skip.** `skipped.libraryClient` is true. This drive did not call `PostgresLogicalDatabaseClient`.
-- **Check project isolation.** `bookmarksAbsent` is true after a `project_a` migrate.
+- **Run migrate.** Run `"$VERIFY" drive --feature example-local-migrate`. Exit code `0`. CLI stdout has `ok: true`. `result.notesRegclass` is `"notes"`. That field is top-level in `stdout.json`.
+- **Check the skip.** `result.skipped.libraryClient` is true (top-level `skipped.libraryClient` in `stdout.json`). This drive did not call `PostgresLogicalDatabaseClient`.
+- **Check project isolation.** `result.bookmarksAbsent` is true after a `project_a` migrate.
 - **Proof.** Keep `artifacts/<run-id>/drive-example-local-migrate/stdout.json` and `migrate.log`. The log contains `applied project_a/0001_init.sql`.
 
 ## Gotchas
