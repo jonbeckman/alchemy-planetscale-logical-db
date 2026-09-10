@@ -88,7 +88,7 @@ Proof lives in `.cursor/skills/verify-logical-db/artifacts/<run-id>/` and, when 
 Standards:
 
 - Drive the public API or the documented example script. Do not treat `nub run lint` as a substitute for a mapped feature.
-- Capture the command, stdout JSON, and exit code.
+- Capture the command, stdout JSON, and exit code. Drive CLI stdout is `{ ok, feature, evidenceDir, exitCode, result }`. Helper fields are under `result` and are top-level in `stdout.json`.
 - Launch already ran `nub run test`. Keep `artifacts/<run-id>/launch/test.log` as the library run log.
 - Mutation proof (`example-local-migrate`) must re-read `to_regclass('public.notes')` after migrate.
 - Observe the PlanetScale skip: `example-local-migrate` must report `skipped.libraryClient: true`.

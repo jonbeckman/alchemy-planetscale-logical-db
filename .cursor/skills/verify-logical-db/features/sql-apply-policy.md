@@ -22,11 +22,11 @@ Preconditions:
 - `"$VERIFY" launch` reported `surfaces.library.ready`.
 - `"$VERIFY" doctor` reported `worth_driving: true`.
 
-- **Run the policy table.** Run `"$VERIFY" drive --feature sql-apply-policy`. Exit code `0`. Stdout JSON has `ok: true`.
-- **Check new files.** `cases.newRejectWrites.shouldWrite` and `cases.newReapplyWrites.shouldWrite` are true. `cases.newRejectWrites.rejectsChangedFile` is false.
-- **Check unchanged.** `cases.unchangedSkips.shouldWrite` is false.
-- **Check migration reject.** `cases.changedRejects.rejectsChangedFile` is true and `shouldWrite` is true.
-- **Check import reapply.** `cases.changedReapplies.rejectsChangedFile` is false and `shouldWrite` is true.
+- **Run the policy table.** Run `"$VERIFY" drive --feature sql-apply-policy`. Exit code `0`. CLI stdout has `ok: true`.
+- **Check new files.** `result.cases.newRejectWrites.shouldWrite` and `result.cases.newReapplyWrites.shouldWrite` are true. `result.cases.newRejectWrites.rejectsChangedFile` is false. Those fields are top-level under `cases` in `stdout.json`.
+- **Check unchanged.** `result.cases.unchangedSkips.shouldWrite` is false.
+- **Check migration reject.** `result.cases.changedRejects.rejectsChangedFile` is true and `shouldWrite` is true.
+- **Check import reapply.** `result.cases.changedReapplies.rejectsChangedFile` is false and `shouldWrite` is true.
 - **Proof.** Keep `artifacts/<run-id>/drive-sql-apply-policy/stdout.json`. Do not apply SQL to PlanetScale for this feature.
 
 ## Gotchas

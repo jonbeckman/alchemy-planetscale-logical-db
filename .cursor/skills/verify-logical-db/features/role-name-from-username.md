@@ -10,7 +10,7 @@ Role name from username lets a user take a PlanetScale connection username that 
 
 ## How to get to it (user POV)
 
-- Call `postgresRoleNameFromUsername` on `applicationRole.username` as shown in the `PostgresLogicalDatabase` doc example.
+- Pass `appRoleName` with `Output.map(appRole.username, postgresRoleNameFromUsername)` as shown in the root README usage example.
 - Import `postgresRoleNameFromUsername` from `alchemy-planetscale-logical-db` (`src/index.ts` in this checkout).
 
 ## Driving it with verify-logical-db
@@ -20,12 +20,13 @@ Preconditions:
 - `"$VERIFY" launch` reported `surfaces.library.ready`.
 - `"$VERIFY" doctor` reported `worth_driving: true`.
 
-- **Run the helper.** Run `"$VERIFY" drive --feature role-name-from-username`. Exit code `0`. Stdout JSON has `ok: true` and `module: "src/index.ts"`.
-- **Check the suffix split.** `cases.suffixed` is `app`. `cases.plain` is `app`. `cases.empty` is `""`.
+- **Run the helper.** Run `"$VERIFY" drive --feature role-name-from-username`. Exit code `0`. CLI stdout has `ok: true`. `result.module` is `"src/index.ts"`. Those fields are top-level in `stdout.json`.
+- **Check the suffix split.** `result.cases.suffixed` is `app`. `result.cases.plain` is `app`. `result.cases.empty` is `""`.
 - **Proof.** Keep `artifacts/<run-id>/drive-role-name-from-username/stdout.json`. Do not call PlanetScale for a username.
 
 ## Gotchas
 
 - The helper splits on the first `.` only by taking `[0]`. It does not validate the prefix as a Postgres identifier.
 - PlanetScale usernames can contain more than one `.`. The visible role is the first segment.
+- `appRole.username` is an Alchemy Output, not a string. Map it with `Output.map`. Do not call the helper on the Output object.
 - An empty username becomes an empty role name. The resource treats a missing `appRoleName` as no grant, not as this helper output.
