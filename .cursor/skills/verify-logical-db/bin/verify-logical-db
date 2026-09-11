@@ -48,10 +48,13 @@ require_repo() {
 
 load_nub() {
   export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+  # nvm.sh exits 11 when NPM_CONFIG_PREFIX is set. Keep the caller prefix.
+  local saved_prefix="${NPM_CONFIG_PREFIX-}"
+  unset NPM_CONFIG_PREFIX
   if [ -s "$NVM_DIR/nvm.sh" ]; then
     # nvm writes to stdout
     # shellcheck disable=SC1090
-    . "$NVM_DIR/nvm.sh" >/dev/null
+    . "$NVM_DIR/nvm.sh" >/dev/null || true
     nvm use 24.15.0 >/dev/null 2>&1 || true
     if command -v nvm >/dev/null 2>&1; then
       local nvm_node
@@ -60,6 +63,12 @@ load_nub() {
         export PATH="${nvm_node}:${PATH}"
       fi
     fi
+  fi
+  if [ -d "$NVM_DIR/versions/node/v24.15.0/bin" ]; then
+    export PATH="$NVM_DIR/versions/node/v24.15.0/bin:${PATH}"
+  fi
+  if [ -n "$saved_prefix" ]; then
+    export NPM_CONFIG_PREFIX="$saved_prefix"
   fi
   export PATH="${HOME}/.nub/bin:${PATH}"
   hash -r
