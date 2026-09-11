@@ -33,7 +33,7 @@ JSON is always written to stdout. Human noise stays on stderr. Commands:
 State: `.cursor/skills/verify-logical-db/.run/state.json` (or `$VERIFY_STATE`).
 Evidence: `.cursor/skills/verify-logical-db/artifacts/<run-id>/` (or `$VERIFY_EVIDENCE_DIR/<run-id>`). Gitignored. Cleanup must not delete it.
 
-`nub` resolves Node 24.15.0 from `package.json` `devEngines`. Put `nub` on `PATH` before you launch. Do not call `/exec-daemon/node` (Node 22) for this skill.
+`nub` resolves Node 24.15.0 from `package.json` `devEngines`. Put `nub` on `PATH` before you launch. Do not call `/exec-daemon/node` (Node 22) for this skill. The CLI puts Node 24.15.0 on PATH from nvm and must not abort when `NPM_CONFIG_PREFIX` is set (`nvm.sh` exits 11 in that case).
 
 ## Launch
 
