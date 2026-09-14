@@ -18,7 +18,7 @@ VERIFY=./.cursor/skills/verify-logical-db/bin/verify-logical-db
 chmod +x "$VERIFY"
 ```
 
-JSON is always written to stdout. Human noise stays on stderr. Commands:
+JSON is always written to stdout, including on failure (`{ "ok": false, "error": … }` with a non-zero exit). Human noise stays on stderr. Commands:
 
 ```bash
 "$VERIFY" launch
