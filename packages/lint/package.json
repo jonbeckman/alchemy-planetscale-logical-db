@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@oxlint/plugins": "1.81.0"
+    "@oxlint/plugins": "1.83.0"
   },
   "devDependencies": {
     "@types/node": "^25.9.1",
