@@ -45,16 +45,16 @@
   },
   "devDependencies": {
     "@mpsuesser/oxlint-plugin-effect": "0.2.2",
-    "@oxlint/plugins": "1.83.0",
-    "@types/node": "^25.9.1",
+    "@oxlint/plugins": "1.85.0",
+    "@types/node": "^25.9.8",
     "@types/pg": "^8.15.6",
     "alchemy": "2.0.0-beta.72",
     "anti-slop": "github:dmmulroy/anti-slop",
     "effect": "4.0.0-beta.107",
-    "oxfmt": "0.68.0",
-    "oxlint": "1.83.0",
+    "oxfmt": "0.70.0",
+    "oxlint": "1.85.0",
     "tegami": "1.5.0",
-    "tsx": "^4.23.12",
+    "tsx": "^4.23.15",
     "typescript": "7.0.2"
   },
   "peerDependencies": {
