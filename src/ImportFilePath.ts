@@ -26,16 +26,26 @@ const dropDotSegments = (filePath: string) =>
     .filter((segment) => segment !== ".")
     .join("/")
 
+const drizzleMigrationSqlSuffix = "/migration.sql"
+
+const dropDrizzleMigrationSqlSuffix = (filePath: string) =>
+  Match.value(filePath.endsWith(drizzleMigrationSqlSuffix)).pipe(
+    Match.when(true, () => filePath.slice(0, -drizzleMigrationSqlSuffix.length)),
+    Match.when(false, () => filePath),
+    Match.exhaustive,
+  )
+
 /**
  * Stable import identity used to compare desired `importFiles` with existing
  * tracking rows. Leading and inner `.` segments are dropped so
- * `./seed/users.sql` and `seed/users.sql` are the same identity. Unstable
- * paths keep their original string and do not collapse onto a safe path.
+ * `./seed/users.sql` and `seed/users.sql` are the same identity. A Drizzle
+ * folder name `NAME` matches `NAME/migration.sql`. Unstable paths keep their
+ * original string and do not collapse onto a safe path.
  */
 export const importFilePathIdentity = (filePath: string) =>
   Match.value(isUnstableImportPath(filePath) || dropDotSegments(filePath) === "").pipe(
     Match.when(true, () => filePath),
-    Match.when(false, () => dropDotSegments(filePath)),
+    Match.when(false, () => dropDrizzleMigrationSqlSuffix(dropDotSegments(filePath))),
     Match.exhaustive,
   )
 

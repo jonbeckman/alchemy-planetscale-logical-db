@@ -88,6 +88,8 @@ export default DatabaseStack.make(
 - `appRoleName`: Postgres-visible app role name to grant.
 - `appRolePrivilegesVersion`: bump to force privilege reconciliation.
 - `migrationsDir`: directory of forward-only `.sql` migration files.
+  Nested Drizzle files such as `NAME/migration.sql` match a tracking row
+  stored as the folder name `NAME`.
 - `migrationsTable`: migration tracking table, defaulting to
   `__alchemy_migrations`.
 - `importRootDir`: filesystem root used to resolve imports, defaulting to the
@@ -99,6 +101,9 @@ export default DatabaseStack.make(
   database reconciliation because these strings are persisted as stable import
   identities. Existing tracking rows that stored a dotted form such as
   `./seed/users.sql` still match `seed/users.sql` and are not treated as
+  removed. Existing tracking rows that stored a Drizzle folder name such as
+  `20260526000000_gtt_postgres_baseline` still match
+  `20260526000000_gtt_postgres_baseline/migration.sql` and are not treated as
   removed.
 - `importsTable`: import tracking table, defaulting to `__alchemy_imports`.
 
