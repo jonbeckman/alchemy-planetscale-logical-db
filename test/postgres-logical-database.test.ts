@@ -123,6 +123,23 @@ describe("importFilePath identity", () => {
     assert.equal(importFilePathsEqual("seed/users.sql", "C:/seed/users.sql"), false)
     assert.equal(importFilePathsEqual("seed/users.sql", "other/users.sql"), false)
   })
+
+  it("treats a Drizzle folder name and NAME/migration.sql as the same tracked identity", () => {
+    assert.equal(
+      importFilePathsEqual(
+        "20260526000000_gtt_postgres_baseline",
+        "20260526000000_gtt_postgres_baseline/migration.sql",
+      ),
+      true,
+    )
+    assert.equal(
+      importFilePathsEqual(
+        "20260526000000_solzero_postgres_baseline",
+        "20260526000000_solzero_postgres_baseline/migration.sql",
+      ),
+      true,
+    )
+  })
 })
 
 describe("removedRecordNames import identity", () => {
@@ -145,6 +162,43 @@ describe("removedRecordNames import identity", () => {
     assert.deepEqual(Option.getOrUndefined(record), {
       hash: "abc",
       storedName: "./seed/users.sql",
+    })
+  })
+
+  it("does not reject a Drizzle folder tracking row when the desired id is NAME/migration.sql", () => {
+    assert.deepEqual(
+      removedRecordNames([{ id: "20260526000000_gtt_postgres_baseline/migration.sql" }], {
+        "20260526000000_gtt_postgres_baseline": "abc",
+      }),
+      [],
+    )
+    assert.deepEqual(
+      removedRecordNames([{ id: "20260526000000_solzero_postgres_baseline/migration.sql" }], {
+        "20260526000000_solzero_postgres_baseline": "abc",
+      }),
+      [],
+    )
+  })
+
+  it("finds the Drizzle folder row when looking up NAME/migration.sql", () => {
+    const gtt = existingTrackedSqlFileRecord(
+      { "20260526000000_gtt_postgres_baseline": "abc" },
+      "20260526000000_gtt_postgres_baseline/migration.sql",
+    )
+    assert.equal(Option.isSome(gtt), true)
+    assert.deepEqual(Option.getOrUndefined(gtt), {
+      hash: "abc",
+      storedName: "20260526000000_gtt_postgres_baseline",
+    })
+
+    const solzero = existingTrackedSqlFileRecord(
+      { "20260526000000_solzero_postgres_baseline": "abc" },
+      "20260526000000_solzero_postgres_baseline/migration.sql",
+    )
+    assert.equal(Option.isSome(solzero), true)
+    assert.deepEqual(Option.getOrUndefined(solzero), {
+      hash: "abc",
+      storedName: "20260526000000_solzero_postgres_baseline",
     })
   })
 })

@@ -548,15 +548,37 @@ drive_import_identity() {
     const sameInner = paths.importFilePathsEqual("seed/users.sql", "seed/./users.sql")
     const notParent = paths.importFilePathsEqual("seed/users.sql", "../seed/users.sql") === false
     const notAbs = paths.importFilePathsEqual("seed/users.sql", "/seed/users.sql") === false
+    const sameDrizzleGtt = paths.importFilePathsEqual("20260526000000_gtt_postgres_baseline", "20260526000000_gtt_postgres_baseline/migration.sql")
+    const sameDrizzleSolzero = paths.importFilePathsEqual("20260526000000_solzero_postgres_baseline", "20260526000000_solzero_postgres_baseline/migration.sql")
     const removed = client.removedRecordNames([{ id: "seed/users.sql" }], { "./seed/users.sql": "abc" })
+    const removedDrizzle = client.removedRecordNames(
+      [{ id: "20260526000000_gtt_postgres_baseline/migration.sql" }],
+      { "20260526000000_gtt_postgres_baseline": "abc" },
+    )
     const record = client.existingTrackedSqlFileRecord({ "./seed/users.sql": "abc" }, "seed/users.sql")
     const stored = Option.getOrUndefined(record)
-    const ok = same && sameInner && notParent && notAbs && removed.length === 0 && stored?.storedName === "./seed/users.sql" && stored?.hash === "abc"
+    const storedDrizzleGtt = Option.getOrUndefined(
+      client.existingTrackedSqlFileRecord(
+        { "20260526000000_gtt_postgres_baseline": "abc" },
+        "20260526000000_gtt_postgres_baseline/migration.sql",
+      ),
+    )
+    const storedDrizzleSolzero = Option.getOrUndefined(
+      client.existingTrackedSqlFileRecord(
+        { "20260526000000_solzero_postgres_baseline": "abc" },
+        "20260526000000_solzero_postgres_baseline/migration.sql",
+      ),
+    )
+    const ok = same && sameInner && notParent && notAbs && sameDrizzleGtt && sameDrizzleSolzero &&
+      removed.length === 0 && removedDrizzle.length === 0 &&
+      stored?.storedName === "./seed/users.sql" && stored?.hash === "abc" &&
+      storedDrizzleGtt?.storedName === "20260526000000_gtt_postgres_baseline" && storedDrizzleGtt?.hash === "abc" &&
+      storedDrizzleSolzero?.storedName === "20260526000000_solzero_postgres_baseline" && storedDrizzleSolzero?.hash === "abc"
     const result = {
       ok,
       feature: "import-identity",
       module: "src/PostgresLogicalDatabase.ts",
-      checks: { same, sameInner, notParent, notAbs, removed, stored }
+      checks: { same, sameInner, notParent, notAbs, sameDrizzleGtt, sameDrizzleSolzero, removed, removedDrizzle, stored, storedDrizzleGtt, storedDrizzleSolzero }
     }
     writeFileSync(dest + "/stdout.json", JSON.stringify(result, null, 2) + "\n")
     process.stdout.write(JSON.stringify(result))

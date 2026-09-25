@@ -43,7 +43,7 @@ Keep implementation details out of the map. Name only user paths, stable handles
 ## Features
 
 - [Import path validation](./import-path-validation.md) covers public `validateImportFilePath` accept and reject cases.
-- [Import identity](./import-identity.md) covers canonical and dotted tracking-row identity.
+- [Import identity](./import-identity.md) covers canonical, dotted, and Drizzle-folder tracking-row identity.
 - [SQL apply policy](./sql-apply-policy.md) covers migration reject versus import reapply.
 - [Role name from username](./role-name-from-username.md) covers `postgresRoleNameFromUsername`.
 - [Example local migrate](./example-local-migrate.md) covers PGLite plus `migrate-local` for `project_a`.
