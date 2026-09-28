@@ -1,10 +1,10 @@
 core:changelogs:
-  - content: "---\npackages:\n  alchemy-planetscale-logical-db:\n    type: patch\n---\n\n## Match Drizzle folder migration identities\n\nTracking rows stored as a Drizzle folder name such as\n`20260526000000_gtt_postgres_baseline` now match the listed file\n`NAME/migration.sql`. The resource does not treat that row as removed and\ndoes not delete it. A later rewrite stores the canonical\n`NAME/migration.sql` identity after the hash check. Dotted forms such as\n`./seed/users.sql` still match `seed/users.sql`.\n"
-    filename: 2026-09-25-drizzle-folder-migration-identity.md
+  - content: "---\npackages:\n  alchemy-planetscale-logical-db:\n    type: patch\n---\n\n## Forced empty patch republish\n\nThis release republishes current master as a patch. There is no product\ncode change since 2.0.1. Toolchain-only commits after 2.0.1 used\n`release:none`. The published API and behavior are the same as 2.0.1.\n"
+    filename: 2026-09-28-forced-empty-patch-republish.md
     v: 0.0.0
 core:packages:
   - changelogIds:
-      - 2026-09-25-drizzle-folder-migration-identity.md
+      - 2026-09-28-forced-empty-patch-republish.md
     id: npm:alchemy-planetscale-logical-db
     updated: true
 npm:packages:
