@@ -1,3 +1,11 @@
+## alchemy-planetscale-logical-db@2.0.2
+
+### Forced empty patch republish
+
+This release republishes current master as a patch. There is no product
+code change since 2.0.1. Toolchain-only commits after 2.0.1 used
+`release:none`. The published API and behavior are the same as 2.0.1.
+
 ## alchemy-planetscale-logical-db@2.0.1
 
 ### Match Drizzle folder migration identities
