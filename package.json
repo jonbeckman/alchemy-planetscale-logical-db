@@ -48,9 +48,9 @@
     "@oxlint/plugins": "1.86.0",
     "@types/node": "^25.9.8",
     "@types/pg": "^8.15.6",
-    "alchemy": "2.0.0-beta.72",
+    "alchemy": "2.0.0-beta.81",
     "anti-slop": "github:dmmulroy/anti-slop",
-    "effect": "4.0.0-beta.107",
+    "effect": "4.0.1",
     "oxfmt": "0.71.0",
     "oxlint": "1.86.0",
     "tegami": "1.5.0",
@@ -58,8 +58,8 @@
     "typescript": "7.0.2"
   },
   "peerDependencies": {
-    "alchemy": ">=2.0.0-beta.72",
-    "effect": "4.0.0-beta.107"
+    "alchemy": ">=2.0.0-beta.81",
+    "effect": "^4.0.0"
   },
   "devEngines": {
     "packageManager": {
