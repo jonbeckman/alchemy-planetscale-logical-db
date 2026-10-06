@@ -1,10 +1,10 @@
 core:changelogs:
-  - content: "---\npackages:\n  alchemy-planetscale-logical-db:\n    type: patch\n---\n\n## Forced empty patch republish\n\nThis release republishes current master as a patch. There is no product\ncode change since 2.0.1. Toolchain-only commits after 2.0.1 used\n`release:none`. The published API and behavior are the same as 2.0.1.\n"
-    filename: 2026-09-28-forced-empty-patch-republish.md
+  - content: "---\npackages:\n  alchemy-planetscale-logical-db:\n    type: minor\n---\n\n## Require Effect 4.0 and Alchemy 81\n\nThis package now peers `effect` at `^4.0.0` and `alchemy` at\n`>=2.0.0-beta.81`. The previous exact `effect@4.0.0-beta.107` pin is\nreplaced by the stable Effect 4 range. Alchemy `2.0.0-beta.81` is the\nfirst Alchemy release that peers `effect` and the `@effect/*` packages\nat `^4.0.0`. Older Alchemy betas were built against Effect 4 betas and\nrelease candidates, including the rc.118 flattened module layout, so\nthis package does not claim they work on stable Effect.\n\nResource props, attributes, and the `TrackedSqlFileError` tag are\nunchanged.\n\n**Required action:** upgrade the consuming app to `effect@^4.0.0` (this\nrepository pins `4.0.1`) and `alchemy@2.0.0-beta.81` or later. If you\nalso use `@effect/*` packages, install the same `4.0.1` version.\n"
+    filename: 2026-10-05-require-effect-4-alchemy-81.md
     v: 0.0.0
 core:packages:
   - changelogIds:
-      - 2026-09-28-forced-empty-patch-republish.md
+      - 2026-10-05-require-effect-4-alchemy-81.md
     id: npm:alchemy-planetscale-logical-db
     updated: true
 npm:packages:
