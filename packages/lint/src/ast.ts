@@ -50,7 +50,7 @@ export function nodeChildren(node: NodeLike, key: string): NodeLike[] {
   return Array.isArray(value) ? value.filter(isNode) : []
 }
 
-export function parentNode(node: NodeLike): NodeLike | undefined {
+function parentNode(node: NodeLike): NodeLike | undefined {
   return isNode(node.parent) ? node.parent : undefined
 }
 
@@ -60,7 +60,7 @@ function isExactString(
   return value !== null && value !== undefined && value === `${value}`
 }
 
-export function literalValue(
+function literalValue(
   node: NodeLike | undefined,
 ): string | number | boolean | bigint | null | undefined {
   if (node === undefined || node.type !== "Literal") {
@@ -73,7 +73,7 @@ export function literalValue(
   return value
 }
 
-export function identifierName(node: NodeLike | undefined): string | undefined {
+function identifierName(node: NodeLike | undefined): string | undefined {
   if (node === undefined) {
     return undefined
   }
@@ -84,7 +84,7 @@ export function identifierName(node: NodeLike | undefined): string | undefined {
   return isExactString(value) ? value : undefined
 }
 
-export function unwrapExpression(node: NodeLike | undefined): NodeLike | undefined {
+function unwrapExpression(node: NodeLike | undefined): NodeLike | undefined {
   let current = node
   while (current) {
     const expression = nodeChild(current, "expression")
@@ -173,14 +173,14 @@ function matchingDescendants(
   return matches
 }
 
-export function containsNode(
+function containsNode(
   node: NodeLike | undefined,
   predicate: (candidate: NodeLike) => boolean,
 ): boolean {
   return findDescendant(node, predicate) !== undefined
 }
 
-export function memberParts(node: NodeLike | undefined): string[] | undefined {
+function memberParts(node: NodeLike | undefined): string[] | undefined {
   const current = unwrapExpression(node)
   if (!current) {
     return undefined
@@ -264,7 +264,7 @@ export function isEffectMember(node: NodeLike | undefined, methodName: string): 
   return parts?.[0] === "Effect" && parts.at(-1) === methodName
 }
 
-export function isConsoleAccess(node: NodeLike | undefined): boolean {
+function isConsoleAccess(node: NodeLike | undefined): boolean {
   return memberParts(node)?.[0] === "console"
 }
 
