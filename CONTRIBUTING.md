@@ -13,7 +13,7 @@ Read the [README](README.md) for the product picture and the
 
 ## Development setup
 
-This repository requires Node.js 24.15.0 and Nub 0.4.11. `.node-version`, `.nvmrc`, and
+This repository requires Node.js 24.15.0 and Nub 0.9.6. `.node-version`, `.nvmrc`, and
 `packageManager` are the source of truth. Install Nub, then install dependencies from the
 repository root:
 
