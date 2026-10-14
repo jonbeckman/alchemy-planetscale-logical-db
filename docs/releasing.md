@@ -10,7 +10,7 @@ The published package is the only release unit. The `example` and
 multi-unit catalog.
 
 `VERSION` and root `package.json` stay on the same SemVer value. The current
-release is `2.0.0`.
+release is `2.1.0`.
 
 ## Version policy
 
