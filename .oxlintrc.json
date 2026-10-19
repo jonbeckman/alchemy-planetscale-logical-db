@@ -59,8 +59,6 @@
         "effect/avoid-process-env": "warn",
         "effect/effect-run-in-body": "warn",
         "effect/effect-promise-vs-trypromise": "warn",
-        "effect/prefer-schema-class": "warn",
-        "effect/stream-large-files": "warn",
         "effect/use-filesystem-service": "warn",
         "effect/use-path-service": "warn",
         "effect/avoid-platform-coupling": "warn",
