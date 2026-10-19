@@ -44,13 +44,14 @@
     "pg": "^8.16.3"
   },
   "devDependencies": {
-    "@mpsuesser/oxlint-plugin-effect": "0.2.2",
+    "@effect/platform-node": "4.0.5",
+    "@mpsuesser/oxlint-plugin-effect": "0.6.0",
     "@oxlint/plugins": "1.87.0",
     "@types/node": "^25.9.8",
     "@types/pg": "^8.15.6",
-    "alchemy": "2.0.0-beta.81",
+    "alchemy": "2.0.0-beta.83",
     "anti-slop": "github:dmmulroy/anti-slop",
-    "effect": "4.0.1",
+    "effect": "4.0.5",
     "oxfmt": "0.72.0",
     "oxlint": "1.87.0",
     "tegami": "1.5.0",
