@@ -7,13 +7,14 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsrs --noEmit"
   },
   "dependencies": {
     "@oxlint/plugins": "1.89.0"
   },
   "devDependencies": {
     "@types/node": "^25.9.8",
+    "tsrs": "0.18.0-ts7.1.0-dev.20260929",
     "typescript": "7.0.2"
   }
 }
