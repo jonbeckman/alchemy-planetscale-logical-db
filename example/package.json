@@ -10,7 +10,7 @@
     "plan:db": "alchemy plan alchemy.db.run.ts --stage prod --env-file .env",
     "predeploy:db": "nub run --cwd .. build",
     "deploy:db": "alchemy deploy alchemy.db.run.ts --stage prod --env-file .env --yes",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsrs --noEmit"
   },
   "dependencies": {
     "@electric-sql/pglite": "0.4.6",
@@ -24,6 +24,7 @@
     "@effect/platform-node": "4.0.5",
     "@types/node": "^25.9.8",
     "@types/pg": "^8.15.6",
+    "tsrs": "0.18.0-ts7.1.0-dev.20260929",
     "tsx": "^4.23.15",
     "typescript": "7.0.2"
   }

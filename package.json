@@ -38,7 +38,7 @@
     "prepublishOnly": "nub run build",
     "tegami": "tsx scripts/tegami.mts",
     "test": "node --import tsx --test test/*.test.ts",
-    "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit"
+    "typecheck": "tsrs --noEmit && tsrs -p tsconfig.test.json --noEmit"
   },
   "dependencies": {
     "pg": "^8.16.3"
@@ -55,6 +55,7 @@
     "oxfmt": "0.74.0",
     "oxlint": "1.89.0",
     "tegami": "1.5.0",
+    "tsrs": "0.18.0-ts7.1.0-dev.20260929",
     "tsx": "^4.23.15",
     "typescript": "7.0.2"
   },
