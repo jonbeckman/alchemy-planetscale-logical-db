@@ -14,7 +14,7 @@ import { Client, type QueryResultRow } from "pg"
 import { importFilePathIdentity, importFilePathsEqual } from "./ImportFilePath.ts"
 import type { SqlFile } from "./SqlFile.ts"
 
-export type TrackedSqlFileAction = "reject" | "reapply"
+type TrackedSqlFileAction = "reject" | "reapply"
 
 const POSTGRES_IDENTIFIER = /^[a-z_][a-z0-9_]*$/
 
