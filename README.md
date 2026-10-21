@@ -24,8 +24,11 @@ nub add alchemy-planetscale-logical-db
 The package expects Alchemy v2 and Effect from the consuming project:
 
 ```sh
-nub add alchemy@2.0.0-beta.81 effect@4.0.1
+nub add alchemy@2.0.0-beta.83 effect@4.0.5
 ```
+
+The supported minimum is the peerDependencies range:
+`alchemy` >=2.0.0-beta.81 and `effect` ^4.0.0.
 
 ## Usage
 
