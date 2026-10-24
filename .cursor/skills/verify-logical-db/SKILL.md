@@ -83,6 +83,8 @@ Do not drive `PostgresLogicalDatabaseClient` against local PGLite. The client se
 
 ## Evidence
 
+See [Cloud-agent PR artifacts](../../../AGENTS.md#cloud-agent-pr-artifacts). Evidence output survives cleanup in `.cursor/skills/verify-logical-db/artifacts/<run-id>/` (or `$VERIFY_EVIDENCE_DIR/<run-id>`).
+
 Proof lives in `.cursor/skills/verify-logical-db/artifacts/<run-id>/` and, when requested, a text export under `/opt/cursor/artifacts/verify-logical-db`.
 
 Standards:
