@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "alchemy": {
+      "source": "darkmatter/skills",
+      "sourceType": "github",
+      "skillPath": "skills/alchemy/SKILL.md",
+      "computedHash": "5e528227b0d0e8b7dc3108880b9ee84ada855db802ec3a7ca6d930020bed1a6a"
+    },
     "effect": {
       "source": "kitlangton/skills",
       "sourceType": "github",
