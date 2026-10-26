@@ -53,6 +53,7 @@ export const validateIdentifier = (label: string, value: string) =>
 
 function quoteIdentifier(value: string) {
   validateIdentifier("Postgres identifier", value)
+
   return `"${value}"`
 }
 
@@ -69,6 +70,7 @@ function throwInvalidExternalIdentifier(label: string, value: string): never {
 
 function quoteExternalIdentifier(label: string, value: string) {
   validateExternalIdentifier(label, value)
+
   return `"${value.replaceAll('"', '""')}"`
 }
 
@@ -94,6 +96,7 @@ function originConnectionUrl(origin: PostgresOrigin, database: string) {
   url.password = Redacted.value(origin.password)
   url.pathname = `/${database}`
   url.searchParams.set("sslmode", "verify-full")
+
   return url.toString()
 }
 
@@ -101,6 +104,7 @@ function removePgSslQueryParams(uri: string) {
   const url = new URL(uri)
   url.searchParams.delete("sslmode")
   url.searchParams.delete("channel_binding")
+
   return url.toString()
 }
 
@@ -172,6 +176,7 @@ function createDatabaseWhenMissing(
   rows: readonly { readonly exists: boolean }[],
 ) {
   const missing = Effect.succeed(rows[0]?.exists !== true)
+
   return createDatabase(client, databaseName).pipe(Effect.when(missing), Effect.asVoid)
 }
 
@@ -181,6 +186,7 @@ function dropDatabaseWhenPresent(
   rows: readonly { readonly exists: boolean }[],
 ) {
   const present = Effect.succeed(rows[0]?.exists === true)
+
   return query(
     client,
     `DROP DATABASE IF EXISTS ${quoteIdentifier(databaseName)} WITH (FORCE)`,
@@ -244,6 +250,7 @@ function readDatabaseOwnershipWhenTableExists(
   exists: boolean,
 ) {
   const tableExists = Effect.succeed(exists)
+
   return query<PostgresLogicalDatabaseOwner>(
     client,
     `SELECT logical_id AS "logicalId", resource_type AS "resourceType", owner_version AS "version"
@@ -325,6 +332,7 @@ export const ensureDatabaseOwnership = (input: {
 
 function trackedSqlFileHashesWhenTableExists(client: Client, tableName: string, exists: boolean) {
   const tableExists = Effect.succeed(exists)
+
   return readExistingTrackedSqlFileHashes(client, tableName).pipe(
     Effect.when(tableExists),
     Effect.map(Option.getOrElse(() => ({}))),
@@ -362,6 +370,7 @@ export function removedRecordNames(
   const desiredIdentities = HashSet.fromIterable(
     desiredFiles.map((file) => importFilePathIdentity(file.id)),
   )
+
   return Arr.sort(
     R.keys(existingRecords).filter(
       (name) => !HashSet.has(desiredIdentities, importFilePathIdentity(name)),
@@ -507,11 +516,13 @@ const applyTrackedSqlFile = (input: {
     const existingRecord = existingTrackedSqlFileRecord(input.existingRecords, input.file.id)
     const existingHash = existingRecord.pipe(Option.map((record) => record.hash))
     const storedName = existingRecord.pipe(Option.map((record) => record.storedName))
+
     const { rejectsChangedFile, shouldWrite } = trackedSqlFileApplyDecision({
       changedFileAction: input.changedFileAction,
       existingHash,
       fileHash: input.file.hash,
     })
+
     const rejectChange = Effect.fail(changedSqlFileError(input.file))
     const writeChange = writeTrackedSqlFile({ ...input, storedName })
     const rejectsChangedFileEffect = Effect.succeed(rejectsChangedFile)
@@ -593,6 +604,7 @@ function revokeTablePrivilegesWhenExists(
 ) {
   const table = quoteQualifiedIdentifier("public", input.tableName)
   const tableExists = Effect.succeed(exists)
+
   return query(input.client, `REVOKE ALL PRIVILEGES ON TABLE ${table} FROM ${input.role}`).pipe(
     Effect.when(tableExists),
   )
@@ -651,6 +663,7 @@ const privilegeCheckOrder = Order.mapInput(Order.String, (check: PrivilegeCheck)
 const appRoleMissingPrivilegeState = (roleName: string) =>
   Effect.gen(function* () {
     const checks = [{ name: `role:${roleName}:exists`, ok: false }]
+
     return {
       hash: yield* hashPrivilegeChecks(checks),
       ready: false,
@@ -694,6 +707,7 @@ const defaultPrivilegeCheck = (check: {
 const appRolePrivilegeState = (checks: readonly PrivilegeCheck[]) =>
   Effect.gen(function* () {
     const sortedChecks = Arr.sort(checks, privilegeCheckOrder)
+
     return {
       hash: yield* hashPrivilegeChecks(sortedChecks),
       ready: sortedChecks.every((check) => check.ok),
@@ -825,6 +839,7 @@ const readAppRolePrivilegesWithClient = (input: {
       "SELECT oid::text AS oid FROM pg_roles WHERE rolname = $1",
       [input.roleName],
     )
+
     return yield* Option.fromUndefinedOr(roleRows.rows[0]?.oid).pipe(
       Option.match({
         onSome: (roleOid) =>

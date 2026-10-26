@@ -185,6 +185,7 @@ describe("removedRecordNames import identity", () => {
       { "20260526000000_gtt_postgres_baseline": "abc" },
       "20260526000000_gtt_postgres_baseline/migration.sql",
     )
+
     assert.equal(Option.isSome(gtt), true)
     assert.deepEqual(Option.getOrUndefined(gtt), {
       hash: "abc",
@@ -195,6 +196,7 @@ describe("removedRecordNames import identity", () => {
       { "20260526000000_solzero_postgres_baseline": "abc" },
       "20260526000000_solzero_postgres_baseline/migration.sql",
     )
+
     assert.equal(Option.isSome(solzero), true)
     assert.deepEqual(Option.getOrUndefined(solzero), {
       hash: "abc",

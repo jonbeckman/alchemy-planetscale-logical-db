@@ -233,8 +233,10 @@ export const readLogicalDatabaseSqlFiles = (input: {
         onNonEmpty: (directory) => listSqlFiles(directory),
       },
     )
+
     const importRootDir = input.importRootDir ?? input.rootDir
     const importFiles = (input.importFiles ?? []).map(validateImportFilePath)
+
     const imports = yield* Effect.forEach(
       Arr.sort(importFiles, Order.String),
       (filePath) => readSqlFile(importRootDir, filePath),
@@ -349,9 +351,11 @@ const diffExistingDatabase = (input: {
   Effect.gen(function* () {
     const exists = yield* databaseExists(input.props.adminOrigin, input.output.name)
     const databaseExistsEffect = Effect.succeed(exists)
+
     const presentDiff = yield* diffExistingPresentDatabase(input).pipe(
       Effect.when(databaseExistsEffect),
     )
+
     return Option.getOrElse(presentDiff, updateAction)
   })
 
@@ -364,16 +368,20 @@ const readExistingDatabase = (input: {
   Effect.gen(function* () {
     const migrationsTable =
       input.olds.migrationsTable ?? input.output?.migrationsTable ?? DEFAULT_MIGRATIONS_TABLE
+
     const importsTable =
       input.olds.importsTable ?? input.output?.importsTable ?? DEFAULT_IMPORTS_TABLE
+
     const ownershipTable = input.output?.ownershipTable ?? DEFAULT_OWNERSHIP_TABLE
     const owner = logicalDatabaseOwner(input.id)
+
     const databaseOwner = yield* readDatabaseOwnership({
       databaseName: input.name,
       origin: input.olds.adminOrigin,
       ownerResourceType: POSTGRES_LOGICAL_DATABASE_RESOURCE_TYPE,
       tableName: ownershipTable,
     })
+
     const [migrationsHashes, importHashes] = yield* Effect.all(
       [
         readTrackedSqlFileHashes({
@@ -389,13 +397,16 @@ const readExistingDatabase = (input: {
       ],
       { concurrency: 2 },
     )
+
     const appRoleName = input.olds.appRoleName ?? input.output?.appRoleName
+
     const appRolePrivileges = yield* readAppRolePrivilegesIfConfigured({
       appRoleName,
       databaseName: input.name,
       excludedTableNames: excludedAppRoleTableNames(migrationsTable, importsTable, ownershipTable),
       origin: input.olds.adminOrigin,
     })
+
     const attributes = {
       appRoleName,
       appRolePrivilegesHash: appRolePrivilegesHash(appRolePrivileges),
@@ -442,6 +453,7 @@ const reconcileConfiguredAppRolePrivileges = (input: {
       origin: input.origin,
       roleName: input.appRoleName,
     })
+
     return yield* readAppRolePrivileges({
       databaseName: input.databaseName,
       excludedTableNames: excludedAppRoleTableNames(
@@ -495,12 +507,16 @@ const diffResolvedDatabase = (input: {
 
     const appRolePrivilegesVersion =
       input.news.appRolePrivilegesVersion ?? DEFAULT_APP_ROLE_PRIVILEGES_VERSION
+
     const migrationsTable =
       input.news.migrationsTable ?? input.output.migrationsTable ?? DEFAULT_MIGRATIONS_TABLE
+
     const importsTable =
       input.news.importsTable ?? input.output.importsTable ?? DEFAULT_IMPORTS_TABLE
+
     const ownershipTable = input.output.ownershipTable ?? DEFAULT_OWNERSHIP_TABLE
     const owner = logicalDatabaseOwner(input.id)
+
     const { imports, migrations } = yield* readLogicalDatabaseSqlFiles({
       importFiles: input.news.importFiles,
       importRootDir: input.news.importRootDir,
@@ -541,9 +557,11 @@ const readReadableDatabase = (input: {
     const name = yield* readKnownDatabaseName(input)
     const exists = yield* databaseExists(input.olds.adminOrigin, name)
     const databaseExistsEffect = Effect.succeed(exists)
+
     const database = yield* readExistingDatabase({ ...input, name }).pipe(
       Effect.when(databaseExistsEffect),
     )
+
     return Option.getOrUndefined(database)
   })
 
@@ -594,11 +612,14 @@ export function PostgresLogicalDatabaseProvider() {
 
         const appRolePrivilegesVersion =
           news.appRolePrivilegesVersion ?? DEFAULT_APP_ROLE_PRIVILEGES_VERSION
+
         const migrationsTable =
           news.migrationsTable ?? output?.migrationsTable ?? DEFAULT_MIGRATIONS_TABLE
+
         const importsTable = news.importsTable ?? output?.importsTable ?? DEFAULT_IMPORTS_TABLE
         const ownershipTable = output?.ownershipTable ?? DEFAULT_OWNERSHIP_TABLE
         const owner = logicalDatabaseOwner(id)
+
         const { imports, migrations } = yield* readLogicalDatabaseSqlFiles({
           importFiles: news.importFiles,
           importRootDir: news.importRootDir,
@@ -636,6 +657,7 @@ export function PostgresLogicalDatabaseProvider() {
         })
 
         const appRoleName = news.appRoleName
+
         const appRolePrivileges = yield* reconcileAppRolePrivileges({
           appRoleName,
           databaseName: name,

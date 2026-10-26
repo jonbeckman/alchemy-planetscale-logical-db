@@ -28,6 +28,7 @@ const sha256Hex = (value: string) =>
 function sqlFilePrefix(name: string) {
   const prefix = name.split("_")[0]
   const parsed = Number.parseInt(prefix, 10)
+
   return Option.liftPredicate(parsed, (value) => !Number.isNaN(value))
 }
 
@@ -55,6 +56,7 @@ export const readSqlFile = (directory: string, name: string) =>
   Effect.gen(function* () {
     const fs = yield* FileSystem.FileSystem
     const path = yield* Path.Path
+
     const sql = yield* fs.stream(path.resolve(directory, name)).pipe(
       Stream.decodeText(),
       Stream.runFold(
@@ -62,9 +64,11 @@ export const readSqlFile = (directory: string, name: string) =>
         (content: string, chunk: string) => content + chunk,
       ),
     )
+
     const hash = yield* sha256Hex(sql)
     const file: SqlFile = { id: name, sql, hash }
     Object.defineProperty(file, "sql", { enumerable: false })
+
     return file
   })
 
@@ -72,6 +76,7 @@ export const listSqlFiles = (directory: string) =>
   Effect.gen(function* () {
     const fs = yield* FileSystem.FileSystem
     const entries = yield* fs.readDirectory(directory, { recursive: true })
+
     const sqlFileNames = Arr.sort(
       entries.map((entry) => String(entry)).filter((name) => name.endsWith(".sql")),
       compareSqlFiles,

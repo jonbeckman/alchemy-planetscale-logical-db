@@ -41,6 +41,7 @@ const applyMigration = (input: {
     const migration = yield* input.fs.readFileString(
       input.path.join(input.project.migrationsDir, input.file),
     )
+
     yield* Effect.tryPromise({
       try: () => input.sql.query(migration),
       catch: (error) => error,
