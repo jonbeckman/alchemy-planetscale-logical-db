@@ -1,6 +1,6 @@
 import * as Alchemy from "alchemy"
 import * as Output from "alchemy/Output"
-import * as Planetscale from "alchemy/Planetscale"
+import * as Planetscale from "@alchemy.run/planetscale"
 import * as PlanetscaleLogicalDb from "alchemy-planetscale-logical-db"
 import * as Effect from "effect/Effect"
 import * as R from "effect/Record"

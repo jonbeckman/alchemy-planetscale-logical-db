@@ -45,15 +45,16 @@
     "pg": "^8.16.3"
   },
   "devDependencies": {
-    "@effect/platform-node": "4.0.5",
+    "@alchemy.run/planetscale": "2.0.0-beta.84",
+    "@effect/platform-node": "4.0.6",
     "@mpsuesser/oxlint-plugin-effect": "0.6.0",
     "@oxlint/plugins": "1.89.0",
     "@types/node": "^25.9.8",
     "@types/pg": "^8.15.6",
     "@yielded/effect-tsrs": "0.2.2",
-    "alchemy": "2.0.0-beta.83",
+    "alchemy": "2.0.0-beta.84",
     "anti-slop": "github:dmmulroy/anti-slop",
-    "effect": "4.0.5",
+    "effect": "4.0.6",
     "oxfmt": "0.74.0",
     "oxlint": "1.89.0",
     "tegami": "1.5.0",
@@ -62,6 +63,7 @@
     "typescript": "7.0.2"
   },
   "peerDependencies": {
+    "@alchemy.run/planetscale": ">=2.0.0-beta.84",
     "alchemy": ">=2.0.0-beta.81",
     "effect": "^4.0.0"
   },

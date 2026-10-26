@@ -1,4 +1,4 @@
-import type { PostgresOrigin } from "alchemy/Planetscale"
+import type { PostgresOrigin } from "@alchemy.run/planetscale"
 import { sha256Object } from "alchemy/Util/sha256"
 import * as Arr from "effect/Array"
 import * as Effect from "effect/Effect"

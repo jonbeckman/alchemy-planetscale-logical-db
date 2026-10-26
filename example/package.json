@@ -13,15 +13,16 @@
     "typecheck": "tsrs --noEmit"
   },
   "dependencies": {
+    "@alchemy.run/planetscale": "2.0.0-beta.84",
     "@electric-sql/pglite": "0.4.6",
     "@electric-sql/pglite-socket": "0.1.6",
-    "alchemy": "2.0.0-beta.83",
+    "alchemy": "2.0.0-beta.84",
     "alchemy-planetscale-logical-db": "workspace:*",
-    "effect": "4.0.5",
+    "effect": "4.0.6",
     "pg": "^8.16.3"
   },
   "devDependencies": {
-    "@effect/platform-node": "4.0.5",
+    "@effect/platform-node": "4.0.6",
     "@types/node": "^25.9.8",
     "@types/pg": "^8.15.6",
     "tsrs": "0.20.0-ts7.1.0-beta",
