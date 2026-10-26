@@ -3,7 +3,7 @@ import { isResolved } from "alchemy/Diff"
 import { createPhysicalName } from "alchemy/PhysicalName"
 import * as Provider from "alchemy/Provider"
 import { Resource } from "alchemy/Resource"
-import type { PostgresOrigin } from "alchemy/Planetscale"
+import type { PostgresOrigin } from "@alchemy.run/planetscale"
 import {
   applyTrackedSqlFiles,
   databaseExists,

@@ -1,5 +1,5 @@
 import * as Alchemy from "alchemy"
-import * as Planetscale from "alchemy/Planetscale"
+import * as Planetscale from "@alchemy.run/planetscale"
 import * as PlanetscaleLogicalDb from "alchemy-planetscale-logical-db"
 import * as Layer from "effect/Layer"
 
