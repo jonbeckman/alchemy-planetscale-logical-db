@@ -16,3 +16,9 @@ Call the verify skill `verify-logical-db` (`.cursor/skills/verify-logical-db/SKI
 Skip artifacts for pin-only, config-only, and markdown-only work.
 
 See [Cloud Agent capabilities](https://cursor.com/docs/cloud-agent/capabilities).
+
+## Pull request flow
+
+Open a pull request as a draft. Run lint, typecheck, and tests locally before each push. Pull request CI does not run on a draft. Full CI runs when the pull request is marked ready for review, and on each later push. Mark the pull request ready for review yourself when the work is done.
+
+Jonathan set the draft pull request flow on 2026-10-25. Jonathan set this rule on 2026-10-26: "No CI on drafts. That should be part of our new process and playbook."
