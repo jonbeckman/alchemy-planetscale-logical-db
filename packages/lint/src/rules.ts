@@ -58,9 +58,11 @@ export const rules = {
       if (!shouldRun() || !isPipeCall(node)) {
         return
       }
+
       const nested = callArguments(node)
         .map((argument) => findDescendant(argument, isPipeCall))
         .find(isNode)
+
       if (nested) {
         report(nested)
       }
@@ -71,12 +73,14 @@ export const rules = {
       if (!shouldRun()) {
         return
       }
+
       if (
         isEffectCall(node, "flatMap") &&
         callArguments(node).some((argument) => hasEffectCall(argument, "flatMap"))
       ) {
         report(node)
       }
+
       if (
         isEffectCall(node, "flatten") &&
         callArguments(node).some((argument) => hasEffectCall(argument, "map"))
@@ -93,7 +97,9 @@ export const rules = {
       if (!shouldRun() || !isEffectCall(node)) {
         return
       }
+
       const firstArgument = callArguments(node)[0]
+
       if (isEffectCall(firstArgument) && firstNestedEffectCall(firstArgument)) {
         report(node)
       }
@@ -132,10 +138,12 @@ export const rules = {
       if (!shouldRun() || !isIife(node)) {
         return
       }
+
       const nested = findDescendant(
         functionBody(nodeChild(node, "callee")),
         (candidate) => candidate !== node && isIife(candidate),
       )
+
       if (nested) {
         report(nested)
       }
@@ -146,10 +154,13 @@ export const rules = {
       if (!shouldRun()) {
         return
       }
+
       for (const property of nodeChildren(node, "properties")) {
         const value = nodeChild(property, "value")
+
         if (value && isBranchCall(value)) {
           report(value)
+
           return
         }
       }
@@ -167,11 +178,15 @@ export const rules = {
       if (!shouldRun() || !isNodeType(functionBody(node), "BlockStatement")) {
         return
       }
+
       const call = parentCall(node)
+
       if (isSchemaFilterCall(call)) {
         return
       }
+
       const returned = returnStatements(functionBody(node))[0]
+
       if (returned) {
         report(returned)
       }
@@ -220,6 +235,7 @@ export const rules = {
       if (!shouldRun() || !isEffectCall(node, "gen")) {
         return
       }
+
       const nested = callArguments(node)
         .map((argument) =>
           findDescendant(
@@ -228,6 +244,7 @@ export const rules = {
           ),
         )
         .find(isNode)
+
       if (nested) {
         report(nested)
       }
@@ -241,8 +258,10 @@ export const rules = {
       ) {
         return
       }
+
       const args = callArguments(node)
       const callback = args.at(-1)
+
       if (hasCallbackReturning(callback, isEffectVoid)) {
         report(node)
       }
@@ -253,18 +272,21 @@ export const rules = {
       if (!shouldRun()) {
         return
       }
+
       if (
         isMatchValuePipe(node) &&
         callArguments(node).some((argument) => hasSequencingCall(argument))
       ) {
         report(node)
       }
+
       if (
         (isCallTo(node, "Match", "when") || isCallTo(node, "Match", "orElse")) &&
         callArguments(node).some((argument) => hasSequencingCall(argument))
       ) {
         report(node)
       }
+
       if (
         isCallTo(node, "Option", "match") &&
         callArguments(node).some((argument) => hasSequencingCall(argument))
@@ -280,7 +302,9 @@ export const rules = {
         if (!shouldRun() || !isEffectCall(node, "sync")) {
           return
         }
+
         const firstArgument = callArguments(node)[0]
+
         if (
           hasCallbackReturning(
             firstArgument,
@@ -299,6 +323,7 @@ export const rules = {
         if (!shouldRun() || (!isEffectCall(node, "as") && !isEffectCall(node, "zipRight"))) {
           return
         }
+
         if (hasSideEffectCall(callArguments(node)[0])) {
           report(node)
         }
@@ -310,7 +335,9 @@ export const rules = {
       if (!shouldRun() || !isEffectCall(node, "orElse")) {
         return
       }
+
       const firstArgument = callArguments(node)[0]
+
       if (
         hasEffectCall(firstArgument, "flatMap") ||
         hasEffectCall(firstArgument, "zipRight") ||
@@ -328,7 +355,9 @@ export const rules = {
         if (!shouldRun()) {
           return
         }
+
         const typeName = typeNameText(nodeChild(node, "typeName"))
+
         if (typeName === "Effect.Effect" || typeName === "Layer.Layer") {
           report(node)
         }
@@ -353,10 +382,12 @@ export const rules = {
   })),
   "avoid-untagged-errors": defineLintRule("avoid-untagged-errors", ({ report, shouldRun }) => {
     const reported = new Set<NodeLike>()
+
     const reportBareErrors = (node: NodeLike | undefined) => {
       if (!shouldRun()) {
         return
       }
+
       for (const errorNode of bareErrorConstructors(node)) {
         if (!reported.has(errorNode)) {
           reported.add(errorNode)
@@ -372,10 +403,12 @@ export const rules = {
         }
 
         const method = effectCallMethod(node)
+
         if (method === "fail" || method === "mapError") {
           for (const argument of callArguments(node)) {
             reportBareErrors(argument)
           }
+
           return
         }
 
@@ -387,6 +420,7 @@ export const rules = {
           if (argument.type !== "ObjectExpression") {
             continue
           }
+
           for (const property of nodeChildren(argument, "properties")) {
             if (propertyKeyName(property) === "catch") {
               reportBareErrors(propertyValue(property))
@@ -398,6 +432,7 @@ export const rules = {
         if (!shouldRun() || !isInsideEffectHandler(node)) {
           return
         }
+
         reportBareErrors(nodeChild(node, "argument"))
       },
     }

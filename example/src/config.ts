@@ -28,6 +28,7 @@ export const projects = {
 } as const
 
 export type ProjectSlug = keyof typeof projects
+
 export type ProjectConfig = (typeof projects)[ProjectSlug]
 
 const projectSlugList = ["project_a", "project_b"] as const satisfies readonly ProjectSlug[]

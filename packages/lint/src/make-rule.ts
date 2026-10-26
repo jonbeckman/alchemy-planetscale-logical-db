@@ -14,6 +14,7 @@ export function defineLintRule(
   } = {},
 ): Rule {
   const requiresEffectFile = options.requiresEffectFile ?? true
+
   return defineRule({
     meta: {
       type: "suggestion",
@@ -24,13 +25,16 @@ export function defineLintRule(
     },
     createOnce(context: Context) {
       let effectFile = false
+
       const report: RuleReporter = (node, message = messages[name]) => {
         context.report({ node, message })
       }
+
       const runtime: RuleRuntime = {
         report,
         shouldRun: () => !requiresEffectFile || effectFile,
       }
+
       const visitors: Visitor = {
         before() {
           effectFile = false
@@ -40,6 +44,7 @@ export function defineLintRule(
         },
         ...createVisitors(runtime, context),
       }
+
       return visitors
     },
   })
