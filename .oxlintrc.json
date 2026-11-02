@@ -19,7 +19,7 @@
       "specifier": "./node_modules/anti-slop/src/effect/index.ts"
     }
   ],
-  "ignorePatterns": ["**/dist/**", "**/*.gen.ts"],
+  "ignorePatterns": ["**/dist/**", "**/*.gen.ts", ".agents/**"],
   "overrides": [
     {
       "files": ["src/**/*.ts", "example/**/*.ts"],
