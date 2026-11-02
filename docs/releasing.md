@@ -5,8 +5,8 @@ This repository publishes one npm package,
 [Tegami](https://tegami.fuma-nama.dev) prepares versions, updates
 `package.json` and the root `VERSION` file, and publishes to npm.
 
-The published package is the only release unit. The `example` and
-`packages/lint` workspaces are private and are ignored by Tegami. There is no
+The published package is the only release unit. The `example`
+workspace is private and is ignored by Tegami. There is no
 multi-unit catalog.
 
 `VERSION` and root `package.json` stay on the same SemVer value. The current

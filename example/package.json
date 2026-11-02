@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "@effect/platform-node": "4.1.2",
-    "@types/node": "^25.9.8",
+    "@types/node": "24.19.2",
     "@types/pg": "^8.15.6",
     "tsrs": "0.20.1-ts7.1.0-beta",
     "tsx": "^4.23.15",
