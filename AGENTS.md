@@ -22,3 +22,8 @@ See [Cloud Agent capabilities](https://cursor.com/docs/cloud-agent/capabilities)
 Open a pull request as a draft. Run lint, typecheck, and tests locally before each push. Pull request CI does not run on a draft. Full CI runs when the pull request is marked ready for review, and on each later push. Mark the pull request ready for review yourself when the work is done.
 
 Jonathan set the draft pull request flow on 2026-10-25. Jonathan set this rule on 2026-10-26: "No CI on drafts. That should be part of our new process and playbook."
+
+## Tooling
+
+- Lint uses the shared `oxlint-plugin-solzero` config in `oxlint.config.ts`, with the Effect rules as errors in `src/` and `example/`. Fix a violation instead of turning its rule off.
+- Skills live in `.agents/skills`. `.claude/skills` links to them, and `skills-lock.json` records their sources.

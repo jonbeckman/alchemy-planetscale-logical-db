@@ -21,12 +21,9 @@ importers:
       '@mpsuesser/oxlint-plugin-effect':
         specifier: 0.6.0
         version: 0.6.0
-      '@oxlint/plugins':
-        specifier: 1.90.0
-        version: 1.90.0
       '@types/node':
-        specifier: ^25.9.8
-        version: 25.9.9
+        specifier: 24.19.2
+        version: 24.19.2
       '@types/pg':
         specifier: ^8.15.6
         version: 8.23.1
@@ -36,9 +33,6 @@ importers:
       alchemy:
         specifier: 2.0.0-beta.84
         version: 2.0.0-beta.84(@effect/platform-node@4.1.2(effect@4.1.2)(redis@6.3.0))(effect@4.1.2)
-      anti-slop:
-        specifier: github:dmmulroy/anti-slop
-        version: https://codeload.github.com/dmmulroy/anti-slop/tar.gz/13909c9e07590f5a85d93c62712259fe14a883f7
       effect:
         specifier: 4.1.2
         version: 4.1.2
@@ -48,6 +42,9 @@ importers:
       oxlint:
         specifier: 1.90.0
         version: 1.90.0
+      oxlint-plugin-solzero:
+        specifier: 0.1.0
+        version: 0.1.0(oxlint@1.90.0)
       tegami:
         specifier: 1.5.0
         version: 1.5.0
@@ -89,8 +86,8 @@ importers:
         specifier: 4.1.2
         version: 4.1.2(effect@4.1.2)(redis@6.3.0)
       '@types/node':
-        specifier: ^25.9.8
-        version: 25.9.9
+        specifier: 24.19.2
+        version: 24.19.2
       '@types/pg':
         specifier: ^8.15.6
         version: 8.23.1
@@ -100,22 +97,6 @@ importers:
       tsx:
         specifier: ^4.23.15
         version: 4.23.15
-      typescript:
-        specifier: 7.0.2
-        version: 7.0.2
-
-  packages/lint:
-    dependencies:
-      '@oxlint/plugins':
-        specifier: 1.90.0
-        version: 1.90.0
-    devDependencies:
-      '@types/node':
-        specifier: ^25.9.8
-        version: 25.9.9
-      tsrs:
-        specifier: 0.20.1-ts7.1.0-beta
-        version: 0.20.1-ts7.1.0-beta
       typescript:
         specifier: 7.0.2
         version: 7.0.2
@@ -623,16 +604,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@oxlint/plugins@1.78.0':
-    resolution: {integrity: sha512-Ypt8KeRYw+4jUtlPirfcHWMrn5ms12VrrFPD+Mds477/7tJxG1Kcz2Yrg2nVcTQEUx/GdlhS+BUg1kmxNm04Ug==}
-    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
-
   '@oxlint/plugins@1.89.0':
     resolution: {integrity: sha512-TJBBNl4KIxbxrSk7gsqlz6iM1kxidfyTizEzfWqXvijF2Ou8/Da58GvjemBVmCmaUamwRij+JwsVc0kpBFuqfg==}
-    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
-
-  '@oxlint/plugins@1.90.0':
-    resolution: {integrity: sha512-FT0JJDNbj9oobVWHpAzFckHY/bx1ftPjulBx4UCMXqmDUGqVWOkbKe5bj4zdEL+D5Ud7y/RfioLwSvlHBMjI4w==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
   '@rainbowatcher/toml-edit-js@0.6.5':
@@ -819,6 +792,9 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@types/node@24.19.2':
+    resolution: {integrity: sha512-93d49wCWJkCyN87MxLpNN6KXPCwFw7bVUg79mGUV1OS40JGWwVCr8n61DXCSqz7CV6/VfPkb7xec7uP2M+QHWQ==}
+
   '@types/node@25.9.9':
     resolution: {integrity: sha512-b4e2xxj/yMeT2hNlD6x7zNFiQK2Dlmkb9CQ6v3/1G2RezKN4YS2lcEv8lzGm1mhs4f2lM4yNAMI/zUDBZBBt7w==}
 
@@ -1003,10 +979,6 @@ packages:
       ws:
         optional: true
 
-  anti-slop@https://codeload.github.com/dmmulroy/anti-slop/tar.gz/13909c9e07590f5a85d93c62712259fe14a883f7:
-    resolution: {gitHosted: true, integrity: sha512-htcINVNo8eWDf9LLDoHcMhBXaw1vq4Wu1uLE38HpWxd3rZ3NTz9cbUTjddMU6nM+V6Chv/VNKJunp6wLIaSOQA==, tarball: https://codeload.github.com/dmmulroy/anti-slop/tar.gz/13909c9e07590f5a85d93c62712259fe14a883f7}
-    version: 0.1.2
-
   capnweb@0.12.0:
     resolution: {integrity: sha512-jgZ/LMtMVTi+RVlooIslH78Gg23XbDTdvcLghWx3oz17D6u5GuJARt+uhZk/wcTo+f81eeabfnow4d3zLBj+JQ==}
 
@@ -1076,6 +1048,12 @@ packages:
         optional: true
       vite-plus:
         optional: true
+
+  oxlint-plugin-solzero@0.1.0:
+    resolution: {integrity: sha512-Cyn477mf9aBEZaBgBd7BK58NaruVslDk6u+kYOY0JyXpTr7YN8sTGWqpkQuiK+oS4HA1KBlMyLDvQxd/E0Z/pg==}
+    engines: {node: '>=22.18.0'}
+    peerDependencies:
+      oxlint: ^1.89.0
 
   oxlint@1.90.0:
     resolution: {integrity: sha512-RkTN9EmgIUpLuhNoLhO3OliMGJlvb3Dk7XVjBZnfoMCHrVpuz5ESd97klfiyYeV7XfA2lNLnDCPMkUI+Qw5How==}
@@ -1510,11 +1488,7 @@ snapshots:
   '@oxlint/binding-win32-x64-msvc@1.90.0':
     optional: true
 
-  '@oxlint/plugins@1.78.0': {}
-
   '@oxlint/plugins@1.89.0': {}
-
-  '@oxlint/plugins@1.90.0': {}
 
   '@rainbowatcher/toml-edit-js@0.6.5': {}
 
@@ -1603,6 +1577,10 @@ snapshots:
 
   '@tsrs/win32-x64@0.20.1-ts7.1.0-beta':
     optional: true
+
+  '@types/node@24.19.2':
+    dependencies:
+      undici-types: 7.24.6
 
   '@types/node@25.9.9':
     dependencies:
@@ -1718,10 +1696,6 @@ snapshots:
       - '@types/react'
       - react-devtools-core
 
-  anti-slop@https://codeload.github.com/dmmulroy/anti-slop/tar.gz/13909c9e07590f5a85d93c62712259fe14a883f7:
-    dependencies:
-      '@oxlint/plugins': 1.78.0
-
   capnweb@0.12.0: {}
 
   chokidar@5.0.0:
@@ -1808,6 +1782,11 @@ snapshots:
       '@oxfmt/binding-win32-arm64-msvc': 0.75.0
       '@oxfmt/binding-win32-ia32-msvc': 0.75.0
       '@oxfmt/binding-win32-x64-msvc': 0.75.0
+
+  oxlint-plugin-solzero@0.1.0(oxlint@1.90.0):
+    dependencies:
+      '@oxlint/plugins': 1.89.0
+      oxlint: 1.90.0
 
   oxlint@1.90.0:
     optionalDependencies:
