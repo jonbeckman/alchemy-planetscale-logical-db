@@ -9,8 +9,9 @@ The published package is the only release unit. The `example`
 workspace is private and is ignored by Tegami. There is no
 multi-unit catalog.
 
-`VERSION` and root `package.json` stay on the same SemVer value. The current
-release is `2.1.0`.
+`VERSION` and root `package.json` stay on the same SemVer value. Tegami writes
+both in `tegami/version-packages`. The published version is the `version` field
+in root `package.json` and the latest heading in `CHANGELOG.md`.
 
 ## Version policy
 
