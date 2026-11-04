@@ -6,7 +6,6 @@ import * as Layer from "effect/Layer"
 import * as Match from "effect/Match"
 import * as Option from "effect/Option"
 import * as Path from "effect/Path"
-import * as Stream from "effect/Stream"
 import {
   importFilePathsEqual,
   readLogicalDatabaseSqlFiles,
@@ -20,8 +19,6 @@ import {
   validateIdentifier,
 } from "../src/PostgresLogicalDatabaseClient.ts"
 
-const textEncoder = new TextEncoder()
-
 const mockSqlForPath = (filePath: string) =>
   Match.value(filePath).pipe(
     Match.when("/repo/seeds/users.sql", () => "INSERT INTO users VALUES (1);"),
@@ -32,7 +29,7 @@ const mockSqlForPath = (filePath: string) =>
 const sqlFileTestLayer = Layer.mergeAll(
   Path.layer,
   FileSystem.layerNoop({
-    stream: (filePath) => Stream.make(textEncoder.encode(mockSqlForPath(filePath))),
+    readFileString: (filePath) => Effect.succeed(mockSqlForPath(filePath)),
   }),
 )
 

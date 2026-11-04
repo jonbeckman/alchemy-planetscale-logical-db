@@ -5,9 +5,10 @@ import * as Effect from "effect/Effect"
 import * as FileSystem from "effect/FileSystem"
 import * as Order from "effect/Order"
 import * as Path from "effect/Path"
+import * as Redacted from "effect/Redacted"
 import { Client } from "pg"
 import { getProject, type ProjectConfig } from "../src/config.ts"
-import { requiredEnv } from "../src/env.ts"
+import { appSlugConfig, databaseUrlConfig } from "../src/env.ts"
 
 const sqlFiles = (entries: readonly string[]) =>
   Arr.sort(
@@ -66,8 +67,8 @@ const runMigrations = (input: {
 const MigrateLocalProgram = Effect.fn("MigrateLocalProgram")(function* () {
   const fs = yield* FileSystem.FileSystem
   const path = yield* Path.Path
-  const project = getProject(requiredEnv("APP_SLUG"))
-  const databaseUrl = requiredEnv("DATABASE_URL")
+  const project = getProject(yield* appSlugConfig)
+  const databaseUrl = Redacted.value(yield* databaseUrlConfig)
   const client = openSqlClient(databaseUrl)
 
   yield* Effect.acquireUseRelease(
