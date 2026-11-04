@@ -43,6 +43,19 @@ const effectPluginRules = [
   "require-effect-concurrency",
   "no-barrel-imports",
   "no-opaque-instance-fields",
+  "use-random-service",
+  "use-console-service",
+  "use-command-executor-service",
+  "use-http-client-service",
+  "avoid-native-fetch",
+  "use-temp-file-scoped",
+  "prefer-array-fromoption-over-option-match-empty",
+  "no-length-comparison",
+  "no-effect-ignore-then-as",
+  "require-is-prefix-for-boolean-schema-field",
+  "maybe-prefix-requires-option",
+  "vm-in-wrong-file",
+  "casting-awareness",
 ]
 
 export default defineConfig({
@@ -61,7 +74,7 @@ export default defineConfig({
       },
     },
     {
-      files: ["**/*.config.ts", "**/scripts/**", "**/test/**", "example/src/env.ts"],
+      files: ["**/*.config.ts", "**/scripts/**", "**/test/**"],
       rules: { "effect/avoid-process-env": "off" },
     },
   ],

@@ -1,29 +1,16 @@
+import { sha256 } from "alchemy/Util/sha256"
 import * as Arr from "effect/Array"
 import * as Effect from "effect/Effect"
 import * as FileSystem from "effect/FileSystem"
 import * as Option from "effect/Option"
 import * as Order from "effect/Order"
 import * as Path from "effect/Path"
-import * as Stream from "effect/Stream"
 
 export interface SqlFile {
   readonly id: string
   readonly sql: string
   readonly hash: string
 }
-
-const textEncoder = new TextEncoder()
-
-const bytesToHex = (bytes: ArrayBuffer) =>
-  Arr.fromIterable(new Uint8Array(bytes))
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("")
-
-const sha256Hex = (value: string) =>
-  Effect.tryPromise({
-    try: () => globalThis.crypto.subtle.digest("SHA-256", textEncoder.encode(value)),
-    catch: (error) => error,
-  }).pipe(Effect.map(bytesToHex))
 
 function sqlFilePrefix(name: string) {
   const prefix = name.split("_")[0]
@@ -57,15 +44,8 @@ export const readSqlFile = (directory: string, name: string) =>
     const fs = yield* FileSystem.FileSystem
     const path = yield* Path.Path
 
-    const sql = yield* fs.stream(path.resolve(directory, name)).pipe(
-      Stream.decodeText(),
-      Stream.runFold(
-        () => "",
-        (content: string, chunk: string) => content + chunk,
-      ),
-    )
-
-    const hash = yield* sha256Hex(sql)
+    const sql = yield* fs.readFileString(path.resolve(directory, name))
+    const hash = yield* sha256(sql)
     const file: SqlFile = { id: name, sql, hash }
     Object.defineProperty(file, "sql", { enumerable: false })
 

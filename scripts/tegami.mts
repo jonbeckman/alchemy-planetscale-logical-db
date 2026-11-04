@@ -24,14 +24,15 @@ const release = tegami({
     }),
     {
       name: "root-version-file",
+      // The built-in npm plugin applies first and writes the bumped version onto
+      // the package manifest. bumpVersion() reads that manifest, so calling it
+      // here increments the version a second time.
+      enforce: "post",
       async applyDraft(draft) {
         const pkg = this.graph.get(publishedPackageId)
 
-        if (!pkg) return
-        const nextVersion = draft.getPackageDraft(pkg.id)?.bumpVersion(pkg)
-
-        if (!nextVersion) return
-        await writeFile(join(this.cwd, "VERSION"), `${nextVersion}\n`)
+        if (!pkg?.version || !draft.getPackageDraft(pkg.id)) return
+        await writeFile(join(this.cwd, "VERSION"), `${pkg.version}\n`)
       },
     },
   ],

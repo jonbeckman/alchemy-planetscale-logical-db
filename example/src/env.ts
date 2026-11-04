@@ -1,9 +1,9 @@
-export function requiredEnv(name: string): string {
-  const value = process.env[name]
+import * as Config from "effect/Config"
+import * as Schema from "effect/Schema"
 
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${name}`)
-  }
+export const appSlugConfig = Config.NonEmptyString("APP_SLUG")
 
-  return value
-}
+export const databaseUrlConfig = Config.schema(
+  Schema.Redacted(Schema.NonEmptyString),
+  "DATABASE_URL",
+)
