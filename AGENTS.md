@@ -25,5 +25,16 @@ Jonathan set the draft pull request flow on 2026-10-25. Jonathan set this rule o
 
 ## Tooling
 
+- Prefer `nub` over `node`, `bun`, and other package managers. Run files with `nub <file>`, scripts with `nub run`, local CLIs with `nubx`, and installs with `nub install` or `nub add`. Use `nub --node <file>` for strict, unaugmented Node.
 - Lint uses the shared `oxlint-plugin-solzero` config in `oxlint.config.ts`, with the Effect rules as errors in `src/` and `example/`. Fix a violation instead of turning its rule off.
 - Skills live in `.agents/skills`. `.claude/skills` links to them, and `skills-lock.json` records their sources.
+
+## Learning more about Effect
+
+This repository uses the Effect Typescript library.
+
+Before writing any Effect code, first read `node_modules/effect/AGENTS.md`
+**completely**, and follow the links in the file when required.
+
+If you need to learn more about particular Effect apis and concepts that the
+guide doesn't cover, search through the source code in `node_modules/effect/src`.

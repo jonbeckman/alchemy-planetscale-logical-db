@@ -36,7 +36,7 @@
     "lint:fix": "oxlint --fix",
     "lint:fix:max": "oxlint --fix --fix-suggestions --fix-dangerously",
     "prepublishOnly": "nub run build",
-    "tegami": "tsx scripts/tegami.mts",
+    "tegami": "nub scripts/tegami.mts",
     "test": "node --import tsx --test test/*.test.ts",
     "typecheck": "tsrs --noEmit && tsrs -p tsconfig.test.json --noEmit"
   },

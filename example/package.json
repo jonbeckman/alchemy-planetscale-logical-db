@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev:db": "pglite-server --db .pglite/project_a --host 127.0.0.1 --port 15432 --max-connections 100",
-    "migrate:local": "APP_SLUG=project_a DATABASE_URL=\"postgresql://postgres:postgres@127.0.0.1:15432/postgres?sslmode=disable\" tsx scripts/migrate-local.ts",
+    "migrate:local": "APP_SLUG=project_a DATABASE_URL=\"postgresql://postgres:postgres@127.0.0.1:15432/postgres?sslmode=disable\" nub scripts/migrate-local.ts",
     "preplan:db": "nub run --cwd .. build",
     "plan:db": "alchemy plan alchemy.db.run.ts --stage prod --env-file .env",
     "predeploy:db": "nub run --cwd .. build",
