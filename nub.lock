@@ -13,8 +13,8 @@ importers:
         version: 8.23.1
     devDependencies:
       '@alchemy.run/planetscale':
-        specifier: 2.0.0-beta.84
-        version: 2.0.0-beta.84(alchemy@2.0.0-beta.84(@effect/platform-node@4.1.2(effect@4.1.2)(redis@6.3.1))(effect@4.1.2))(effect@4.1.2)(pg@8.23.1)
+        specifier: 2.0.0-beta.85
+        version: 2.0.0-beta.85(alchemy@2.0.0-beta.85(@effect/platform-node@4.1.2(effect@4.1.2)(redis@6.3.1))(effect@4.1.2))(effect@4.1.2)(pg@8.23.1)
       '@effect/platform-node':
         specifier: 4.1.2
         version: 4.1.2(effect@4.1.2)(redis@6.3.1)
@@ -31,8 +31,8 @@ importers:
         specifier: 0.2.3
         version: 0.2.3
       alchemy:
-        specifier: 2.0.0-beta.84
-        version: 2.0.0-beta.84(@effect/platform-node@4.1.2(effect@4.1.2)(redis@6.3.1))(effect@4.1.2)
+        specifier: 2.0.0-beta.85
+        version: 2.0.0-beta.85(@effect/platform-node@4.1.2(effect@4.1.2)(redis@6.3.1))(effect@4.1.2)
       effect:
         specifier: 4.1.2
         version: 4.1.2
@@ -61,8 +61,8 @@ importers:
   example:
     dependencies:
       '@alchemy.run/planetscale':
-        specifier: 2.0.0-beta.84
-        version: 2.0.0-beta.84(alchemy@2.0.0-beta.84(@effect/platform-node@4.1.2(effect@4.1.2)(redis@6.3.1))(effect@4.1.2))(effect@4.1.2)(pg@8.23.1)
+        specifier: 2.0.0-beta.85
+        version: 2.0.0-beta.85(alchemy@2.0.0-beta.85(@effect/platform-node@4.1.2(effect@4.1.2)(redis@6.3.1))(effect@4.1.2))(effect@4.1.2)(pg@8.23.1)
       '@electric-sql/pglite':
         specifier: 0.4.6
         version: 0.4.6
@@ -70,8 +70,8 @@ importers:
         specifier: 0.1.6
         version: 0.1.6(@electric-sql/pglite@0.4.6)
       alchemy:
-        specifier: 2.0.0-beta.84
-        version: 2.0.0-beta.84(@effect/platform-node@4.1.2(effect@4.1.2)(redis@6.3.1))(effect@4.1.2)
+        specifier: 2.0.0-beta.85
+        version: 2.0.0-beta.85(@effect/platform-node@4.1.2(effect@4.1.2)(redis@6.3.1))(effect@4.1.2)
       alchemy-planetscale-logical-db:
         specifier: workspace:*
         version: 2.2.0
@@ -103,14 +103,14 @@ importers:
 
 packages:
 
-  '@alchemy.run/node-utils@2.0.0-beta.84':
-    resolution: {integrity: sha512-UdvCtwEeLmRNN89gVjkMIQTqzkE+xPQb26dPsQM6JzDdHUyqaTyg64U4RmfUjUul0sWQbbVIeAO475GQYbGELw==}
+  '@alchemy.run/node-utils@2.0.0-beta.85':
+    resolution: {integrity: sha512-2gxqMNMoJdx13w7wlDJw+gaXQ8e1VxQFsKldOvweqpd7JEgB5TGn3oO8r1sb/GB9+UzqXdh8tKp2MOVgFOrmbg==}
 
-  '@alchemy.run/planetscale@2.0.0-beta.84':
-    resolution: {integrity: sha512-j0Y4oreytRcH/fickgRPP6+i4KC8vTX/gEz58WVho+hHcajgxGAcxnrSUCoV4YgKFOigR5ONkq+OhbR5a+VPVw==}
+  '@alchemy.run/planetscale@2.0.0-beta.85':
+    resolution: {integrity: sha512-rBG26S6nGVF3fzCTnvMKu/Un/5H+YepOIJyld+1JeaAKV78z3U+bYtR+dSWR6KcW8tG8xX9pj83sisZdp0iNog==}
     peerDependencies:
-      alchemy: 2.0.0-beta.84
-      effect: ^4.0.5
+      alchemy: 2.0.0-beta.85
+      effect: ^4.1.0
       mysql2: ^3.24.2
       pg: ^8.22.0
     peerDependenciesMeta:
@@ -131,14 +131,14 @@ packages:
       react-devtools-core:
         optional: true
 
-  '@alchemy.run/sql@2.0.0-beta.84':
-    resolution: {integrity: sha512-GdP9zDnm6b25p8DZfeg8HbPk66pfIuTA+IHFSC/I8iKbjUE49WoqBmdSUSJtL4ZmTvndTDCYZ7Y9PehBjNTL+w==}
+  '@alchemy.run/sql@2.0.0-beta.85':
+    resolution: {integrity: sha512-8827sU12RJRNjj+HM9XMxnw86gxzrg5c4dAon7KEs9xgV96OW2RaJlcrL9bJ4L2QZWzRTayHh5S1KKio4uUAOw==}
     peerDependencies:
-      '@effect/sql-libsql': ^4.0.5
-      '@effect/sql-mysql2': ^4.0.5
-      '@effect/sql-pg': ^4.0.5
-      alchemy: 2.0.0-beta.84
-      effect: ^4.0.5
+      '@effect/sql-libsql': ^4.1.0
+      '@effect/sql-mysql2': ^4.1.0
+      '@effect/sql-pg': ^4.1.0
+      alchemy: 2.0.0-beta.85
+      effect: ^4.1.0
       mysql2: ^3.24.2
       pg: ^8.22.0
     peerDependenciesMeta:
@@ -161,13 +161,13 @@ packages:
     resolution: {integrity: sha512-dlT1m5e/0yUL0kRNcQn7yGLVThkgbB0Ga/1AmfDDC/8ik6AIiSf2QLQO2zPYvefsHP0aFgxO93cVLCCfDp7kzQ==}
     engines: {node: '>= 20.12.0'}
 
-  '@distilled.cloud/core@1.0.0-rc.17':
-    resolution: {integrity: sha512-BHcVEtqIbyyqU3S3o8DjUtqoAJ4FLnsb4BX3nTK2+mcDARS2Puc+Qak6sn+b+W5CRKOOWyrhltbc+kaYDUwxeQ==}
+  '@distilled.cloud/core@1.0.0-rc.18':
+    resolution: {integrity: sha512-Iui60+sNl1CwUu7NKGLuFf3VC4H9xYzfm0Fc8ZQvd87qwf1sDMB3EAWZrq/QFgrwzSY16z2mJ0PNHaBUnGet8A==}
     peerDependencies:
       effect: ^4.0.5
 
-  '@distilled.cloud/planetscale@1.0.0-rc.17':
-    resolution: {integrity: sha512-njhj8KAcjSUShf5WK1J7GaLQb496QefHgKBQnQ5g+AJr0u9VPYcugdhuslWsd+L634GL13IHjXVnB2Fp36uy9w==}
+  '@distilled.cloud/planetscale@1.0.0-rc.18':
+    resolution: {integrity: sha512-GSpQVfwYq2QKjjQpjiMl4IUBgyS7doNX4mnIzIRzM44BMMtTwx0gMcBj7b7PVAA0O7MyKLKV134Ba1+w3u71kw==}
     peerDependencies:
       effect: ^4.0.5
 
@@ -952,16 +952,15 @@ packages:
     engines: {node: '>=22.14'}
     hasBin: true
 
-  alchemy@2.0.0-beta.84:
-    resolution: {integrity: sha512-GAcfT/fvolC5C4t6yKx2P3e4rYmaM3aXhtnwK2FnGDFUCdv5zIQatiVXtoNuABzFgMn6UIj9jxrCWWweXoWgmA==}
+  alchemy@2.0.0-beta.85:
+    resolution: {integrity: sha512-dRSyfVDfU3wevBT0Iam6PUjQTn6PY6Lyd2BOeg9ToE208ifrx0sdmNUag8lLeiHisxlhaJJRyOtqKcWZ7lY0Pw==}
     hasBin: true
     peerDependencies:
-      '@alchemy.run/frontend-frameworks': 2.0.0-beta.84
-      '@effect/platform-bun': ^4.0.5
-      '@effect/platform-node': ^4.0.5
-      '@effect/vitest': ^4.0.5
-      effect: ^4.0.5
-      vite: ^8.0.7
+      '@alchemy.run/frontend-frameworks': 2.0.0-beta.85
+      '@effect/platform-bun': ^4.1.0
+      '@effect/platform-node': ^4.1.0
+      effect: ^4.1.0
+      vite: ^7.0.0 || ^8.0.0
       ws: ^8.21.0
     peerDependenciesMeta:
       '@alchemy.run/frontend-frameworks':
@@ -969,8 +968,6 @@ packages:
       '@effect/platform-bun':
         optional: true
       '@effect/platform-node':
-        optional: true
-      '@effect/vitest':
         optional: true
       vite:
         optional: true
@@ -1213,17 +1210,17 @@ packages:
 
 snapshots:
 
-  '@alchemy.run/node-utils@2.0.0-beta.84':
+  '@alchemy.run/node-utils@2.0.0-beta.85':
     dependencies:
       chokidar: 5.0.0
       rolldown: 1.2.13
 
-  '@alchemy.run/planetscale@2.0.0-beta.84(alchemy@2.0.0-beta.84(@effect/platform-node@4.1.2(effect@4.1.2)(redis@6.3.1))(effect@4.1.2))(effect@4.1.2)(pg@8.23.1)':
+  '@alchemy.run/planetscale@2.0.0-beta.85(alchemy@2.0.0-beta.85(@effect/platform-node@4.1.2(effect@4.1.2)(redis@6.3.1))(effect@4.1.2))(effect@4.1.2)(pg@8.23.1)':
     dependencies:
-      '@alchemy.run/sql': 2.0.0-beta.84(alchemy@2.0.0-beta.84(@effect/platform-node@4.1.2(effect@4.1.2)(redis@6.3.1))(effect@4.1.2))(effect@4.1.2)(pg@8.23.1)
-      '@distilled.cloud/core': 1.0.0-rc.17(effect@4.1.2)
-      '@distilled.cloud/planetscale': 1.0.0-rc.17(effect@4.1.2)
-      alchemy: 2.0.0-beta.84(@effect/platform-node@4.1.2(effect@4.1.2)(redis@6.3.1))(effect@4.1.2)
+      '@alchemy.run/sql': 2.0.0-beta.85(alchemy@2.0.0-beta.85(@effect/platform-node@4.1.2(effect@4.1.2)(redis@6.3.1))(effect@4.1.2))(effect@4.1.2)(pg@8.23.1)
+      '@distilled.cloud/core': 1.0.0-rc.18(effect@4.1.2)
+      '@distilled.cloud/planetscale': 1.0.0-rc.18(effect@4.1.2)
+      alchemy: 2.0.0-beta.85(@effect/platform-node@4.1.2(effect@4.1.2)(redis@6.3.1))(effect@4.1.2)
       effect: 4.1.2
       pg: 8.23.1
     transitivePeerDependencies:
@@ -1234,9 +1231,9 @@ snapshots:
 
   '@alchemy.run/sigil@0.1.0-alpha.1': {}
 
-  '@alchemy.run/sql@2.0.0-beta.84(alchemy@2.0.0-beta.84(@effect/platform-node@4.1.2(effect@4.1.2)(redis@6.3.1))(effect@4.1.2))(effect@4.1.2)(pg@8.23.1)':
+  '@alchemy.run/sql@2.0.0-beta.85(alchemy@2.0.0-beta.85(@effect/platform-node@4.1.2(effect@4.1.2)(redis@6.3.1))(effect@4.1.2))(effect@4.1.2)(pg@8.23.1)':
     dependencies:
-      alchemy: 2.0.0-beta.84(@effect/platform-node@4.1.2(effect@4.1.2)(redis@6.3.1))(effect@4.1.2)
+      alchemy: 2.0.0-beta.85(@effect/platform-node@4.1.2(effect@4.1.2)(redis@6.3.1))(effect@4.1.2)
       effect: 4.1.2
       pg: 8.23.1
 
@@ -1252,13 +1249,13 @@ snapshots:
       fast-wrap-ansi: 0.2.2
       sisteransi: 1.0.5
 
-  '@distilled.cloud/core@1.0.0-rc.17(effect@4.1.2)':
+  '@distilled.cloud/core@1.0.0-rc.18(effect@4.1.2)':
     dependencies:
       effect: 4.1.2
 
-  '@distilled.cloud/planetscale@1.0.0-rc.17(effect@4.1.2)':
+  '@distilled.cloud/planetscale@1.0.0-rc.18(effect@4.1.2)':
     dependencies:
-      '@distilled.cloud/core': 1.0.0-rc.17(effect@4.1.2)
+      '@distilled.cloud/core': 1.0.0-rc.18(effect@4.1.2)
       effect: 4.1.2
 
   '@effect/platform-node-shared@4.1.2(effect@4.1.2)':
@@ -1673,9 +1670,9 @@ snapshots:
       '@yielded/effect-tsrs-linux-x64': 0.2.3
       '@yielded/effect-tsrs-win32-x64': 0.2.3
 
-  alchemy@2.0.0-beta.84(@effect/platform-node@4.1.2(effect@4.1.2)(redis@6.3.1))(effect@4.1.2):
+  alchemy@2.0.0-beta.85(@effect/platform-node@4.1.2(effect@4.1.2)(redis@6.3.1))(effect@4.1.2):
     dependencies:
-      '@alchemy.run/node-utils': 2.0.0-beta.84
+      '@alchemy.run/node-utils': 2.0.0-beta.85
       '@alchemy.run/sigil': 0.1.0-alpha.1
       '@effect/platform-node': 4.1.2(effect@4.1.2)(redis@6.3.1)
       capnweb: 0.12.0
