@@ -44,13 +44,13 @@
     "pg": "^8.16.3"
   },
   "devDependencies": {
-    "@alchemy.run/planetscale": "2.0.0-beta.84",
+    "@alchemy.run/planetscale": "2.0.0-beta.85",
     "@effect/platform-node": "4.1.2",
     "@mpsuesser/oxlint-plugin-effect": "0.6.0",
     "@types/node": "24.19.2",
     "@types/pg": "^8.15.6",
     "@yielded/effect-tsrs": "0.2.3",
-    "alchemy": "2.0.0-beta.84",
+    "alchemy": "2.0.0-beta.85",
     "effect": "4.1.2",
     "oxfmt": "0.75.0",
     "oxlint": "1.90.0",
