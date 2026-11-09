@@ -25,11 +25,33 @@
       "skillPath": "skills/nub/SKILL.md",
       "computedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
+    "oxfmt": {
+      "source": "delexw/claude-code-misc",
+      "sourceType": "github",
+      "skillPath": "skills/oxfmt/SKILL.md",
+      "computedHash": "dd12b7e710cf038d142d0d95caf977726d44f87caf1fcde2f19b2c69b03c2c9b"
+    },
+    "oxlint": {
+      "source": "delexw/claude-code-misc",
+      "sourceType": "github",
+      "skillPath": "skills/oxlint/SKILL.md",
+      "computedHash": "44808aefb361ada1250783eb31ccb20aa020e2c61466e52f53efb10ce20d793b"
+    },
     "postgres": {
       "source": "planetscale/database-skills",
       "sourceType": "github",
       "skillPath": "skills/postgres/SKILL.md",
       "computedHash": "3d4b3c578b7fcbc61e89b2731a248175e2aa740dc228a106b1a8b29b05ab000f"
+    },
+    "tegami": {
+      "source": "./.agents/skills/tegami",
+      "sourceType": "local",
+      "computedHash": "dfb8d7d6ffbe7d7ad6ac1b3695533deb0d0207f9812f01d8011273ec9de4bb44"
+    },
+    "tsrs": {
+      "source": "./.agents/skills/tsrs",
+      "sourceType": "local",
+      "computedHash": "d2e423a17772879aba1ed2b802baca9d8a772ab996dc86dc9885ec386dc5582d"
     }
   }
 }
