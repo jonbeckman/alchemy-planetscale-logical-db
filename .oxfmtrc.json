@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
   "arrowParens": "always",
-  "ignorePatterns": [".agents/skills/**"],
+  "ignorePatterns": [".agents/skills/**", ".claude/skills/**", ".cursor/skills/**"],
   "semi": false
 }
