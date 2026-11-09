@@ -68,7 +68,7 @@
   "devEngines": {
     "packageManager": {
       "name": "nub",
-      "version": "0.9.6",
+      "version": "0.10.0",
       "onFail": "warn"
     },
     "runtime": {
@@ -79,7 +79,7 @@
   "engines": {
     "node": ">=24.15.0 <25"
   },
-  "packageManager": "nub@0.9.6",
+  "packageManager": "nub@0.10.0",
   "allowScripts": {
     "esbuild": true,
     "msgpackr-extract": true,
