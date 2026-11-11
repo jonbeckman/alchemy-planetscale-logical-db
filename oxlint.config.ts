@@ -56,6 +56,23 @@ const effectPluginRules = [
   "maybe-prefix-requires-option",
   "vm-in-wrong-file",
   "casting-awareness",
+  // Plugin anti-slop rules this tree already satisfies.
+  // solzero effectRules already errors on prefer-option-over-null and avoid-untagged-errors.
+  "no-chained-type-assertions",
+  "no-conditional-empty-object-spread",
+  "no-known-value-widening",
+  "no-module-mocking",
+  "no-object-parameters",
+  "no-reflect-apply",
+  "no-reflect-get",
+  "no-runtime-typeof",
+  "no-service-constructor-imports",
+  "no-unknown-parameters",
+  "no-unknown-returns",
+  "no-unknown-type-aliases",
+  "no-unsafe-dictionary-type",
+  "no-widen-then-assert",
+  "require-safety-comment-for-type-assertion",
 ]
 
 export default defineConfig({
