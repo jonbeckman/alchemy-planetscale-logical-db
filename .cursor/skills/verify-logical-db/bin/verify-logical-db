@@ -507,7 +507,7 @@ feature_dir() {
 
 drive_import_path_validation() {
   local dest="$1"
-  node --import tsx --input-type=module -e '
+  nub --input-type=module -e '
     import { writeFileSync } from "node:fs"
     import { pathToFileURL } from "node:url"
     const dest = process.argv[2]
@@ -537,7 +537,7 @@ drive_import_path_validation() {
 
 drive_import_identity() {
   local dest="$1"
-  node --import tsx --input-type=module -e '
+  nub --input-type=module -e '
     import { writeFileSync } from "node:fs"
     import { pathToFileURL } from "node:url"
     import * as Option from "effect/Option"
@@ -588,7 +588,7 @@ drive_import_identity() {
 
 drive_sql_apply_policy() {
   local dest="$1"
-  node --import tsx --input-type=module -e '
+  nub --input-type=module -e '
     import { writeFileSync } from "node:fs"
     import { pathToFileURL } from "node:url"
     import * as Option from "effect/Option"
@@ -618,7 +618,7 @@ drive_sql_apply_policy() {
 
 drive_role_name() {
   local dest="$1"
-  node --import tsx --input-type=module -e '
+  nub --input-type=module -e '
     import { writeFileSync } from "node:fs"
     import { pathToFileURL } from "node:url"
     const dest = process.argv[2]
@@ -651,11 +651,11 @@ drive_example_local_migrate() {
   local migrate_log="$dest/migrate.log"
   if ! (
     cd "$repo_root/example"
-    APP_SLUG=project_a DATABASE_URL="$url" nubx tsx scripts/migrate-local.ts
+    APP_SLUG=project_a DATABASE_URL="$url" nub scripts/migrate-local.ts
   ) >"$migrate_log" 2>&1; then
     die "example migrate-local failed" "{\"log\":\"$migrate_log\"}"
   fi
-  node --import tsx --input-type=module -e '
+  nub --input-type=module -e '
     import { writeFileSync } from "node:fs"
     import { Client } from "pg"
     const dest = process.argv[1]
@@ -670,7 +670,7 @@ drive_example_local_migrate() {
     const result = {
       ok: notesName === "notes",
       feature: "example-local-migrate",
-      command: "nubx tsx scripts/migrate-local.ts",
+      command: "nub scripts/migrate-local.ts",
       databaseUrlHost: "127.0.0.1",
       notesRegclass: notesName,
       bookmarksAbsent: bookmarks.rows[0]?.name == null,

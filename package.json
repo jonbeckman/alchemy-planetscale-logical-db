@@ -37,7 +37,7 @@
     "lint:fix:max": "oxlint --fix --fix-suggestions --fix-dangerously",
     "prepublishOnly": "nub run build",
     "tegami": "nub scripts/tegami.mts",
-    "test": "node --import tsx --test test/*.test.ts",
+    "test": "nub --test test/*.test.ts",
     "typecheck": "tsrs --noEmit && tsrs -p tsconfig.test.json --noEmit"
   },
   "dependencies": {
@@ -57,7 +57,6 @@
     "oxlint-plugin-solzero": "0.1.0",
     "tegami": "1.5.0",
     "tsrs": "0.23.0-ts7.1.0-beta",
-    "tsx": "^4.23.15",
     "typescript": "7.0.2"
   },
   "peerDependencies": {
@@ -79,10 +78,5 @@
   "engines": {
     "node": ">=24.15.0 <25"
   },
-  "packageManager": "nub@0.10.0",
-  "allowScripts": {
-    "esbuild": true,
-    "msgpackr-extract": true,
-    "workerd": true
-  }
+  "packageManager": "nub@0.10.0"
 }
