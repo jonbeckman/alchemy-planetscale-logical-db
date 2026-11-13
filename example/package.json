@@ -14,8 +14,8 @@
   },
   "dependencies": {
     "@alchemy.run/planetscale": "2.0.0-beta.85",
-    "@electric-sql/pglite": "0.4.6",
-    "@electric-sql/pglite-socket": "0.1.6",
+    "@electric-sql/pglite": "0.5.16",
+    "@electric-sql/pglite-socket": "0.2.19",
     "alchemy": "2.0.0-beta.85",
     "alchemy-planetscale-logical-db": "workspace:*",
     "effect": "4.1.2",
