@@ -14,8 +14,15 @@ nvm alias default "$(tr -d '[:space:]' < .nvmrc)"
 export PATH="$(dirname "$(nvm which default)"):$HOME/.nub/bin:$PATH"
 hash -r
 
-if ! command -v nub >/dev/null 2>&1 || [ "$(nub --version | awk 'NR==1{print $1}' | tr -d 'v')" != "0.9.6" ]; then
-  curl -fsSL https://nubjs.com/install.sh | bash -s 0.9.6
+# Nub version comes from package.json packageManager.
+nub_version="$(sed -n 's/^[[:space:]]*"packageManager": "nub@\([^"]*\)".*/\1/p' package.json)"
+if [ -z "$nub_version" ]; then
+  echo "package.json packageManager must be nub@<version>" >&2
+  exit 1
+fi
+
+if ! command -v nub >/dev/null 2>&1 || [ "$(nub --version | awk 'NR==1{print $1}' | tr -d 'v')" != "$nub_version" ]; then
+  curl -fsSL https://nubjs.com/install.sh | bash -s "$nub_version"
   export PATH="$HOME/.nub/bin:$PATH"
 fi
 
