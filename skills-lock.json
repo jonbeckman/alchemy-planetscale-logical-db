@@ -1,57 +1,64 @@
 {
-  "version": 1,
+  "version": 2,
   "skills": {
     "alchemy": {
       "source": "wyattjoh/skills",
       "sourceType": "github",
       "skillPath": "skills/alchemy/SKILL.md",
-      "computedHash": "4329a80e27b2d414288cde2500f6fb8f2b36081e45d105a43e2d8aad37c9590f"
+      "computedHash": "0c920fc75d72944c8b519fec36da9db54aa9197146a14ae4787287c2195362ff",
+      "commit": "9f7340737ee8023e935758e3d8edd89caca67f93"
     },
     "effect": {
       "source": "kitlangton/skills",
       "sourceType": "github",
       "skillPath": "skills/effect/SKILL.md",
-      "computedHash": "d88417dca5f22fcc80b03ebd4096dfa6113a50cc6bb574bf53f75248cd321e35"
+      "computedHash": "08df6d7dd3d3f3d5a6658c17b90f6b776912fd566d15c85ac6140030fafc1a9c",
+      "commit": "71195e36024ebd2e66c5beac946e81eafd5abc43"
     },
     "effect-ts": {
       "source": "effect-ts/skills",
       "sourceType": "github",
       "skillPath": "skills/effect-ts/SKILL.md",
-      "computedHash": "cb225ba5dda169883dfee680fba6c570c89245ba19242a9bc5c3f2ac8218a55f"
+      "computedHash": "0e5d926566561f7fe206f5f60c1c53e21d1519fd6de8408a7e3c9934d55ad04f",
+      "commit": "155c50c911f9c99c294ef8a4461981c5bbe6453e"
     },
     "nub": {
       "source": "nubjs/nub",
       "sourceType": "github",
       "skillPath": "skills/nub/SKILL.md",
-      "computedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      "computedHash": "5edbaab41f6bc63cadccfb8b87eaea4068cf312544325ab9002d7efba4ffbaf6",
+      "commit": "1556637f83ae77aa593b0871614a175c04523c2e"
     },
     "oxfmt": {
       "source": "delexw/claude-code-misc",
       "sourceType": "github",
       "skillPath": "skills/oxfmt/SKILL.md",
-      "computedHash": "dd12b7e710cf038d142d0d95caf977726d44f87caf1fcde2f19b2c69b03c2c9b"
+      "computedHash": "1696941b2ba6c5ad3a086ab469b2ffd1979f8882d354d0ac8141b7579724bc07",
+      "commit": "c729be07588f3b64a3878cc9f5e99c362388554c"
     },
     "oxlint": {
       "source": "delexw/claude-code-misc",
       "sourceType": "github",
       "skillPath": "skills/oxlint/SKILL.md",
-      "computedHash": "44808aefb361ada1250783eb31ccb20aa020e2c61466e52f53efb10ce20d793b"
+      "computedHash": "7e89f7fc1dc4639a61e1df0fcafe4260f2cf84525369975beac9a84e8b9bc61e",
+      "commit": "c729be07588f3b64a3878cc9f5e99c362388554c"
     },
     "postgres": {
       "source": "planetscale/database-skills",
       "sourceType": "github",
       "skillPath": "skills/postgres/SKILL.md",
-      "computedHash": "3d4b3c578b7fcbc61e89b2731a248175e2aa740dc228a106b1a8b29b05ab000f"
+      "computedHash": "16e451102fbc0c5daf2f8fe01c860b68a7fd272207f8f59ccf8dbfda98254442",
+      "commit": "f6ed002d03084cb39c01d1d58904d47a36f5322a"
     },
     "tegami": {
       "source": "./.agents/skills/tegami",
       "sourceType": "local",
-      "computedHash": "dfb8d7d6ffbe7d7ad6ac1b3695533deb0d0207f9812f01d8011273ec9de4bb44"
+      "computedHash": "c77961085e1daeb5b96fbca1e0ec6764fd8dae769b780c4d14f02c37a31246ac"
     },
     "tsrs": {
       "source": "./.agents/skills/tsrs",
       "sourceType": "local",
-      "computedHash": "d2e423a17772879aba1ed2b802baca9d8a772ab996dc86dc9885ec386dc5582d"
+      "computedHash": "f811d16a25b200b9a9665e349b24eb357b570bec2d12dd88d4a4a424717aba50"
     }
   }
 }
