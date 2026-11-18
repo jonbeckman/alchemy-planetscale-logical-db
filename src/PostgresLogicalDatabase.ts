@@ -160,7 +160,7 @@ export const PostgresLogicalDatabase = Resource<PostgresLogicalDatabase>(
   "Planetscale.PostgresLogicalDatabase",
 )
 
-export const postgresRoleNameFromUsername = (username: string) => username.split(".")[0] ?? username
+export const postgresRoleNameFromUsername = (username: string) => username.split(".")[0]
 
 const ensurePostgresIdentifierPrefix = (name: string) =>
   Match.value(/^[a-z]/.test(name)).pipe(

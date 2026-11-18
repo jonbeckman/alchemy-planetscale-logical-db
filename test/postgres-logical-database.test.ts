@@ -8,6 +8,7 @@ import * as Option from "effect/Option"
 import * as Path from "effect/Path"
 import {
   importFilePathsEqual,
+  postgresRoleNameFromUsername,
   readLogicalDatabaseSqlFiles,
   validateImportFilePath,
 } from "../src/PostgresLogicalDatabase.ts"
@@ -32,6 +33,15 @@ const sqlFileTestLayer = Layer.mergeAll(
     readFileString: (filePath) => Effect.succeed(mockSqlForPath(filePath)),
   }),
 )
+
+describe("postgresRoleNameFromUsername", () => {
+  it("returns the Postgres role prefix before the first dot", () => {
+    assert.equal(postgresRoleNameFromUsername("app.branch.id"), "app")
+    assert.equal(postgresRoleNameFromUsername("app"), "app")
+    assert.equal(postgresRoleNameFromUsername(""), "")
+    assert.equal(postgresRoleNameFromUsername("."), "")
+  })
+})
 
 describe("validateIdentifier", () => {
   it("accepts identifiers that start with a lowercase letter", () => {
