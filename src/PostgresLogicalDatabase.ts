@@ -27,6 +27,7 @@ import * as Match from "effect/Match"
 import * as Option from "effect/Option"
 import * as Order from "effect/Order"
 import * as R from "effect/Record"
+import * as Schema from "effect/Schema"
 
 const DEFAULT_MIGRATIONS_TABLE = "__alchemy_migrations"
 const DEFAULT_IMPORTS_TABLE = "__alchemy_imports"
@@ -201,11 +202,19 @@ const excludedAppRoleTableNames = (
   ownershipTable: string,
 ) => [migrationsTable, importsTable, ownershipTable]
 
+class LogicalDatabaseRenameError extends Schema.TaggedError<LogicalDatabaseRenameError>()(
+  "LogicalDatabaseRenameError",
+  {
+    message: Schema.String,
+  },
+) {}
+
 const renameError = (oldName: string, newName: string) =>
-  new Error(
-    `Refusing to rename logical Postgres database "${oldName}" to "${newName}". ` +
+  new LogicalDatabaseRenameError({
+    message:
+      `Refusing to rename logical Postgres database "${oldName}" to "${newName}". ` +
       "Database renames can break downstream connection references; perform an explicit manual cutover instead.",
-  )
+  })
 
 const isUsablePostgresOrigin = (origin: PostgresOrigin) => origin.host !== "" && origin.user !== ""
 

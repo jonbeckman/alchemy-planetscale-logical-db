@@ -1,9 +1,14 @@
 import * as Match from "effect/Match"
+import * as Schema from "effect/Schema"
+
+class ImportFilePathError extends Schema.TaggedError<ImportFilePathError>()("ImportFilePathError", {
+  message: Schema.String,
+}) {}
 
 const importFilePathError = (filePath: string) =>
-  new Error(
-    `Import file path "${filePath}" must be a normalized, repository-relative path using "/" separators (for example "seeds/users.sql"). Absolute paths, backslashes, empty segments, ".", and ".." are not stable tracked identifiers.`,
-  )
+  new ImportFilePathError({
+    message: `Import file path "${filePath}" must be a normalized, repository-relative path using "/" separators (for example "seeds/users.sql"). Absolute paths, backslashes, empty segments, ".", and ".." are not stable tracked identifiers.`,
+  })
 
 const hasWindowsPathPrefix = (filePath: string) =>
   /^[a-zA-Z]:/.test(filePath) || filePath.startsWith("\\\\")

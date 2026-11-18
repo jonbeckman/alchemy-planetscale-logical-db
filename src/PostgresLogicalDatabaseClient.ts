@@ -38,10 +38,17 @@ interface PrivilegeCheck {
   readonly ok: boolean
 }
 
+class InvalidPostgresIdentifierError extends Schema.TaggedError<InvalidPostgresIdentifierError>()(
+  "InvalidPostgresIdentifierError",
+  {
+    message: Schema.String,
+  },
+) {}
+
 function throwInvalidIdentifier(label: string, value: string): never {
-  throw new Error(
-    `${label} "${value}" must start with a lowercase letter or underscore and contain only lowercase letters, numbers, and underscores.`,
-  )
+  throw new InvalidPostgresIdentifierError({
+    message: `${label} "${value}" must start with a lowercase letter or underscore and contain only lowercase letters, numbers, and underscores.`,
+  })
 }
 
 export const validateIdentifier = (label: string, value: string) =>
@@ -65,7 +72,9 @@ const validateExternalIdentifier = (label: string, value: string) =>
   )
 
 function throwInvalidExternalIdentifier(label: string, value: string): never {
-  throw new Error(`${label} "${value}" must be a non-empty Postgres identifier.`)
+  throw new InvalidPostgresIdentifierError({
+    message: `${label} "${value}" must be a non-empty Postgres identifier.`,
+  })
 }
 
 function quoteExternalIdentifier(label: string, value: string) {

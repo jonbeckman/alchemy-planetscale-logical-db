@@ -1,5 +1,6 @@
 import * as Arr from "effect/Array"
 import * as Option from "effect/Option"
+import * as Schema from "effect/Schema"
 
 const projectPath = (path: string) => new URL(path, import.meta.url).pathname
 
@@ -37,8 +38,14 @@ export function projectSlugs(): readonly ProjectSlug[] {
   return projectSlugList
 }
 
+class UnknownProjectSlug extends Schema.TaggedError<UnknownProjectSlug>()("UnknownProjectSlug", {
+  message: Schema.String,
+}) {}
+
 function unknownProjectSlug(slug: string): never {
-  throw new Error(`Unknown APP_SLUG "${slug}". Expected one of: ${projectSlugs().join(", ")}.`)
+  throw new UnknownProjectSlug({
+    message: `Unknown APP_SLUG "${slug}". Expected one of: ${projectSlugs().join(", ")}.`,
+  })
 }
 
 export const getProject = (slug: string): ProjectConfig =>
