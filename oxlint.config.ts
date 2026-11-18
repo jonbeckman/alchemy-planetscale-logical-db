@@ -57,7 +57,8 @@ const effectPluginRules = [
   "vm-in-wrong-file",
   "casting-awareness",
   // Plugin anti-slop rules this tree already satisfies.
-  // solzero effectRules already errors on prefer-option-over-null and avoid-untagged-errors.
+  // solzero effectRules already errors on prefer-option-over-null.
+  // The plugin prefer-option-over-null rule also flags optional parameters, which resource props use.
   "no-chained-type-assertions",
   "no-conditional-empty-object-spread",
   "no-known-value-widening",
@@ -67,12 +68,16 @@ const effectPluginRules = [
   "no-reflect-get",
   "no-runtime-typeof",
   "no-service-constructor-imports",
+  "no-shape-in-symbol-names",
   "no-unknown-parameters",
   "no-unknown-returns",
   "no-unknown-type-aliases",
   "no-unsafe-dictionary-type",
   "no-widen-then-assert",
   "require-safety-comment-for-type-assertion",
+  // Domain failures in src/ and example/ are Schema.TaggedError.
+  // This plugin rule is broader than solzero/avoid-untagged-errors.
+  "avoid-untagged-errors",
 ]
 
 export default defineConfig({
@@ -82,6 +87,10 @@ export default defineConfig({
   plugins: ["unicorn", "typescript", "oxc"],
   jsPlugins: [{ name: "effect", specifier: "@mpsuesser/oxlint-plugin-effect" }],
   ignorePatterns: [...agentToolIgnorePatterns, "**/dist/**", "**/*.gen.ts"],
+  rules: {
+    // Tests live in test/. Skill fixtures under .agents and .claude stay ignored.
+    "solzero/no-colocated-tests": "error",
+  },
   overrides: [
     {
       files: ["src/**/*.ts", "example/**/*.ts"],
