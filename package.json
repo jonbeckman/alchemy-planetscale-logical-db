@@ -52,7 +52,7 @@
     "@yielded/effect-tsrs": "0.2.3",
     "alchemy": "2.0.0-beta.87",
     "effect": "4.1.5",
-    "oxfmt": "0.79.0",
+    "oxfmt": "0.80.0",
     "oxlint": "1.95.0",
     "oxlint-plugin-solzero": "0.1.0",
     "tegami": "1.5.0",
