@@ -67,7 +67,7 @@
   "devEngines": {
     "packageManager": {
       "name": "nub",
-      "version": "0.11.1",
+      "version": "0.11.2",
       "onFail": "warn"
     },
     "runtime": {
@@ -78,5 +78,5 @@
   "engines": {
     "node": ">=24.15.0 <25"
   },
-  "packageManager": "nub@0.11.1"
+  "packageManager": "nub@0.11.2"
 }
