@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/domain/sessions
      upstream: website/src/content/docs/domain/sessions.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # Sessions and middleware
 
@@ -98,7 +98,7 @@ The Worker that serves the Api provides `SessionLive`. A client that isn't a bro
 
 ## Guard commands and views
 
-List the middleware on each command and view that needs it. Middleware runs in order, and what it provides is what `decide` and `validate` may read.
+List the middleware on each command and view that needs it. Middleware runs in list order: the first entry runs first, and what it provides reaches the entries after it and what `decide` and `validate` may read.
 
 ```typescript
 // packages/domain/src/Account/SetNickname.command.ts

@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/cloudflare/frontend/foldkit
      upstream: website/src/content/docs/cloudflare/frontend/foldkit.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # Foldkit
 
@@ -14,6 +14,15 @@ generated Fetch handler becomes the Worker entry.
 Configure rendering in the application's Foldkit plugin. The resource supports
 browser-only SPAs, server-side rendering (SSR), static site generation (SSG),
 and hybrid rendering. Asset routing follows the build's output.
+
+## Install
+
+The build integration is not bundled with alchemy. Install
+`@alchemy.run/frontend-frameworks`; the resource loads its `/foldkit`
+export from your project at deploy time. It is only used at build time,
+so a dev dependency is enough:
+
+<PackageManagers dev={devDeps} />
 
 ## Configure Vite
 

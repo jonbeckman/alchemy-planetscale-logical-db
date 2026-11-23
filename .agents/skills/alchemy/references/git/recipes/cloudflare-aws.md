@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/git/recipes/cloudflare-aws
      upstream: website/src/content/docs/git/recipes/cloudflare-aws.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # Bytes in S3, hashing on Lambda
 

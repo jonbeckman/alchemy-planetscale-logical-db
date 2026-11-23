@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/aws/compute/web-functions
      upstream: website/src/content/docs/aws/compute/web-functions.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # Lambda Web Functions
 

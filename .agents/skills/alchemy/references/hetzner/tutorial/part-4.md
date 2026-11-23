@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/hetzner/tutorial/part-4
      upstream: website/src/content/docs/hetzner/tutorial/part-4.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # Part 4: Networking & Load Balancing
 

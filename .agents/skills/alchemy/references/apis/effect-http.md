@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/apis/effect-http
      upstream: website/src/content/docs/apis/effect-http.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # Effect HTTP
 

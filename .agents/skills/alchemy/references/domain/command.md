@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/domain/command
      upstream: website/src/content/docs/domain/command.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # Command
 
@@ -228,7 +228,7 @@ export class WithdrawMoney extends Domain.Command("WithdrawMoney", {
 
 Nothing from its input reaches a trace unless its `decide` annotates it; see [Observability](/domain/observability).
 
-Middleware runs in order, and any of it can stop the command with its own error, like `Unauthorized`. What it provides, such as who the caller is, travels with the command to the aggregate, where `decide` reads it to authorize the change. See [Sessions and middleware](/domain/sessions).
+Middleware runs in list order, so `Session` authenticates before `MfaChallenge` challenges, and any of it can stop the command with its own error, like `Unauthorized`. What it provides, such as who the caller is, travels with the command to the aggregate, where `decide` reads it to authorize the change. See [Sessions and middleware](/domain/sessions).
 
 A client can run the same `decide` with `Account.predict` when it provides what the middleware would, from a client-side Layer. See [Optimistic updates](/domain/optimistic-updates#bound-this-pattern).
 

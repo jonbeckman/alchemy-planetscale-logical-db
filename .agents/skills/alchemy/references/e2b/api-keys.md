@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/e2b/api-keys
      upstream: website/src/content/docs/e2b/api-keys.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # Team & API keys
 

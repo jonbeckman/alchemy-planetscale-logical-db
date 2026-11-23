@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/daytona/sandboxes/toolbox
      upstream: website/src/content/docs/daytona/sandboxes/toolbox.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # Toolbox
 

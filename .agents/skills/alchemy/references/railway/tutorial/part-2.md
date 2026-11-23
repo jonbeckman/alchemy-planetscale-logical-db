@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/railway/tutorial/part-2
      upstream: website/src/content/docs/railway/tutorial/part-2.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # Part 2: Deploy a Service
 

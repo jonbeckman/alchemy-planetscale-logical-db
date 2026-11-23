@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/docker/limits-and-security
      upstream: website/src/content/docs/docker/limits-and-security.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # Limits & security
 

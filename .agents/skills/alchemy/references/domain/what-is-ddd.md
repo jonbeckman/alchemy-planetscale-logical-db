@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/domain/what-is-ddd
      upstream: website/src/content/docs/domain/what-is-ddd.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # What is Domain-Driven Design?
 

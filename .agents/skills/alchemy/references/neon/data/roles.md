@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/neon/data/roles
      upstream: website/src/content/docs/neon/data/roles.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # Roles
 

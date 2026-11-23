@@ -5,8 +5,8 @@
       "source": "wyattjoh/skills",
       "sourceType": "github",
       "skillPath": "skills/alchemy/SKILL.md",
-      "computedHash": "0c920fc75d72944c8b519fec36da9db54aa9197146a14ae4787287c2195362ff",
-      "commit": "9f7340737ee8023e935758e3d8edd89caca67f93"
+      "computedHash": "4e0421b1e766b1e6934bc1c124522e8e3ae55c551abb5aa999ce87adbcbb12b3",
+      "commit": "9bbb6eef3df045b84ef33ae54a44e2b4c4adc285"
     },
     "effect": {
       "source": "kitlangton/skills",

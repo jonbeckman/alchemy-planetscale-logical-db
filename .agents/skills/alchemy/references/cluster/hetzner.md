@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/cluster/hetzner
      upstream: website/src/content/docs/cluster/hetzner.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # Hetzner
 

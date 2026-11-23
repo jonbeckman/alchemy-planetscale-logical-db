@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/better-auth/sign-in-providers/custom-oauth
      upstream: website/src/content/docs/better-auth/sign-in-providers/custom-oauth.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # Custom OAuth and OIDC
 

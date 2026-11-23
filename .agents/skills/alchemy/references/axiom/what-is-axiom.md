@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/axiom/what-is-axiom
      upstream: website/src/content/docs/axiom/what-is-axiom.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # What is Axiom?
 

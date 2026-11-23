@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/modal/sandboxes/persistent
      upstream: website/src/content/docs/modal/sandboxes/persistent.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # Persistent sandboxes
 

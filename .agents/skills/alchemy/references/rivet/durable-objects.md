@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/rivet/durable-objects
      upstream: website/src/content/docs/rivet/durable-objects.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # Durable Object
 
@@ -108,7 +108,7 @@ return Effect.gen(function* () {
 
 ## Give it methods
 
-Every function the inner Effect returns, apart from `fetch` and `alarm`, is a method callers can run:
+Every function the inner Effect returns, apart from `fetch`, `alarm` and the `webSocket*` handlers, is a method callers can run:
 
 ```typescript title="src/room.ts"
 return {
@@ -142,6 +142,30 @@ return {
 ```
 
 Callers forward a request to it with `room.fetch(request)`.
+
+## Hold WebSockets
+
+`fetch` can accept a WebSocket instead of answering. `Rivet.upgrade()` accepts it and returns the `101` response to hand back:
+
+```typescript title="src/room.ts"
+return {
+  fetch: Effect.gen(function* () {
+    const [response, socket] = yield* Rivet.upgrade({ tags: ["chat"] });
+    yield* socket.send(`welcome to ${state.id.name}`);
+    return response;
+  }),
+  webSocketMessage: (socket: Rivet.WebSocket, message: string | Uint8Array) =>
+    Effect.gen(function* () {
+      for (const peer of yield* state.getWebSockets("chat")) yield* peer.send(message);
+    }),
+};
+```
+
+A caller passes the upgrade request along with `room.fetch(request)`, and Rivet's gateway carries the socket to the instance that owns the name. The room receives its messages in `webSocketMessage`, and `webSocketClose` and `webSocketError` when it ends. `state.getWebSockets(tag)` finds every open socket with a tag, and the room stays awake while it holds any.
+
+:::caution
+Rivet 3 doesn't hibernate WebSockets yet, so a room holding open sockets stays awake. Hibernatable WebSockets are coming soon.
+:::
 
 ## Wake it with alarm
 
