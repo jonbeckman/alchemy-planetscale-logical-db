@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/gcp/data/firestore
      upstream: website/src/content/docs/gcp/data/firestore.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # Firestore
 

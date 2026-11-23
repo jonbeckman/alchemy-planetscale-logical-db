@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/git/what-is-git
      upstream: website/src/content/docs/git/what-is-git.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # What is a git host?
 

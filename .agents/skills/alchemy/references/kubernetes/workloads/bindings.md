@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/kubernetes/workloads/bindings
      upstream: website/src/content/docs/kubernetes/workloads/bindings.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # Configuration & bindings
 

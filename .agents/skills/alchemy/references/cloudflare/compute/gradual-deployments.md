@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/cloudflare/compute/gradual-deployments
      upstream: website/src/content/docs/cloudflare/compute/gradual-deployments.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # Gradual deployments
 

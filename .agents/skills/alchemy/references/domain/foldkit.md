@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/domain/foldkit
      upstream: website/src/content/docs/domain/foldkit.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # Integrate with Foldkit
 
@@ -198,7 +198,7 @@ const resources = Layer.merge(Connection, Headers);
 
 Provide `resources` to `Runtime.makeApplication`. The MFA value above is the bank demo's code. A real app reads the current credential at execution time. Never put credentials in Command args or Messages.
 
-Live reads authenticate by cookie. Serve the app and Api on one origin. WebSocket push requires a store with `connect`, such as Cloudflare Durable Objects. Use `protocolHttp` for polling on other platforms. The adapter does not select a protocol.
+Live reads authenticate by cookie. Serve the app and Api on one origin. Every platform pushes live reads over `protocolWebSocket`; `protocolHttp` polls instead. The adapter does not select a protocol.
 
 ## Test and host the app
 

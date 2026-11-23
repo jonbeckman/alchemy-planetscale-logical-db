@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/railway/data/drizzle-mysql
      upstream: website/src/content/docs/railway/data/drizzle-mysql.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # Drizzle MySQL on Railway
 

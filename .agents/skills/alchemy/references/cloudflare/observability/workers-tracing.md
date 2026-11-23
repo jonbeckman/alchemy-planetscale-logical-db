@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/cloudflare/observability/workers-tracing
      upstream: website/src/content/docs/cloudflare/observability/workers-tracing.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # Native Workers tracing
 

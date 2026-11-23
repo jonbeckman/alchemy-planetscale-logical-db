@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/e2b/what-is-e2b
      upstream: website/src/content/docs/e2b/what-is-e2b.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # What is E2B?
 

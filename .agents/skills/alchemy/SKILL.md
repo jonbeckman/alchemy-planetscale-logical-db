@@ -1,6 +1,6 @@
 ---
 name: alchemy
-description: Answers Alchemy (alchemy.run) questions from an indexed local copy of the full documentation. Covers Stacks, Resources, Actions, Outputs, bindings, the Effect-based deploy/runtime phase model, the alchemy CLI, state stores, stages, secret providers (dotenv, Doppler, Infisical), Better Auth, SQL clients (Effect SQL, Drizzle, Prisma ORM), and provider guides for Cloudflare, AWS, GCP, Kubernetes, Fly, Railway, Hetzner, Neon, PlanetScale, Prisma, Turso, Rivet, Stripe, Docker, and Axiom, sandbox providers (Modal, Daytona, E2B, Boat, Archil), Effect Cluster, and the Effect domain-driven design framework. Use when the user mentions "alchemy", "alchemy.run", "alchemy.run.ts", "Alchemy.Stack", "Infrastructure-as-Effects", "alchemy deploy", or asks how to define a Resource, bind a resource into a Worker or Lambda, or deploy an Effect program to Cloudflare or AWS with Alchemy.
+description: Answers Alchemy (alchemy.run) questions from an indexed local copy of the full documentation. Covers Stacks, Resources, Actions, Outputs, bindings, the Effect-based deploy/runtime phase model, the alchemy CLI, state stores, stages, secret providers (dotenv, Doppler, Infisical), Better Auth, SQL clients (Effect SQL, Drizzle, Prisma ORM), and provider guides for Cloudflare, AWS, GCP, DigitalOcean, Kubernetes, Fly, Railway, Hetzner, Neon, PlanetScale, Prisma, Turso, Rivet, Stripe, Docker, and Axiom, sandbox providers (Modal, Daytona, E2B, Boat, Archil), Effect Cluster, and the Effect domain-driven design framework. Use when the user mentions "alchemy", "alchemy.run", "alchemy.run.ts", "Alchemy.Stack", "Infrastructure-as-Effects", "alchemy deploy", or asks how to define a Resource, bind a resource into a Worker or Lambda, or deploy an Effect program to Cloudflare or AWS with Alchemy.
 argument-hint: "[topic]"
 ---
 
@@ -12,7 +12,7 @@ this skill's directory.
 
 <!-- BEGIN GENERATED: corpus-stats -->
 
-Indexed from `alchemy-run/alchemy` @ `21c6012` (2026-11-12), alchemy `2.0.0-beta.86` on `effect@4.1.4`: **807 topic files** across 37 areas.
+Indexed from `alchemy-run/alchemy` @ `d1f364a` (2026-11-15), alchemy `2.0.0-beta.87` on `effect@4.1.4`: **851 topic files** across 38 areas.
 
 Reference paths mirror site URLs exactly, so a path is derivable without
 searching: `https://alchemy.run/cloudflare/compute/workers` ->
@@ -106,7 +106,7 @@ artifact.
 ```typescript
 // alchemy.run.ts
 import * as Alchemy from "alchemy";
-import * as Cloudflare from "alchemy/Cloudflare";
+import * as Cloudflare from "@alchemy.run/cloudflare";
 import * as Effect from "effect/Effect";
 
 export default Alchemy.Stack(
@@ -208,6 +208,7 @@ yourself.
 - `references/cluster/` (23) -- Run Effect Cluster entities, workflows, singletons and crons with Alchemy — a Postgres database and a pool of runners on Docker, AWS, GCP, Kubernetes, Fly or Hetzner, or Durable Objects on Cloudflare.
 - `references/command/` (4) -- Alchemy's cloud-agnostic primitives for local processes in the deploy graph — memoized builds, one-off commands, and dev servers.
 - `references/daytona/` (20) -- Run code you don't fully trust in Daytona sandboxes. Declare snapshots, volumes and secrets in your Stack, and create, drive and delete sandboxes from any Worker or Lambda.
+- `references/digitalocean/` (44) -- Run Effect programs on DigitalOcean with Alchemy. Declare Apps, Functions, Droplets, Kubernetes, Spaces, Managed Databases, AI agents and networking in one TypeScript program.
 - `references/docker/` (17) -- Docker builds applications into images and runs them as isolated containers on a Docker engine, on your laptop, a CI runner or a server.
 - `references/domain/` (44) -- A domain-driven design framework for Effect. Model your business as commands, aggregates, events, views, projections and policies, test it in memory, and run it on Durable Objects on Cloudflare, Rivet or Effect Cluster.
 - `references/e2b/` (17) -- Run sandboxes for agents on E2B with Alchemy. Declare templates, warm snapshots, volumes and secrets in TypeScript, and create sandboxes from any Worker or Function.
@@ -344,6 +345,21 @@ daytona/                   _overview networking/network observability/telemetry
                            security/secrets setup tutorial/part-1 tutorial/part-2
                            tutorial/part-3 tutorial/part-4 tutorial/part-5
                            tutorial/part-6 what-is-daytona
+digitalocean/              _overview ai/action-gateway ai/agent-harness ai/genai-agents
+                           ai/inference compute/app-platform compute/choosing-a-runtime
+                           compute/droplets compute/functions compute/kubernetes
+                           compute/sandboxes data/managed-databases data/spaces
+                           data/vector-databases data/volumes-nfs frontend/astro
+                           frontend/foldkit frontend/nextjs frontend/nuxt
+                           frontend/octane frontend/react-router frontend/solidstart
+                           frontend/sveltekit frontend/tanstack-start frontend/vinext
+                           frontend/vite frontend/vocs frontend/waku frontend/websites
+                           networking/dns networking/firewalls networking/load-balancers
+                           networking/reserved-ips networking/vpcs
+                           observability/monitoring security/secrets setup
+                           teams-projects-and-tokens tutorial/part-1 tutorial/part-2
+                           tutorial/part-3 tutorial/part-4 tutorial/part-5
+                           what-is-digitalocean
 docker/                    _overview build-caches build-images cloud-runtimes containers
                            effectful-services engines-and-contexts limits-and-security
                            local-services networks registries remote-images services

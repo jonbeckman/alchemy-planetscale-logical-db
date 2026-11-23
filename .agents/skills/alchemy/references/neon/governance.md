@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/neon/governance
      upstream: website/src/content/docs/neon/governance.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # Organization governance
 

@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/environments/custom-auth-provider
      upstream: website/src/content/docs/environments/custom-auth-provider.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # Custom Auth Provider
 

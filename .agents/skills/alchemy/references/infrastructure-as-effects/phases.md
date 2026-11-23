@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/infrastructure-as-effects/phases
      upstream: website/src/content/docs/infrastructure-as-effects/phases.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # Phases
 
@@ -102,10 +102,11 @@ differently across phases.
 
 `alchemy dev` is a plantime phase, so `ALCHEMY_PHASE` is `plan`
 during local development just like a regular deploy. To tell whether
-you're running under `alchemy dev` specifically, read the
-`ALCHEMY_DEV` config key. The CLI sets `ALCHEMY_DEV=true` on the dev
-process; every other entrypoint leaves it unset, so it defaults to
-`false`.
+you're running in local dev mode, read `ALCHEMY_DEV`. Inside a stack
+it matches the mode providers run in, so it's `true` under `alchemy dev`
+and in a test with `Test.make({ dev: true })` or `ALCHEMY_TEST_DEV=1`,
+and `false` on a regular deploy. Outside a stack it reads the
+`ALCHEMY_DEV` environment variable, which defaults to `false`.
 
 ```typescript
 import { ALCHEMY_DEV } from "alchemy";

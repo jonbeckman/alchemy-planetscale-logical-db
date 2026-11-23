@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/rivet/namespaces
      upstream: website/src/content/docs/rivet/namespaces.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # Control planes and namespaces
 

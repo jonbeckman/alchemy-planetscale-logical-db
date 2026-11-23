@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/stripe/guides/subscriptions
      upstream: website/src/content/docs/stripe/guides/subscriptions.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # Sell a subscription
 

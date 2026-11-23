@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/docker/effectful-services
      upstream: website/src/content/docs/docker/effectful-services.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # Effectful services
 

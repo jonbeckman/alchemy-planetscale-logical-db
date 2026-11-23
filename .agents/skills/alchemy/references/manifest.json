@@ -2,12 +2,12 @@
   "source": {
     "repo": "https://github.com/alchemy-run/alchemy.git",
     "ref": "main",
-    "sha": "21c6012",
-    "date": "2026-11-12",
-    "alchemyVersion": "2.0.0-beta.86",
+    "sha": "d1f364a",
+    "date": "2026-11-15",
+    "alchemyVersion": "2.0.0-beta.87",
     "effectVersion": "4.1.4"
   },
-  "generated": 807,
+  "generated": 851,
   "pages": [
     {
       "title": "Certificate authorities",
@@ -2562,8 +2562,8 @@
       "path": "references/cloudflare/frontend/foldkit.md",
       "upstream": "website/src/content/docs/cloudflare/frontend/foldkit.mdx",
       "url": "https://alchemy.run/cloudflare/frontend/foldkit",
-      "lines": 309,
-      "bytes": 10666
+      "lines": 318,
+      "bytes": 10946
     },
     {
       "title": "Frontend frameworks",
@@ -3610,6 +3610,534 @@
       "bytes": 7971
     },
     {
+      "title": "Action Gateway",
+      "description": "Give agents tools through DigitalOcean's Action Gateway, with toolbelts, MCP endpoints, approval rules, output views, your own MCP servers, provider credentials and per-actor limits.",
+      "area": "digitalocean",
+      "group": "ai",
+      "slug": "digitalocean/ai/action-gateway",
+      "path": "references/digitalocean/ai/action-gateway.md",
+      "upstream": "website/src/content/docs/digitalocean/ai/action-gateway.mdx",
+      "url": "https://alchemy.run/digitalocean/ai/action-gateway",
+      "lines": 108,
+      "bytes": 4147
+    },
+    {
+      "title": "Agent harness",
+      "description": "Run coding agents like OpenCode and Claude Code in DigitalOcean Harness Runtime sessions, each in its own sandbox, start them from your App, and schedule them with triggers.",
+      "area": "digitalocean",
+      "group": "ai",
+      "slug": "digitalocean/ai/agent-harness",
+      "path": "references/digitalocean/ai/agent-harness.md",
+      "upstream": "website/src/content/docs/digitalocean/ai/agent-harness.mdx",
+      "url": "https://alchemy.run/digitalocean/ai/agent-harness",
+      "lines": 131,
+      "bytes": 5307
+    },
+    {
+      "title": "GenAI agents",
+      "description": "Build DigitalOcean GenAI Platform agents with instructions, knowledge bases, function calls and routes to other agents, and call them from any runtime with a key of their own.",
+      "area": "digitalocean",
+      "group": "ai",
+      "slug": "digitalocean/ai/genai-agents",
+      "path": "references/digitalocean/ai/genai-agents.md",
+      "upstream": "website/src/content/docs/digitalocean/ai/genai-agents.mdx",
+      "url": "https://alchemy.run/digitalocean/ai/genai-agents",
+      "lines": 134,
+      "bytes": 5444
+    },
+    {
+      "title": "Inference",
+      "description": "Call models by name with DigitalOcean Serverless Inference from any runtime (chat, embeddings, images, speech, video and batches), or serve an open-weight model on GPUs reserved for you with Dedicated Inference.",
+      "area": "digitalocean",
+      "group": "ai",
+      "slug": "digitalocean/ai/inference",
+      "path": "references/digitalocean/ai/inference.md",
+      "upstream": "website/src/content/docs/digitalocean/ai/inference.mdx",
+      "url": "https://alchemy.run/digitalocean/ai/inference",
+      "lines": 112,
+      "bytes": 4810
+    },
+    {
+      "title": "App Platform",
+      "description": "Run an Effect or async program on DigitalOcean App Platform as an HTTPS service, with instance sizes, scheduled jobs, alerts, secrets and the team's Container Registry.",
+      "area": "digitalocean",
+      "group": "compute",
+      "slug": "digitalocean/compute/app-platform",
+      "path": "references/digitalocean/compute/app-platform.md",
+      "upstream": "website/src/content/docs/digitalocean/compute/app-platform.mdx",
+      "url": "https://alchemy.run/digitalocean/compute/app-platform",
+      "lines": 154,
+      "bytes": 5908
+    },
+    {
+      "title": "Choosing a runtime",
+      "description": "How App Platform services and jobs, Functions, Kubernetes and Droplets differ in what starts them, how they scale and what they cost, and how to choose one for each part of an app.",
+      "area": "digitalocean",
+      "group": "compute",
+      "slug": "digitalocean/compute/choosing-a-runtime",
+      "path": "references/digitalocean/compute/choosing-a-runtime.md",
+      "upstream": "website/src/content/docs/digitalocean/compute/choosing-a-runtime.mdx",
+      "url": "https://alchemy.run/digitalocean/compute/choosing-a-runtime",
+      "lines": 169,
+      "bytes": 7522
+    },
+    {
+      "title": "Droplets",
+      "description": "Run DigitalOcean Droplets with cloud-init, SSH keys, volumes, snapshots, backups and autoscale pools, and know which changes update a Droplet in place and which replace it.",
+      "area": "digitalocean",
+      "group": "compute",
+      "slug": "digitalocean/compute/droplets",
+      "path": "references/digitalocean/compute/droplets.md",
+      "upstream": "website/src/content/docs/digitalocean/compute/droplets.mdx",
+      "url": "https://alchemy.run/digitalocean/compute/droplets",
+      "lines": 135,
+      "bytes": 4664
+    },
+    {
+      "title": "Functions",
+      "description": "Run Effect or async handlers as DigitalOcean Functions, deploy single-file functions in any runtime, schedule them with triggers, and call them from other runtimes with a scoped access key.",
+      "area": "digitalocean",
+      "group": "compute",
+      "slug": "digitalocean/compute/functions",
+      "path": "references/digitalocean/compute/functions.md",
+      "upstream": "website/src/content/docs/digitalocean/compute/functions.mdx",
+      "url": "https://alchemy.run/digitalocean/compute/functions",
+      "lines": 162,
+      "bytes": 5929
+    },
+    {
+      "title": "Kubernetes",
+      "description": "Create DigitalOcean Kubernetes (DOKS) clusters and node pools, apply manifests from the same Stack, pull images from the team's registry, install 1-Click apps and forward logs.",
+      "area": "digitalocean",
+      "group": "compute",
+      "slug": "digitalocean/compute/kubernetes",
+      "path": "references/digitalocean/compute/kubernetes.md",
+      "upstream": "website/src/content/docs/digitalocean/compute/kubernetes.mdx",
+      "url": "https://alchemy.run/digitalocean/compute/kubernetes",
+      "lines": 114,
+      "bytes": 4050
+    },
+    {
+      "title": "Sandboxes",
+      "description": "Create DigitalOcean MicroVM sandboxes from a template while your program runs, run untrusted code in them, expose a port, pause and resume them, and delete them when done.",
+      "area": "digitalocean",
+      "group": "compute",
+      "slug": "digitalocean/compute/sandboxes",
+      "path": "references/digitalocean/compute/sandboxes.md",
+      "upstream": "website/src/content/docs/digitalocean/compute/sandboxes.mdx",
+      "url": "https://alchemy.run/digitalocean/compute/sandboxes",
+      "lines": 109,
+      "bytes": 4516
+    },
+    {
+      "title": "Managed Databases",
+      "description": "Run managed PostgreSQL, MySQL, Valkey, MongoDB, Kafka and OpenSearch clusters on DigitalOcean, apply SQL migrations on deploy, connect from runtimes, and add users, pools, replicas and trusted sources.",
+      "area": "digitalocean",
+      "group": "data",
+      "slug": "digitalocean/data/managed-databases",
+      "path": "references/digitalocean/data/managed-databases.md",
+      "upstream": "website/src/content/docs/digitalocean/data/managed-databases.mdx",
+      "url": "https://alchemy.run/digitalocean/data/managed-databases",
+      "lines": 163,
+      "bytes": 6222
+    },
+    {
+      "title": "Spaces",
+      "description": "Store objects in DigitalOcean Spaces buckets, read and write them from any runtime with keys scoped to one bucket, serve them through the CDN, and set CORS, versioning and lifecycle rules.",
+      "area": "digitalocean",
+      "group": "data",
+      "slug": "digitalocean/data/spaces",
+      "path": "references/digitalocean/data/spaces.md",
+      "upstream": "website/src/content/docs/digitalocean/data/spaces.mdx",
+      "url": "https://alchemy.run/digitalocean/data/spaces",
+      "lines": 122,
+      "bytes": 4748
+    },
+    {
+      "title": "Vector Databases",
+      "description": "Run a managed Weaviate vector database on DigitalOcean and connect to it from a runtime with its endpoints and API key.",
+      "area": "digitalocean",
+      "group": "data",
+      "slug": "digitalocean/data/vector-databases",
+      "path": "references/digitalocean/data/vector-databases.md",
+      "upstream": "website/src/content/docs/digitalocean/data/vector-databases.mdx",
+      "url": "https://alchemy.run/digitalocean/data/vector-databases",
+      "lines": 84,
+      "bytes": 3583
+    },
+    {
+      "title": "Volumes and NFS",
+      "description": "Give Droplets disks that outlive them with Block Storage Volumes, share files between Droplets and Kubernetes nodes with managed NFS, and snapshot Volumes.",
+      "area": "digitalocean",
+      "group": "data",
+      "slug": "digitalocean/data/volumes-nfs",
+      "path": "references/digitalocean/data/volumes-nfs.md",
+      "upstream": "website/src/content/docs/digitalocean/data/volumes-nfs.mdx",
+      "url": "https://alchemy.run/digitalocean/data/volumes-nfs",
+      "lines": 80,
+      "bytes": 2948
+    },
+    {
+      "title": "Astro",
+      "description": "Deploy a Astro app to DigitalOcean App Platform with DigitalOcean.Website.Astro, built on your machine and served by an App, with Astro's own dev server under alchemy dev.",
+      "area": "digitalocean",
+      "group": "frontend",
+      "slug": "digitalocean/frontend/astro",
+      "path": "references/digitalocean/frontend/astro.md",
+      "upstream": "website/src/content/docs/digitalocean/frontend/astro.mdx",
+      "url": "https://alchemy.run/digitalocean/frontend/astro",
+      "lines": 71,
+      "bytes": 2505
+    },
+    {
+      "title": "Foldkit",
+      "description": "Deploy a Foldkit app to DigitalOcean App Platform with DigitalOcean.Website.Foldkit, built on your machine and served by an App, with Foldkit's own dev server under alchemy dev.",
+      "area": "digitalocean",
+      "group": "frontend",
+      "slug": "digitalocean/frontend/foldkit",
+      "path": "references/digitalocean/frontend/foldkit.md",
+      "upstream": "website/src/content/docs/digitalocean/frontend/foldkit.mdx",
+      "url": "https://alchemy.run/digitalocean/frontend/foldkit",
+      "lines": 68,
+      "bytes": 2479
+    },
+    {
+      "title": "Next.js",
+      "description": "Deploy a Next.js app to DigitalOcean App Platform with DigitalOcean.Website.Nextjs, built on your machine and served by an App, with Next.js's own dev server under alchemy dev.",
+      "area": "digitalocean",
+      "group": "frontend",
+      "slug": "digitalocean/frontend/nextjs",
+      "path": "references/digitalocean/frontend/nextjs.md",
+      "upstream": "website/src/content/docs/digitalocean/frontend/nextjs.mdx",
+      "url": "https://alchemy.run/digitalocean/frontend/nextjs",
+      "lines": 69,
+      "bytes": 2536
+    },
+    {
+      "title": "Nuxt",
+      "description": "Deploy a Nuxt app to DigitalOcean App Platform with DigitalOcean.Website.Nuxt, built on your machine and served by an App, with Nuxt's own dev server under alchemy dev.",
+      "area": "digitalocean",
+      "group": "frontend",
+      "slug": "digitalocean/frontend/nuxt",
+      "path": "references/digitalocean/frontend/nuxt.md",
+      "upstream": "website/src/content/docs/digitalocean/frontend/nuxt.mdx",
+      "url": "https://alchemy.run/digitalocean/frontend/nuxt",
+      "lines": 67,
+      "bytes": 2430
+    },
+    {
+      "title": "Octane",
+      "description": "Deploy a Octane app to DigitalOcean App Platform with DigitalOcean.Website.Octane, built on your machine and served by an App, with Octane's own dev server under alchemy dev.",
+      "area": "digitalocean",
+      "group": "frontend",
+      "slug": "digitalocean/frontend/octane",
+      "path": "references/digitalocean/frontend/octane.md",
+      "upstream": "website/src/content/docs/digitalocean/frontend/octane.mdx",
+      "url": "https://alchemy.run/digitalocean/frontend/octane",
+      "lines": 67,
+      "bytes": 2438
+    },
+    {
+      "title": "React Router",
+      "description": "Deploy a React Router app to DigitalOcean App Platform with DigitalOcean.Website.ReactRouter, built on your machine and served by an App, with React Router's own dev server under alchemy dev.",
+      "area": "digitalocean",
+      "group": "frontend",
+      "slug": "digitalocean/frontend/react-router",
+      "path": "references/digitalocean/frontend/react-router.md",
+      "upstream": "website/src/content/docs/digitalocean/frontend/react-router.mdx",
+      "url": "https://alchemy.run/digitalocean/frontend/react-router",
+      "lines": 69,
+      "bytes": 2546
+    },
+    {
+      "title": "SolidStart",
+      "description": "Deploy a SolidStart app to DigitalOcean App Platform with DigitalOcean.Website.SolidStart, built on your machine and served by an App, with SolidStart's own dev server under alchemy dev.",
+      "area": "digitalocean",
+      "group": "frontend",
+      "slug": "digitalocean/frontend/solidstart",
+      "path": "references/digitalocean/frontend/solidstart.md",
+      "upstream": "website/src/content/docs/digitalocean/frontend/solidstart.mdx",
+      "url": "https://alchemy.run/digitalocean/frontend/solidstart",
+      "lines": 69,
+      "bytes": 2518
+    },
+    {
+      "title": "SvelteKit",
+      "description": "Deploy a SvelteKit app to DigitalOcean App Platform with DigitalOcean.Website.SvelteKit, built on your machine and served by an App, with SvelteKit's own dev server under alchemy dev.",
+      "area": "digitalocean",
+      "group": "frontend",
+      "slug": "digitalocean/frontend/sveltekit",
+      "path": "references/digitalocean/frontend/sveltekit.md",
+      "upstream": "website/src/content/docs/digitalocean/frontend/sveltekit.mdx",
+      "url": "https://alchemy.run/digitalocean/frontend/sveltekit",
+      "lines": 67,
+      "bytes": 2508
+    },
+    {
+      "title": "TanStack Start",
+      "description": "Deploy a TanStack Start app to DigitalOcean App Platform with DigitalOcean.Website.TanStackStart, built on your machine and served by an App, with TanStack Start's own dev server under alchemy dev.",
+      "area": "digitalocean",
+      "group": "frontend",
+      "slug": "digitalocean/frontend/tanstack-start",
+      "path": "references/digitalocean/frontend/tanstack-start.md",
+      "upstream": "website/src/content/docs/digitalocean/frontend/tanstack-start.mdx",
+      "url": "https://alchemy.run/digitalocean/frontend/tanstack-start",
+      "lines": 69,
+      "bytes": 2632
+    },
+    {
+      "title": "Vinext",
+      "description": "Deploy a Vinext app to DigitalOcean App Platform with DigitalOcean.Website.Vinext, built on your machine and served by an App, with Vinext's own dev server under alchemy dev.",
+      "area": "digitalocean",
+      "group": "frontend",
+      "slug": "digitalocean/frontend/vinext",
+      "path": "references/digitalocean/frontend/vinext.md",
+      "upstream": "website/src/content/docs/digitalocean/frontend/vinext.mdx",
+      "url": "https://alchemy.run/digitalocean/frontend/vinext",
+      "lines": 69,
+      "bytes": 2456
+    },
+    {
+      "title": "Vite",
+      "description": "Deploy a Vite app to DigitalOcean App Platform with DigitalOcean.Website.Vite, built on your machine and served by an App, with Vite's own dev server under alchemy dev.",
+      "area": "digitalocean",
+      "group": "frontend",
+      "slug": "digitalocean/frontend/vite",
+      "path": "references/digitalocean/frontend/vite.md",
+      "upstream": "website/src/content/docs/digitalocean/frontend/vite.mdx",
+      "url": "https://alchemy.run/digitalocean/frontend/vite",
+      "lines": 68,
+      "bytes": 2434
+    },
+    {
+      "title": "Vocs",
+      "description": "Deploy a Vocs app to DigitalOcean App Platform with DigitalOcean.Website.Vocs, built on your machine and served by an App, with Vocs's own dev server under alchemy dev.",
+      "area": "digitalocean",
+      "group": "frontend",
+      "slug": "digitalocean/frontend/vocs",
+      "path": "references/digitalocean/frontend/vocs.md",
+      "upstream": "website/src/content/docs/digitalocean/frontend/vocs.mdx",
+      "url": "https://alchemy.run/digitalocean/frontend/vocs",
+      "lines": 67,
+      "bytes": 2392
+    },
+    {
+      "title": "Waku",
+      "description": "Deploy a Waku app to DigitalOcean App Platform with DigitalOcean.Website.Waku, built on your machine and served by an App, with Waku's own dev server under alchemy dev.",
+      "area": "digitalocean",
+      "group": "frontend",
+      "slug": "digitalocean/frontend/waku",
+      "path": "references/digitalocean/frontend/waku.md",
+      "upstream": "website/src/content/docs/digitalocean/frontend/waku.mdx",
+      "url": "https://alchemy.run/digitalocean/frontend/waku",
+      "lines": 69,
+      "bytes": 2455
+    },
+    {
+      "title": "Websites",
+      "description": "Deploy Astro, Next.js, Nuxt, SvelteKit, SolidStart, React Router, TanStack Start, Waku, Vinext, Vite, Vocs, Foldkit, Octane and static sites to DigitalOcean App Platform from one Stack.",
+      "area": "digitalocean",
+      "group": "frontend",
+      "slug": "digitalocean/frontend/websites",
+      "path": "references/digitalocean/frontend/websites.md",
+      "upstream": "website/src/content/docs/digitalocean/frontend/websites.mdx",
+      "url": "https://alchemy.run/digitalocean/frontend/websites",
+      "lines": 93,
+      "bytes": 3452
+    },
+    {
+      "title": "DigitalOcean",
+      "description": "Run Effect programs on DigitalOcean with Alchemy. Declare Apps, Functions, Droplets, Kubernetes, Spaces, Managed Databases, AI agents and networking in one TypeScript program.",
+      "area": "digitalocean",
+      "group": "",
+      "slug": "digitalocean",
+      "path": "references/digitalocean/_overview.md",
+      "upstream": "website/src/content/docs/digitalocean/index.mdx",
+      "url": "https://alchemy.run/digitalocean",
+      "lines": 73,
+      "bytes": 2759
+    },
+    {
+      "title": "DNS",
+      "description": "Host domains on DigitalOcean DNS and manage their records from a Stack, pointing names at Droplets, load balancers and reserved IPs.",
+      "area": "digitalocean",
+      "group": "networking",
+      "slug": "digitalocean/networking/dns",
+      "path": "references/digitalocean/networking/dns.md",
+      "upstream": "website/src/content/docs/digitalocean/networking/dns.mdx",
+      "url": "https://alchemy.run/digitalocean/networking/dns",
+      "lines": 53,
+      "bytes": 1797
+    },
+    {
+      "title": "Firewalls",
+      "description": "Control which traffic reaches DigitalOcean Droplets with Cloud Firewalls, applied by Droplet id or by tag, with inbound and outbound rules.",
+      "area": "digitalocean",
+      "group": "networking",
+      "slug": "digitalocean/networking/firewalls",
+      "path": "references/digitalocean/networking/firewalls.md",
+      "upstream": "website/src/content/docs/digitalocean/networking/firewalls.mdx",
+      "url": "https://alchemy.run/digitalocean/networking/firewalls",
+      "lines": 48,
+      "bytes": 2203
+    },
+    {
+      "title": "Load balancers and certificates",
+      "description": "Spread traffic across DigitalOcean Droplets with load balancers, terminate HTTPS with Let's Encrypt or your own certificates, and check backend health.",
+      "area": "digitalocean",
+      "group": "networking",
+      "slug": "digitalocean/networking/load-balancers",
+      "path": "references/digitalocean/networking/load-balancers.md",
+      "upstream": "website/src/content/docs/digitalocean/networking/load-balancers.mdx",
+      "url": "https://alchemy.run/digitalocean/networking/load-balancers",
+      "lines": 72,
+      "bytes": 2805
+    },
+    {
+      "title": "Reserved IPs",
+      "description": "Keep a public address on DigitalOcean that stays the same when the Droplet behind it is replaced, and move it between Droplets.",
+      "area": "digitalocean",
+      "group": "networking",
+      "slug": "digitalocean/networking/reserved-ips",
+      "path": "references/digitalocean/networking/reserved-ips.md",
+      "upstream": "website/src/content/docs/digitalocean/networking/reserved-ips.mdx",
+      "url": "https://alchemy.run/digitalocean/networking/reserved-ips",
+      "lines": 46,
+      "bytes": 1793
+    },
+    {
+      "title": "VPCs and NAT",
+      "description": "Put Droplets, Kubernetes clusters and databases on a private DigitalOcean VPC, peer two VPCs, and give private machines one outbound address with a NAT gateway.",
+      "area": "digitalocean",
+      "group": "networking",
+      "slug": "digitalocean/networking/vpcs",
+      "path": "references/digitalocean/networking/vpcs.md",
+      "upstream": "website/src/content/docs/digitalocean/networking/vpcs.mdx",
+      "url": "https://alchemy.run/digitalocean/networking/vpcs",
+      "lines": 60,
+      "bytes": 2778
+    },
+    {
+      "title": "Monitoring and Insights",
+      "description": "Watch DigitalOcean resources with uptime checks, Droplet alert policies and Insights alert rules, send alerts to email, Slack or webhooks, forward Kubernetes logs, and query metrics and logs from a runtime.",
+      "area": "digitalocean",
+      "group": "observability",
+      "slug": "digitalocean/observability/monitoring",
+      "path": "references/digitalocean/observability/monitoring.md",
+      "upstream": "website/src/content/docs/digitalocean/observability/monitoring.mdx",
+      "url": "https://alchemy.run/digitalocean/observability/monitoring",
+      "lines": 117,
+      "bytes": 4667
+    },
+    {
+      "title": "Secrets",
+      "description": "Give DigitalOcean Apps and Functions API keys and passwords as Config values from .env or a secrets manager, or keep shared values in DigitalOcean Secrets and read them with ReadSecret.",
+      "area": "digitalocean",
+      "group": "security",
+      "slug": "digitalocean/security/secrets",
+      "path": "references/digitalocean/security/secrets.md",
+      "upstream": "website/src/content/docs/digitalocean/security/secrets.mdx",
+      "url": "https://alchemy.run/digitalocean/security/secrets",
+      "lines": 106,
+      "bytes": 4580
+    },
+    {
+      "title": "Setup",
+      "description": "Install Alchemy and connect it to DigitalOcean — create a personal access token for your team and store it in a profile.",
+      "area": "digitalocean",
+      "group": "",
+      "slug": "digitalocean/setup",
+      "path": "references/digitalocean/setup.md",
+      "upstream": "website/src/content/docs/digitalocean/setup.mdx",
+      "url": "https://alchemy.run/digitalocean/setup",
+      "lines": 79,
+      "bytes": 3045
+    },
+    {
+      "title": "Teams, projects and tokens",
+      "description": "How a DigitalOcean team holds your resources and billing, how a personal access token decides where Alchemy deploys, how to keep production in its own team, and the narrower keys bindings create for your runtimes.",
+      "area": "digitalocean",
+      "group": "",
+      "slug": "digitalocean/teams-projects-and-tokens",
+      "path": "references/digitalocean/teams-projects-and-tokens.md",
+      "upstream": "website/src/content/docs/digitalocean/teams-projects-and-tokens.mdx",
+      "url": "https://alchemy.run/digitalocean/teams-projects-and-tokens",
+      "lines": 88,
+      "bytes": 5256
+    },
+    {
+      "title": "Part 1: Your First App",
+      "description": "Create a Stack, write an Effect HTTP handler, and deploy it to App Platform with its own Container Registry.",
+      "area": "digitalocean",
+      "group": "tutorial",
+      "slug": "digitalocean/tutorial/part-1",
+      "path": "references/digitalocean/tutorial/part-1.md",
+      "upstream": "website/src/content/docs/digitalocean/tutorial/part-1.mdx",
+      "url": "https://alchemy.run/digitalocean/tutorial/part-1",
+      "lines": 124,
+      "bytes": 3924
+    },
+    {
+      "title": "Part 2: Store Files in Spaces",
+      "description": "Declare a Spaces bucket, give the App a key that reaches only that bucket, and read and write objects from a handler.",
+      "area": "digitalocean",
+      "group": "tutorial",
+      "slug": "digitalocean/tutorial/part-2",
+      "path": "references/digitalocean/tutorial/part-2.md",
+      "upstream": "website/src/content/docs/digitalocean/tutorial/part-2.mdx",
+      "url": "https://alchemy.run/digitalocean/tutorial/part-2",
+      "lines": 135,
+      "bytes": 5006
+    },
+    {
+      "title": "Part 3: Add a Postgres Database",
+      "description": "Declare a managed PostgreSQL cluster, apply SQL migrations on every deploy, and query it from the App with its connection string.",
+      "area": "digitalocean",
+      "group": "tutorial",
+      "slug": "digitalocean/tutorial/part-3",
+      "path": "references/digitalocean/tutorial/part-3.md",
+      "upstream": "website/src/content/docs/digitalocean/tutorial/part-3.mdx",
+      "url": "https://alchemy.run/digitalocean/tutorial/part-3",
+      "lines": 159,
+      "bytes": 5150
+    },
+    {
+      "title": "Part 4: Run a Nightly Job",
+      "description": "Schedule an App Platform job from the same program, so a report of the day's visits lands in Spaces every night.",
+      "area": "digitalocean",
+      "group": "tutorial",
+      "slug": "digitalocean/tutorial/part-4",
+      "path": "references/digitalocean/tutorial/part-4.md",
+      "upstream": "website/src/content/docs/digitalocean/tutorial/part-4.mdx",
+      "url": "https://alchemy.run/digitalocean/tutorial/part-4",
+      "lines": 63,
+      "bytes": 2023
+    },
+    {
+      "title": "Part 5: Ship to Production",
+      "description": "Deploy a second copy of the Stack as a stage, give production its own team and profile, deploy from CI, and tear down what you no longer need.",
+      "area": "digitalocean",
+      "group": "tutorial",
+      "slug": "digitalocean/tutorial/part-5",
+      "path": "references/digitalocean/tutorial/part-5.md",
+      "upstream": "website/src/content/docs/digitalocean/tutorial/part-5.mdx",
+      "url": "https://alchemy.run/digitalocean/tutorial/part-5",
+      "lines": 50,
+      "bytes": 2485
+    },
+    {
+      "title": "What is DigitalOcean?",
+      "description": "The concepts behind DigitalOcean — teams, tokens, projects, regions, App Platform, Functions, Droplets, Kubernetes, Sandboxes, Spaces, Managed Databases, AI agents, networking and monitoring — and how @alchemy.run/digitalocean models each of them.",
+      "area": "digitalocean",
+      "group": "",
+      "slug": "digitalocean/what-is-digitalocean",
+      "path": "references/digitalocean/what-is-digitalocean.md",
+      "upstream": "website/src/content/docs/digitalocean/what-is-digitalocean.mdx",
+      "url": "https://alchemy.run/digitalocean/what-is-digitalocean",
+      "lines": 163,
+      "bytes": 9195
+    },
+    {
       "title": "Build caches",
       "description": "Keep an image's build layers in a registry or GitHub Actions cache, so fresh CI runners skip the steps that didn't change.",
       "area": "docker",
@@ -3859,7 +4387,7 @@
       "upstream": "website/src/content/docs/domain/backfill.mdx",
       "url": "https://alchemy.run/domain/backfill",
       "lines": 107,
-      "bytes": 9363
+      "bytes": 9789
     },
     {
       "title": "Sign in with better-auth",
@@ -3907,7 +4435,7 @@
       "upstream": "website/src/content/docs/domain/command.mdx",
       "url": "https://alchemy.run/domain/command",
       "lines": 276,
-      "bytes": 14444
+      "bytes": 14510
     },
     {
       "title": "Deadlines",
@@ -3930,8 +4458,8 @@
       "path": "references/domain/effect-cluster.md",
       "upstream": "website/src/content/docs/domain/effect-cluster.mdx",
       "url": "https://alchemy.run/domain/effect-cluster",
-      "lines": 133,
-      "bytes": 5645
+      "lines": 135,
+      "bytes": 5887
     },
     {
       "title": "Event",
@@ -3967,7 +4495,7 @@
       "upstream": "website/src/content/docs/domain/foldkit.mdx",
       "url": "https://alchemy.run/domain/foldkit",
       "lines": 208,
-      "bytes": 9633
+      "bytes": 9587
     },
     {
       "title": "Plain HTTP and OpenAPI",
@@ -4099,7 +4627,7 @@
       "upstream": "website/src/content/docs/domain/projection.mdx",
       "url": "https://alchemy.run/domain/projection",
       "lines": 282,
-      "bytes": 13047
+      "bytes": 13235
     },
     {
       "title": "Query",
@@ -4111,7 +4639,7 @@
       "upstream": "website/src/content/docs/domain/query.mdx",
       "url": "https://alchemy.run/domain/query",
       "lines": 343,
-      "bytes": 17510
+      "bytes": 17603
     },
     {
       "title": "Rivet",
@@ -4122,8 +4650,8 @@
       "path": "references/domain/rivet.md",
       "upstream": "website/src/content/docs/domain/rivet.mdx",
       "url": "https://alchemy.run/domain/rivet",
-      "lines": 126,
-      "bytes": 5170
+      "lines": 128,
+      "bytes": 5560
     },
     {
       "title": "Saga",
@@ -4147,7 +4675,7 @@
       "upstream": "website/src/content/docs/domain/sessions.mdx",
       "url": "https://alchemy.run/domain/sessions",
       "lines": 389,
-      "bytes": 15574
+      "bytes": 15637
     },
     {
       "title": "Story",
@@ -4626,8 +5154,8 @@
       "path": "references/environments/profiles.md",
       "upstream": "website/src/content/docs/environments/profiles.mdx",
       "url": "https://alchemy.run/environments/profiles",
-      "lines": 221,
-      "bytes": 8771
+      "lines": 222,
+      "bytes": 8944
     },
     {
       "title": "Secret providers",
@@ -6726,8 +7254,8 @@
       "path": "references/infrastructure-as-effects/phases.md",
       "upstream": "website/src/content/docs/infrastructure-as-effects/phases.mdx",
       "url": "https://alchemy.run/infrastructure-as-effects/phases",
-      "lines": 163,
-      "bytes": 7069
+      "lines": 164,
+      "bytes": 7204
     },
     {
       "title": "Runtime",
@@ -8874,8 +9402,8 @@
       "path": "references/rivet/durable-objects.md",
       "upstream": "website/src/content/docs/rivet/durable-objects.mdx",
       "url": "https://alchemy.run/rivet/durable-objects",
-      "lines": 199,
-      "bytes": 8122
+      "lines": 223,
+      "bytes": 9250
     },
     {
       "title": "Durable Streams",

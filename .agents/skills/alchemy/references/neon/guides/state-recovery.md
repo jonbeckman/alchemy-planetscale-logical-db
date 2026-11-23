@@ -1,6 +1,6 @@
 <!-- source: https://alchemy.run/neon/guides/state-recovery
      upstream: website/src/content/docs/neon/guides/state-recovery.mdx
-     alchemy 2.0.0-beta.86 @ 21c6012 -->
+     alchemy 2.0.0-beta.87 @ d1f364a -->
 
 # State and recovery
 
