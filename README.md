@@ -95,9 +95,9 @@ export default DatabaseStack.make(
   stored as the folder name `NAME`.
 - `migrationsTable`: migration tracking table, defaulting to
   `__alchemy_migrations`.
-- `importRootDir`: filesystem root used to resolve imports, defaulting to the
-  Alchemy process working directory. Set it to the repository root when deploys
-  can run from different working directories. This value is not persisted.
+- `importRootDir`: filesystem root used to resolve imports, defaulting to
+  Alchemy's working directory at startup. Set it to the repository root when
+  deploys can run from different working directories. This value is not persisted.
 - `importFiles`: normalized, repository-relative SQL file identifiers to apply
   as mutable imports/seed data. Use forward slashes without empty, `.`, or `..`
   segments. The resource rejects absolute and non-normalized paths before any

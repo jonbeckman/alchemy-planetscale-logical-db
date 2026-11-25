@@ -3,6 +3,7 @@ import { isResolved } from "alchemy/Diff"
 import { createPhysicalName } from "alchemy/PhysicalName"
 import * as Provider from "alchemy/Provider"
 import { Resource } from "alchemy/Resource"
+import { initialCwd } from "alchemy/Util/Node"
 import type { PostgresOrigin } from "@alchemy.run/planetscale"
 import {
   applyTrackedSqlFiles,
@@ -92,7 +93,7 @@ export interface PostgresLogicalDatabaseProps {
   /**
    * Root directory used to resolve import files. This filesystem location is
    * not persisted as part of an import's identity.
-   * @default process.cwd()
+   * @default Alchemy's working directory at startup
    */
   importRootDir?: string
 
@@ -575,7 +576,7 @@ const readReadableDatabase = (input: {
   })
 
 export function PostgresLogicalDatabaseProvider() {
-  const rootDir = process.cwd()
+  const rootDir = initialCwd
 
   return Provider.effect(
     PostgresLogicalDatabase,
